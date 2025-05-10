@@ -2,8 +2,11 @@ import java.awt.*;
 import javax.swing.*;
 
 public class GameUI extends JFrame {
-    private JTextArea textArea;
+    JTextArea textArea;
     private JButton inventoryBtn, dialogueBtn, saveBtn;
+    private Storyline currentStory;
+    private GameState gameState;
+
 
     public GameUI() {
 
@@ -13,7 +16,7 @@ public class GameUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         textArea = new JTextArea();
-        textArea.setEditable(false);
+        textArea.setEditable(true);
         add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
@@ -38,6 +41,18 @@ public class GameUI extends JFrame {
         buttonPanel.add(saveBtn);
         add(buttonPanel, BorderLayout.SOUTH);
         
+    }
+
+    public void startGame(int storylineId) {
+        this.gameState = new GameState();
+        
+        switch(storylineId) {
+            case 1 -> currentStory = new Storyline1(this, gameState);
+            case 2 -> currentStory = new Storyline2(this, gameState);
+            case 3 -> currentStory = new Storyline3(this, gameState);
+        }
+        
+        currentStory.startStory();
     }
 
     private void showInventory() {
@@ -70,15 +85,32 @@ public class GameUI extends JFrame {
         
         // Example options
         String[] options = {"Hello nice to meet you!", "This is another text dialogue", "this is a longer text dialogue that is used to test limit"};
-        JList<String> optionList = new JList<>(options);
+        String redOption = "THIS IS A FAST RED TEXT";
+
+        DefaultListModel<String> listModel = new DefaultListModel<>(); // ini kek list yang modifiable
+
+        for (String option : options) {
+            listModel.addElement(option); 
+        }
+        listModel.addElement(redOption);
+
+        JList<String> optionList = new JList<>(listModel);
 
         JButton btn = new JButton("Say dialogue");
+
         btn.addActionListener(e -> {
                 String selected = optionList.getSelectedValue();
                 dialogueDialog.dispose();
+                int delayTimer = 20;
+
+                if(selected == redOption){
+                    delayTimer = 5;
+                }  else {
+                    delayTimer = 20;
+                } 
                 
                 Typewriter typewriter = new Typewriter(textArea);
-                typewriter.typeText("\n" + selected + "...", 20);
+                typewriter.typeText("\n" + selected + "...", delayTimer);
             });
         dialogueDialog.add(new JScrollPane(optionList));
         dialogueDialog.add(btn, BorderLayout.SOUTH);

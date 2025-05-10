@@ -52,7 +52,7 @@ public class StartMenu extends JFrame{
         add(titlePanel, BorderLayout.CENTER);
 
 
-        Font buttonFont = new Font("Arial", Font.BOLD, 16);
+        Font buttonFont = new Font("Courier", Font.BOLD, 16);
         Dimension buttonSize = new Dimension(200, 50); // Width, Height
 
 
@@ -98,6 +98,8 @@ public class StartMenu extends JFrame{
 
     public void startGame(){
         GameUI gameUI = new GameUI();
+        int storylineChoice = 3;  //for now untuk ngganti storyline makek ini dulu di code e langsung
+        gameUI.startGame(storylineChoice); // Pass the selected storyline
         gameUI.setVisible(true);
         this.dispose();
     }
