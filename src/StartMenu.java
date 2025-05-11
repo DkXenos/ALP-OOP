@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.io.InputStream;
+import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -24,6 +25,7 @@ public class StartMenu extends JFrame{
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
 
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
@@ -98,7 +100,13 @@ public class StartMenu extends JFrame{
 
     public void startGame(){
         GameUI gameUI = new GameUI();
-        int storylineChoice = 3;  //for now untuk ngganti storyline makek ini dulu di code e langsung
+        Random r = new Random();
+
+        // int storylineChoice = 1 + r.nextInt(3);  
+        //for now untuk ngganti storyline makek ini dulu di code e langsung
+
+        int storylineChoice = 1;
+
         gameUI.startGame(storylineChoice); // Pass the selected storyline
         gameUI.setVisible(true);
         this.dispose();

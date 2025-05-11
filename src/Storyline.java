@@ -9,6 +9,6 @@ public abstract class Storyline {
     }
 
     public abstract void startStory();
-    public abstract void handleChoice(String choice);
+    public abstract void handleChoice(int choice);
     public abstract String[] getCurrentChoices();
 }

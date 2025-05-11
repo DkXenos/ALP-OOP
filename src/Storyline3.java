@@ -10,7 +10,7 @@ public class Storyline3 extends Storyline {
     }
 
     @Override
-    public void handleChoice(String choice) {
+    public void handleChoice(int choice) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
