@@ -86,10 +86,10 @@ public class Storyline1 extends Storyline {
         }
     }
     @Override
-    public void handleChoice(int choice) {
+    public void handleChoice(String choice) {
         switch(dialogueState) {
             case 0 -> {
-                if(choice == 1) {
+                if(choice == "1") {
                     // state.social++;
                     showDialogue(1);
                 } else {

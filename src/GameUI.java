@@ -132,6 +132,7 @@ public class GameUI extends JFrame {
         listModel.addElement(redOption);
 
         JList<String> optionList = new JList<>(listModel);
+        optionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JButton btn = new JButton("Say dialogue");
 
@@ -147,6 +148,8 @@ public class GameUI extends JFrame {
                 } 
                 
                 Typewriter typewriter = new Typewriter(textArea);
+
+                currentStory.handleChoice(selected);
                 typewriter.typeText("\n" + selected + "...", Color.black, delayTimer);
             });
         dialogueDialog.add(new JScrollPane(optionList));
