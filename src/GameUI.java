@@ -87,6 +87,7 @@ public class GameUI extends JFrame {
     }
     
     public void displayText(String text, Color color) {
+
     Typewriter typewriter = new Typewriter(textArea);
     typewriter.typeText(text, color != null ? color : Color.WHITE, 20);
 }

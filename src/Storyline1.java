@@ -11,6 +11,11 @@ public class Storyline1 extends Storyline {
 
     @Override
     public void startStory() {
+        Timer timer = new Timer(500, e ->{
+            ui.displayText("[Lullaby of Empty Bottles]", Color.black);
+        });
+        timer.setRepeats(false);
+        timer.start();
         showDialogue(0); // Start first dialogue
     }
 
@@ -23,9 +28,13 @@ public class Storyline1 extends Storyline {
         
         switch(stage) {
             case 0 -> {
-                ui.displayText("\n[Phone Notification]", Color.black);
+                Timer t = new Timer(1500, e ->{
+                    ui.displayText("\n[Phone Notification]", Color.black);
+                });
+                t.setRepeats(false);
+                t.start();
                 // Add slight delay between messages
-                Timer timer = new Timer(1000, e -> {
+                Timer timer = new Timer(2000, e -> {
                     ui.displayText("\nOLD_FRIEND: Hey, I'm in town... you wanna go grab some food?", Color.black);
                     ui.showChoices(new String[]{
                         "1. Definitely! Where?", 
