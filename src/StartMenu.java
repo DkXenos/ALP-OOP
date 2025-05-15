@@ -29,52 +29,50 @@ public class StartMenu extends JFrame{
 
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
-        titlePanel.setOpaque(false); // Transparent background
+        titlePanel.setOpaque(false); 
 
-        // Title Label
+        // Title judul game
         JLabel titleLabel = new JLabel("Chapters of a Lost Summer", SwingConstants.CENTER);
         titleLabel.setFont(customFont); 
         titleLabel.setForeground(new Color(255, 215, 0));
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Horizontal centering
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Description Label
+        // ini nama nama kita
         JLabel descLabel = new JLabel("Made by: Jason Tio & Eileen Cynthia Mark", SwingConstants.CENTER);
         descLabel.setFont(customFont.deriveFont(24f)); // Smaller size
         descLabel.setForeground(new Color(117, 8, 81));
         descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add vertical spacing
-        titlePanel.add(Box.createVerticalGlue()); // Pushes content to center
+        // untuk spacing
+        titlePanel.add(Box.createVerticalGlue()); 
         titlePanel.add(titleLabel);
-        titlePanel.add(Box.createRigidArea(new Dimension(0, 20))); // 20px gap
+        titlePanel.add(Box.createRigidArea(new Dimension(0, 20)));
         titlePanel.add(descLabel);
         titlePanel.add(Box.createVerticalGlue());
 
-        // Add to frame
         add(titlePanel, BorderLayout.CENTER);
 
 
         Font buttonFont = new Font("Courier", Font.BOLD, 16);
-        Dimension buttonSize = new Dimension(200, 50); // Width, Height
+        Dimension buttonSize = new Dimension(200, 50); 
 
 
         JPanel buttonContainer = new JPanel(new BorderLayout());
-        buttonContainer.setBorder(new EmptyBorder(70, 20, 20, 20)); // Padding
+        buttonContainer.setBorder(new EmptyBorder(70, 20, 20, 20)); //ngasi padding
 
-        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Centers content
-        buttonPanel.setOpaque(false); // Transparent background
+        JPanel buttonPanel = new JPanel(new GridBagLayout());  //nge center content e kita
+        buttonPanel.setOpaque(false);
 
-        // Start Button
+        //start button
         startButton = new JButton("Start Game");
-        styleButton(startButton, buttonFont, buttonSize, new Color(100, 200, 100)); // Green
+        styleButton(startButton, buttonFont, buttonSize, new Color(100, 200, 100)); 
 
-        // Save Button
+        // save Button
         saveFileButton = new JButton("Save Files");
         styleButton(saveFileButton, buttonFont, buttonSize, new Color(100, 150, 200));
 
-        // Add buttons with constraints to center them
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Button margins
+        gbc.insets = new Insets(10, 10, 10, 10); //ini kek margin untuk mbikin button e gak gede banget gtu
         gbc.gridx = 0;
         gbc.gridy = 0;
         buttonPanel.add(startButton, gbc);
@@ -93,7 +91,7 @@ public class StartMenu extends JFrame{
         button.setPreferredSize(size);
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
-        button.setFocusPainted(false); // Removes the dotted border on click
+        button.setFocusPainted(false);
         button.setBorder(BorderFactory.createRaisedBevelBorder());
     }
 
