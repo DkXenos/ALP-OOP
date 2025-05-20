@@ -2,8 +2,12 @@ import java.awt.*;
 import javax.swing.*;
 
 public class GameUI extends JFrame {
-    private JTextArea textArea;
+    JTextArea textArea;
     private JButton inventoryBtn, dialogueBtn, saveBtn;
+    private Storyline currentStory;
+    private GameState gameState;
+    private JPanel choicePanel;
+
 
     public GameUI() {
 
@@ -11,9 +15,15 @@ public class GameUI extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+        setResizable(false);
+
         textArea = new JTextArea();
         textArea.setEditable(false);
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        choicePanel = new JPanel();
+        choicePanel.setLayout(new BoxLayout(choicePanel, BoxLayout.Y_AXIS));
+        add(choicePanel, BorderLayout.EAST);
         add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
@@ -40,6 +50,49 @@ public class GameUI extends JFrame {
         
     }
 
+    public void startGame(int storylineId) {
+        this.gameState = new GameState();
+        
+        switch(storylineId) {
+            case 1 -> currentStory = new Storyline1(this, gameState);
+            case 2 -> currentStory = new Storyline2(this, gameState);
+            case 3 -> currentStory = new Storyline3(this, gameState);
+        }
+        
+        currentStory.startStory();
+    }
+
+    public void showChoices(String[] options) {
+        choicePanel.removeAll();
+        
+        if (options == null || options.length == 0) {
+            revalidate();
+            repaint();
+            return;
+        }
+        
+        for (int i = 0; i < options.length; i++) {
+            JButton btn = new JButton(options[i]);
+            final int choice = i + 1;
+            btn.addActionListener(e -> {
+                if (currentStory != null) {
+                    currentStory.handleChoice(choice);
+                }
+            });
+            choicePanel.add(btn);
+        }
+        
+        revalidate();
+        repaint();
+    }
+    
+    public void displayText(String text, Color color) {
+
+    Typewriter typewriter = new Typewriter(textArea);
+    typewriter.typeText(text, color != null ? color : Color.WHITE, 20);
+}
+
+
     private void showInventory() {
         JDialog inventoryDialog = new JDialog(this, "Inventory", true);
         inventoryDialog.setSize(300, 200);
@@ -54,7 +107,7 @@ public class GameUI extends JFrame {
             inventoryDialog.dispose();
             
             Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nUsed: " + selected + "...", 20); // untuk delay
+            typewriter.typeText("\nUsed: " + selected + "...", Color.black,20); // untuk delay
         });
         
         
@@ -70,15 +123,35 @@ public class GameUI extends JFrame {
         
         // Example options
         String[] options = {"Hello nice to meet you!", "This is another text dialogue", "this is a longer text dialogue that is used to test limit"};
-        JList<String> optionList = new JList<>(options);
+        String redOption = "THIS IS A FAST RED TEXT";
+
+        DefaultListModel<String> listModel = new DefaultListModel<>(); // ini kek list yang modifiable
+
+        for (String option : options) {
+            listModel.addElement(option); 
+        }
+        listModel.addElement(redOption);
+
+        JList<String> optionList = new JList<>(listModel);
+        optionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JButton btn = new JButton("Say dialogue");
+
         btn.addActionListener(e -> {
                 String selected = optionList.getSelectedValue();
                 dialogueDialog.dispose();
+                int delayTimer = 20;
+
+                if(selected == redOption){
+                    delayTimer = 5;
+                }  else {
+                    delayTimer = 20;
+                } 
                 
                 Typewriter typewriter = new Typewriter(textArea);
-                typewriter.typeText("\n" + selected + "...", 20);
+
+                currentStory.handleChoice(selected);
+                typewriter.typeText("\n" + selected + "...", Color.black, delayTimer);
             });
         dialogueDialog.add(new JScrollPane(optionList));
         dialogueDialog.add(btn, BorderLayout.SOUTH);
@@ -101,7 +174,7 @@ public class GameUI extends JFrame {
             saveDialog.dispose();
 
             Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nSaved Game...", 20);
+            typewriter.typeText("\nSaved Game...", Color.black, 20);
         });
         
         JButton loadBtn = new JButton("Load Game");
@@ -111,7 +184,7 @@ public class GameUI extends JFrame {
             saveDialog.dispose();
 
             Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nGame Loaded!", 20);
+            typewriter.typeText("\nGame Loaded!", Color.black, 20);
 
         });
         
