@@ -2,190 +2,244 @@ import java.awt.*;
 import javax.swing.*;
 
 public class GameUI extends JFrame {
-    JTextArea textArea;
-    private JButton inventoryBtn, saveBtn; // Removed dialogueBtn
+    JTextArea textArea; // For main story/dialogue
+    private JButton inventoryBtn, saveBtn;
     private Storyline currentStory;
     private GameState gameState;
-    // private JPanel choicePanel; // Removed choicePanel
+    private Typewriter typewriter; // For main text area
+    private Typewriter battleLogTypewriter; // For battle log text area
 
+    // Panels for CardLayout
+    private JPanel mainContentPanel;
+    private CardLayout cardLayout;
+    private static final String TEXT_AREA_CARD = "TextAreaCard";
+    private static final String BATTLE_CARD = "BattleCard";
 
-     public GameUI() {
+    // Battle UI components
+    private JPanel battleDisplayPanel; // The main panel for the battle card
+    private JTextArea battleLogTextArea; // For battle-specific messages
+    private JLabel playerHealthBattleLabel;
+    private JLabel opponentNameBattleLabel;
+    private JLabel opponentHealthBattleLabel;
+    private JPanel battleActionPanel;
+    private JButton attackButton;
+    private JButton itemButtonBattle;
 
+    public GameUI() {
         setTitle("Text Adventure");
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
+        
         textArea = new JTextArea();
         textArea.setEditable(false);
-        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        this.typewriter = new Typewriter(textArea);
+        JScrollPane textAreaScrollPane = new JScrollPane(textArea);
 
-        // Removed choicePanel and its setup
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2)); // Only 2 buttons now
+        cardLayout = new CardLayout();
+        mainContentPanel = new JPanel(cardLayout);
+
+
+        battleDisplayPanel = new JPanel(new BorderLayout(5, 5));
+        battleDisplayPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0)); 
+        playerHealthBattleLabel = new JLabel("Player HP: --", SwingConstants.LEFT);
+        opponentNameBattleLabel = new JLabel("Opponent: --", SwingConstants.CENTER);
+        opponentHealthBattleLabel = new JLabel("HP: --", SwingConstants.RIGHT);
+        statsPanel.add(playerHealthBattleLabel);
+        statsPanel.add(opponentNameBattleLabel);
+        statsPanel.add(opponentHealthBattleLabel);
+        battleDisplayPanel.add(statsPanel, BorderLayout.NORTH);
+
+
+        battleLogTextArea = new JTextArea();
+        battleLogTextArea.setEditable(false);
+        battleLogTextArea.setLineWrap(true);
+        battleLogTextArea.setWrapStyleWord(true);
+        this.battleLogTypewriter = new Typewriter(battleLogTextArea);
+        battleDisplayPanel.add(new JScrollPane(battleLogTextArea), BorderLayout.CENTER);
+
+
+        battleActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        attackButton = new JButton("Attack");
+        itemButtonBattle = new JButton("Use Item");
+
+        attackButton.addActionListener(e -> {
+            if (currentStory != null && battleManagerIsActive()) {
+                currentStory.handleChoice(1); // 1 for Attack
+            }
+        });
+        itemButtonBattle.addActionListener(e -> {
+            if (currentStory != null && battleManagerIsActive()) {
+                currentStory.handleChoice(2); // 2 for Item
+            }
+        });
+
+        battleActionPanel.add(attackButton);
+        battleActionPanel.add(itemButtonBattle);
+        battleDisplayPanel.add(battleActionPanel, BorderLayout.SOUTH);
+
+        // Add cards to mainContentPanel
+        mainContentPanel.add(textAreaScrollPane, TEXT_AREA_CARD);
+        mainContentPanel.add(battleDisplayPanel, BATTLE_CARD);
+
+        add(mainContentPanel, BorderLayout.CENTER); 
+
+        // Bottom button panel (Inventory, Save/Load)
+        JPanel bottomButtonPanel = new JPanel(new GridLayout(1, 2));
         Font buttonFont = new Font("Arial", Font.BOLD, 16);
-        Dimension buttonSize = new Dimension(200, 50); 
+        Dimension buttonSize = new Dimension(200, 50);
 
         inventoryBtn = new JButton("Inventory");
-        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(100, 200, 100)); 
-
+        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(100, 200, 100));
         saveBtn = new JButton("Save/Load");
-        styleButton(saveBtn, buttonFont, buttonSize, new Color(100, 100, 200)); 
-        
+        styleButton(saveBtn, buttonFont, buttonSize, new Color(100, 100, 200));
+
         inventoryBtn.addActionListener(e -> showInventory());
         saveBtn.addActionListener(e -> showSaveLoadMenu());
-        
-        buttonPanel.add(inventoryBtn);
-        buttonPanel.add(saveBtn);
-        add(buttonPanel, BorderLayout.SOUTH);
+
+        bottomButtonPanel.add(inventoryBtn);
+        bottomButtonPanel.add(saveBtn);
+        add(bottomButtonPanel, BorderLayout.SOUTH);
+
+        cardLayout.show(mainContentPanel, TEXT_AREA_CARD);
+    }
+
+    private boolean battleManagerIsActive() {
+        if (currentStory instanceof Storyline1) { 
+            return ((Storyline1) currentStory).getBattleManager().isBattleActive();
+        }
+        // Add similar checks for Storyline2, Storyline3 if they can have battles
+        return false;
     }
 
     public void startGame(int storylineId) {
         this.gameState = new GameState();
-        
-        switch(storylineId) {
+        switch (storylineId) {
             case 1 -> currentStory = new Storyline1(this, gameState);
             case 2 -> currentStory = new Storyline2(this, gameState);
             case 3 -> currentStory = new Storyline3(this, gameState);
+            default -> {
+                displayText("Error: Invalid storyline ID.", Color.RED);
+                return;
+            }
         }
-        
-        currentStory.startStory();
+        if (currentStory != null) {
+            currentStory.startStory();
+        }
     }
+
+    public void showBattleInterface(String opponentName, int playerHealth, int opponentHealth) {
+        playerHealthBattleLabel.setText("Player HP: " + playerHealth);
+        opponentNameBattleLabel.setText(opponentName);
+        opponentHealthBattleLabel.setText("HP: " + opponentHealth);
+        battleLogTextArea.setText(""); 
+        if (battleLogTypewriter != null) { // Ensure typewriter queue is cleared if it exists
+            battleLogTypewriter.stopAndClearQueue();
+        }
+        cardLayout.show(mainContentPanel, BATTLE_CARD);
+    }
+
+    public void updateBattleInterfaceHealth(int playerHealth, int opponentHealth) {
+        playerHealthBattleLabel.setText("Player HP: " + playerHealth);
+        opponentHealthBattleLabel.setText("HP: " + opponentHealth);
+    }
+
+    public void appendBattleLog(String message, Color color) {
+        // Use the battleLogTypewriter with a short delay
+        int shortDelay = 15; // milliseconds, adjust as needed for "very quickly"
+        this.battleLogTypewriter.typeText(message + "\n", color != null ? color : Color.BLACK, shortDelay);
+    }
+
+    public void hideBattleInterface() {
+        cardLayout.show(mainContentPanel, TEXT_AREA_CARD);
+    }
+
     public void showChoicesDialog(String[] options) {
         if (options == null || options.length == 0) return;
 
         JDialog dialogueDialog = new JDialog(this, "Dialogue Choices", true);
         dialogueDialog.setLayout(new BoxLayout(dialogueDialog.getContentPane(), BoxLayout.Y_AXIS));
-
         dialogueDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        dialogueDialog.setUndecorated(false);
-        dialogueDialog.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (String option : options) {
-            listModel.addElement(option); 
+            listModel.addElement(option);
         }
-
         JList<String> optionList = new JList<>(listModel);
-
         JButton btn = new JButton("Select");
         btn.addActionListener(e -> {
             int selectedIdx = optionList.getSelectedIndex();
+            dialogueDialog.dispose();
             if (selectedIdx >= 0 && currentStory != null) {
                 currentStory.handleChoice(selectedIdx + 1);
             }
-            dialogueDialog.dispose();
         });
-
         dialogueDialog.add(new JScrollPane(optionList));
         dialogueDialog.add(btn, BorderLayout.SOUTH);
-        dialogueDialog.pack();
-        dialogueDialog.setSize(500,200);
+        dialogueDialog.pack(); // Pack first to get preferred height based on content
+
+        // Set a fixed width (e.g., 400) and an adaptive height with a maximum (e.g., 250)
+        int fixedWidth = 400; 
+        int maxHeight = 250; // Example maximum height
+        // Use preferred height from pack(), add some padding, but cap at maxHeight
+        int preferredHeightWithPadding = dialogueDialog.getPreferredSize().height + 50;
+        dialogueDialog.setSize(fixedWidth, Math.min(maxHeight, preferredHeightWithPadding)); 
+        
         dialogueDialog.setLocationRelativeTo(null);
         dialogueDialog.setResizable(false);
         dialogueDialog.setVisible(true);
     }
+
     public void displayText(String text, Color color) {
-
-    Typewriter typewriter = new Typewriter(textArea);
-    typewriter.typeText(text, color != null ? color : Color.WHITE, 20);
-}
-
+        this.typewriter.typeText(text, color != null ? color : Color.BLACK, 20); 
+    }
 
     private void showInventory() {
         JDialog inventoryDialog = new JDialog(this, "Inventory", true);
         inventoryDialog.setSize(300, 200);
-        
-        // Example items
-        String[] items = {"Whiskey Bottle (3 uses)", "Pocket Knife", "Car Keys"};
+        String[] items = {"Whiskey Bottle (3 uses)", "Pocket Knife", "Car Keys"}; 
         JList<String> itemList = new JList<>(items);
-        
         JButton useBtn = new JButton("Use Selected");
         useBtn.addActionListener(e -> {
             String selected = itemList.getSelectedValue();
             inventoryDialog.dispose();
-            
-            Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nUsed: " + selected + "...", Color.black,20); // untuk delay
+            displayText("\nUsed: " + (selected != null ? selected : "nothing") + "...", Color.BLACK);
         });
-        
-        
         inventoryDialog.add(new JScrollPane(itemList));
         inventoryDialog.add(useBtn, BorderLayout.SOUTH);
         inventoryDialog.setLocationRelativeTo(null);
         inventoryDialog.setVisible(true);
     }
 
-    private void showDialogueOptions() {
-        JDialog dialogueDialog = new JDialog(this, "Dialogue Choices", true);
-        dialogueDialog.setLayout(new BoxLayout(dialogueDialog.getContentPane(), BoxLayout.Y_AXIS));
-        
-        // Example options
-        String[] options = {"Hello nice to meet you!", "This is another text dialogue", "this is a longer text dialogue that is used to test limit"};
-        String redOption = "THIS IS A FAST RED TEXT";
-
-        DefaultListModel<String> listModel = new DefaultListModel<>(); // ini kek list yang modifiable
-
-        for (String option : options) {
-            listModel.addElement(option); 
-        }
-        listModel.addElement(redOption);
-
-        JList<String> optionList = new JList<>(listModel);
-
-        JButton btn = new JButton("Say dialogue");
-
-        btn.addActionListener(e -> {
-                String selected = optionList.getSelectedValue();
-                dialogueDialog.dispose();
-                int delayTimer = 20;
-
-                if(selected == redOption){
-                    delayTimer = 5;
-                }  else {
-                    delayTimer = 20;
-                } 
-                
-                Typewriter typewriter = new Typewriter(textArea);
-                typewriter.typeText("\n" + selected + "...", Color.black, delayTimer);
-            });
-        dialogueDialog.add(new JScrollPane(optionList));
-        dialogueDialog.add(btn, BorderLayout.SOUTH);
-        dialogueDialog.pack();
-        dialogueDialog.setSize(500,200);
-        dialogueDialog.setLocationRelativeTo(null);
-        dialogueDialog.setResizable(false);
-        dialogueDialog.setVisible(true);
-
+    private void showDialogueOptions() { 
+        String[] options = {"Hello nice to meet you!", "This is another text dialogue", "THIS IS A FAST RED TEXT"};
+        showChoicesDialog(options); 
     }
 
     private void showSaveLoadMenu() {
         JDialog saveDialog = new JDialog(this, "Save System", true);
         saveDialog.setLayout(new GridLayout(2, 1));
-        
-        JButton saveBtn = new JButton("Save Game");
-        saveBtn.addActionListener(e -> {
-            // Connect to your SaveManager class
-            textArea.append("\nGame saved!");
+        JButton saveBtnG = new JButton("Save Game");
+        saveBtnG.addActionListener(e -> {
+            displayText("\nGame saved!", Color.BLACK);
             saveDialog.dispose();
-
-            Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nSaved Game...", Color.black, 20);
+            displayText("\nSaved Game...", Color.BLACK);
         });
-        
         JButton loadBtn = new JButton("Load Game");
         loadBtn.addActionListener(e -> {
-            // Connect to SaveManager.loadGame()
-            textArea.append("\nGame loaded!");
+            displayText("\nGame loaded!", Color.BLACK);
             saveDialog.dispose();
-
-            Typewriter typewriter = new Typewriter(textArea);
-            typewriter.typeText("\nGame Loaded!", Color.black, 20);
-
+            displayText("\nGame Loaded!", Color.BLACK);
         });
-        
-        saveDialog.add(saveBtn);
+        saveDialog.add(saveBtnG);
         saveDialog.add(loadBtn);
         saveDialog.setSize(200, 150);
         saveDialog.setLocationRelativeTo(null);
@@ -197,18 +251,7 @@ public class GameUI extends JFrame {
         button.setPreferredSize(size);
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
-        button.setFocusPainted(false); 
+        button.setFocusPainted(false);
         button.setBorder(BorderFactory.createRaisedBevelBorder());
     }
-    
-    // Font textOutput = new Font("Arial", Font.BOLD, 16);
-
-    // private void textOutput(String textMessage, Font font, Dimension size, Color bgColor) {
-    //     button.setFont(font);
-    //     button.setPreferredSize(size);
-    //     button.setBackground(bgColor);
-    //     button.setForeground(Color.WHITE);
-    //     button.setFocusPainted(false); 
-    //     button.setBorder(BorderFactory.createRaisedBevelBorder());
-    // }
 }
