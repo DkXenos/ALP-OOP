@@ -3,13 +3,13 @@ import javax.swing.*;
 
 public class GameUI extends JFrame {
     JTextArea textArea;
-    private JButton inventoryBtn, dialogueBtn, saveBtn;
+    private JButton inventoryBtn, saveBtn; // Removed dialogueBtn
     private Storyline currentStory;
     private GameState gameState;
-    private JPanel choicePanel;
+    // private JPanel choicePanel; // Removed choicePanel
 
 
-    public GameUI() {
+     public GameUI() {
 
         setTitle("Text Adventure");
         setSize(800, 600);
@@ -21,33 +21,24 @@ public class GameUI extends JFrame {
         textArea.setEditable(false);
         add(new JScrollPane(textArea), BorderLayout.CENTER);
 
-        choicePanel = new JPanel();
-        choicePanel.setLayout(new BoxLayout(choicePanel, BoxLayout.Y_AXIS));
-        add(choicePanel, BorderLayout.EAST);
-        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        // Removed choicePanel and its setup
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2)); // Only 2 buttons now
         Font buttonFont = new Font("Arial", Font.BOLD, 16);
         Dimension buttonSize = new Dimension(200, 50); 
 
         inventoryBtn = new JButton("Inventory");
         styleButton(inventoryBtn, buttonFont, buttonSize, new Color(100, 200, 100)); 
 
-        dialogueBtn = new JButton("Dialogue");
-        styleButton(dialogueBtn, buttonFont, buttonSize, new Color(200, 100, 100)); 
-
         saveBtn = new JButton("Save/Load");
         styleButton(saveBtn, buttonFont, buttonSize, new Color(100, 100, 200)); 
         
         inventoryBtn.addActionListener(e -> showInventory());
-        dialogueBtn.addActionListener(e -> showDialogueOptions());
         saveBtn.addActionListener(e -> showSaveLoadMenu());
         
         buttonPanel.add(inventoryBtn);
-        buttonPanel.add(dialogueBtn);
         buttonPanel.add(saveBtn);
         add(buttonPanel, BorderLayout.SOUTH);
-        
     }
 
     public void startGame(int storylineId) {
@@ -61,31 +52,40 @@ public class GameUI extends JFrame {
         
         currentStory.startStory();
     }
+    public void showChoicesDialog(String[] options) {
+        if (options == null || options.length == 0) return;
 
-    public void showChoices(String[] options) {
-        choicePanel.removeAll();
-        
-        if (options == null || options.length == 0) {
-            revalidate();
-            repaint();
-            return;
+        JDialog dialogueDialog = new JDialog(this, "Dialogue Choices", true);
+        dialogueDialog.setLayout(new BoxLayout(dialogueDialog.getContentPane(), BoxLayout.Y_AXIS));
+
+        dialogueDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialogueDialog.setUndecorated(false);
+        dialogueDialog.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String option : options) {
+            listModel.addElement(option); 
         }
-        
-        for (int i = 0; i < options.length; i++) {
-            JButton btn = new JButton(options[i]);
-            final int choice = i + 1;
-            btn.addActionListener(e -> {
-                if (currentStory != null) {
-                    currentStory.handleChoice(choice);
-                }
-            });
-            choicePanel.add(btn);
-        }
-        
-        revalidate();
-        repaint();
+
+        JList<String> optionList = new JList<>(listModel);
+
+        JButton btn = new JButton("Select");
+        btn.addActionListener(e -> {
+            int selectedIdx = optionList.getSelectedIndex();
+            if (selectedIdx >= 0 && currentStory != null) {
+                currentStory.handleChoice(selectedIdx + 1);
+            }
+            dialogueDialog.dispose();
+        });
+
+        dialogueDialog.add(new JScrollPane(optionList));
+        dialogueDialog.add(btn, BorderLayout.SOUTH);
+        dialogueDialog.pack();
+        dialogueDialog.setSize(500,200);
+        dialogueDialog.setLocationRelativeTo(null);
+        dialogueDialog.setResizable(false);
+        dialogueDialog.setVisible(true);
     }
-    
     public void displayText(String text, Color color) {
 
     Typewriter typewriter = new Typewriter(textArea);

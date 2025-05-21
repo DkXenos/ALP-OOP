@@ -22,76 +22,12 @@ public class Storyline1 extends Storyline {
     // Handle all dialogue in one method
     private void showDialogue(int stage) {
         dialogueState = stage;
-        
-        // Clear previous choices first
-        ui.showChoices(new String[0]);
-        
-        switch(stage) {
-            case 0 -> {
-                Timer t = new Timer(1500, e ->{
-                    ui.displayText("\n[Phone Notification]", Color.black);
-                });
-                t.setRepeats(false);
-                t.start();
-                // Add slight delay between messages
-                Timer timer = new Timer(2000, e -> {
-                    ui.displayText("\nOLD_FRIEND: Hey, I'm in town... you wanna go grab some food?", Color.black);
-                    ui.showChoices(new String[]{
-                        "1. Definitely! Where?", 
-                        "2. Maybe another day"
-                    });
-                });
-                timer.setRepeats(false);
-                timer.start();
-            }
-            case 1 -> {
-                ui.displayText("\ndialogue 2 test", Color.black);
-                Timer timer = new Timer(1000, e -> {
-                    ui.displayText("\nthis is a third dialogue test", Color.black);
-                    ui.showChoices(new String[]{
-                        "1. this is choice test 1?", 
-                        "2. this is choice test 2"
-                    });
-                });
-                timer.setRepeats(false);
-                timer.start();
-            }
-            case 2 -> {
-                ui.displayText("\ndialogue 3 test", Color.black);
-                Timer timer = new Timer(1000, e -> {
-                    ui.displayText("\nthis is a fourth dialogue test", Color.black);
-                    ui.showChoices(new String[]{
-                        "1. this is choice test 12?", 
-                        "2. this is choice test 22"
-                    });
-                });
-                timer.setRepeats(false);
-                timer.start();
-            }
-            case 3 -> {
-                ui.displayText("\ndialogue 4 test", Color.black);
-                Timer timer = new Timer(1000, e -> {
-                    ui.displayText("\nthis is a fifth dialogue test", Color.black);
-                    ui.showChoices(new String[]{
-                        "1. this is choice test 12?", 
-                        "2. this is choice test 22"
-                    });
-                });
-                timer.setRepeats(false);
-                timer.start();
-            }
-            case 4 -> {
-                ui.displayText("\ndialogue 5 test", Color.black);
-                Timer timer = new Timer(1000, e -> {
-                    ui.displayText("\nthis is a sixth dialogue test", Color.black);
-                    ui.showChoices(new String[]{
-                        "1. this is choice test 12?", 
-                        "2. this is choice test 22"
-                    });
-                });
-                timer.setRepeats(false);
-                timer.start();
-            }
+        switch (stage) {
+            case 0 -> showStage0();
+            case 1 -> showStage1();
+            case 2 -> showStage2();
+            case 3 -> showStage3();
+            case 4 -> showStage4();
         }
     }
     @Override
@@ -128,6 +64,82 @@ public class Storyline1 extends Storyline {
             }
         }
     }
+
+    private void showStage0() {
+        Timer t = new Timer(1500, e -> {
+            ui.displayText("\n[Phone Notification]", Color.black);
+        });
+        t.setRepeats(false);
+        t.start();
+
+        Timer timer = new Timer(2000, e -> {
+            ui.displayText("\nOLD_FRIEND: Hey, I'm in town... you wanna go grab some food?", Color.black);
+        });
+        timer.setRepeats(false);
+        timer.start();
+
+        Timer t2 = new Timer(3000, e -> {
+            ui.showChoicesDialog(new String[]{
+                "1. Definitely! Where?",
+                "2. Maybe another day"
+            });
+        });
+        t2.setRepeats(false);
+        t2.start();
+    }
+
+    private void showStage1() {
+        ui.displayText("\ndialogue 2 test", Color.black);
+        Timer timer = new Timer(1000, e -> {
+            ui.displayText("\nthis is a third dialogue test", Color.black);
+            ui.showChoicesDialog(new String[]{
+                "1. this is choice test 1?",
+                "2. this is choice test 2"
+            });
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    private void showStage2() {
+        ui.displayText("\ndialogue 3 test", Color.black);
+        Timer timer = new Timer(1000, e -> {
+            ui.displayText("\nthis is a fourth dialogue test", Color.black);
+            ui.showChoicesDialog(new String[]{
+                "1. this is choice test 12?",
+                "2. this is choice test 22"
+            });
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    private void showStage3() {
+        ui.displayText("\ndialogue 4 test", Color.black);
+        Timer timer = new Timer(1000, e -> {
+            ui.displayText("\nthis is a fifth dialogue test", Color.black);
+            ui.showChoicesDialog(new String[]{
+                "1. this is choice test 12?",
+                "2. this is choice test 22"
+            });
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    private void showStage4() {
+        ui.displayText("\ndialogue 5 test", Color.black);
+        Timer timer = new Timer(1000, e -> {
+            ui.displayText("\nthis is a sixth dialogue test", Color.black);
+            ui.showChoicesDialog(new String[]{
+                "1. this is choice test 12?",
+                "2. this is choice test 22"
+            });
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
 
     @Override
     public String[] getCurrentChoices() {
