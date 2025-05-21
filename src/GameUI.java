@@ -73,7 +73,7 @@ public class GameUI extends JFrame {
         btn.addActionListener(e -> {
             int selectedIdx = optionList.getSelectedIndex();
             if (selectedIdx >= 0 && currentStory != null) {
-                currentStory.handleChoice(selectedIdx + 1);
+                currentStory.handleChoice(optionList.getSelectedValue());
             }
             dialogueDialog.dispose();
         });
