@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map; // Import Map
 
 public class GameState {
     private HashMap<String, Integer> stats = new HashMap<>();
@@ -21,7 +22,7 @@ public class GameState {
         // Ensure health doesn't exceed max_health or go below 0 immediately after setting
         if (key.equals(PLAYER_HEALTH)) {
             int currentHealth = stats.getOrDefault(key, 0);
-            int maxHealth = stats.getOrDefault(PLAYER_MAX_HEALTH, currentHealth);
+            int maxHealth = stats.getOrDefault(PLAYER_MAX_HEALTH, currentHealth); // Use PLAYER_MAX_HEALTH
             stats.put(key, Math.min(Math.max(currentHealth, 0), maxHealth));
         }
     }
@@ -42,5 +43,28 @@ public class GameState {
 
     public boolean getFlag(String key) {
         return flags.getOrDefault(key, false);
+    }
+
+    // New methods for save/load
+    public HashMap<String, Integer> getAllStats() {
+        return new HashMap<>(this.stats); // Return a copy
+    }
+
+    public void setAllStats(Map<String, Integer> newStats) {
+        this.stats.clear();
+        if (newStats != null) {
+            this.stats.putAll(newStats);
+        }
+    }
+
+    public HashMap<String, Boolean> getAllFlags() {
+        return new HashMap<>(this.flags); // Return a copy
+    }
+
+    public void setAllFlags(Map<String, Boolean> newFlags) {
+        this.flags.clear();
+        if (newFlags != null) {
+            this.flags.putAll(newFlags);
+        }
     }
 }

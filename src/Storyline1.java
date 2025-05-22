@@ -7,16 +7,34 @@ import javax.swing.Timer;
 // import BattleManager.BattleResult; // Not strictly needed if using BattleManager.BattleResult directly
 
 public class Storyline1 extends Storyline {
-    private int dialogueState = 0; // Tracks current conversation stage
+    private int dialogueState = 0;
     private BattleManager battleManager;
 
     public Storyline1(GameUI ui, GameState state) {
         super(ui, state);
-        this.battleManager = new BattleManager(ui, state); // Initialize BattleManager
+        this.battleManager = new BattleManager(ui, state);
     }
 
-    public BattleManager getBattleManager() { // Add this getter
+    public BattleManager getBattleManager() {
         return this.battleManager;
+    }
+
+    // Getter for dialogueState
+    public int getDialogueState() {
+        return dialogueState;
+    }
+
+    // Setter for dialogueState, potentially also triggers UI update
+    public void setDialogueState(int dialogueState) {
+        this.dialogueState = dialogueState;
+        // Important: After setting state, the UI needs to reflect this.
+        // This might involve calling showDialogue directly or having GameUI manage it.
+        // For simplicity, let's assume GameUI will call showDialoguePublic after this.
+    }
+    
+    // Public wrapper for showDialogue if it's private or package-private
+    public void showDialoguePublic(int stage) {
+        this.showDialogue(stage);
     }
 
     @Override

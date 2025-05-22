@@ -99,11 +99,14 @@ public class GameUI extends JFrame {
 
         inventoryBtn = new JButton("Inventory");
         styleButton(inventoryBtn, buttonFont, buttonSize, new Color(100, 200, 100));
-        saveBtn = new JButton("Save/Load");
+        saveBtn = new JButton("Save Game"); // Clarify button purpose
         styleButton(saveBtn, buttonFont, buttonSize, new Color(100, 100, 200));
+        saveBtn.addActionListener(e -> saveCurrentGame());
 
         inventoryBtn.addActionListener(e -> showInventory());
-        saveBtn.addActionListener(e -> showSaveLoadMenu());
+        // The "Load Game" button is primarily on the StartMenu.
+        // If you want a load button in GameUI, it would likely restart the game with loaded data.
+        // For now, we'll focus on StartMenu loading.
 
         bottomButtonPanel.add(inventoryBtn);
         bottomButtonPanel.add(saveBtn);
@@ -224,28 +227,101 @@ public class GameUI extends JFrame {
         showChoicesDialog(options); 
     }
 
-    private void showSaveLoadMenu() {
-        JDialog saveDialog = new JDialog(this, "Save System", true);
-        saveDialog.setLayout(new GridLayout(2, 1));
-        JButton saveBtnG = new JButton("Save Game");
-        saveBtnG.addActionListener(e -> {
-            displayText("\nGame saved!", Color.BLACK);
-            saveDialog.dispose();
-            displayText("\nSaved Game...", Color.BLACK);
-        });
-        JButton loadBtn = new JButton("Load Game");
-        loadBtn.addActionListener(e -> {
-            displayText("\nGame loaded!", Color.BLACK);
-            saveDialog.dispose();
-            displayText("\nGame Loaded!", Color.BLACK);
-        });
-        saveDialog.add(saveBtnG);
-        saveDialog.add(loadBtn);
-        saveDialog.setSize(200, 150);
-        saveDialog.setLocationRelativeTo(null);
-        saveDialog.setVisible(true);
+    private void saveCurrentGame() {
+        if (currentStory == null || gameState == null) {
+            displayText("\nNothing to save.", Color.BLACK);
+            return;
+        }
+        // For simplicity, disallow saving during active battle in this iteration
+        if (battleManagerIsActive()) {
+            displayText("\nCannot save during an active battle.", Color.RED);
+            return;
+        }
+
+        int storylineId = -1;
+        int currentDialogueState = -1;
+
+        if (currentStory instanceof Storyline1) {
+            storylineId = 1;
+            currentDialogueState = ((Storyline1) currentStory).getDialogueState();
+        } else if (currentStory instanceof Storyline2) {
+            storylineId = 2;
+            // Storyline2 doesn't have a complex dialogueState field yet
+            // currentDialogueState = ((Storyline2) currentStory).getDialogueState();
+        } else if (currentStory instanceof Storyline3) {
+            storylineId = 3;
+            // Storyline3 doesn't have a complex dialogueState field yet
+            // currentDialogueState = ((Storyline3) currentStory).getDialogueState();
+        } else {
+            displayText("\nCannot determine storyline type to save.", Color.RED);
+            return;
+        }
+        
+        // If a storyline doesn't have a specific dialogue state to save, use a default (e.g., 0 or -1)
+        // For Storyline1, we have it. For others, adjust as they develop.
+        if (storylineId != 1 && currentDialogueState == -1) currentDialogueState = 0; // Default if not Storyline1
+
+        SaveData saveData = new SaveData(
+            storylineId,
+            currentDialogueState,
+            gameState.getAllStats(),
+            gameState.getAllFlags()
+        );
+
+        SaveManager.saveGame(saveData);
+        displayText("\nGame Saved!", Color.BLACK);
     }
 
+    // Method to apply loaded data
+    public void applySaveData(SaveData data) {
+        if (data == null) {
+            displayText("Failed to load save data.", Color.RED);
+            return;
+        }
+
+        this.gameState = new GameState(); // Re-initialize or create new
+        this.gameState.setAllStats(data.stats);
+        this.gameState.setAllFlags(data.flags);
+
+        boolean storyLoaded = false;
+        switch (data.storylineId) {
+            case 1:
+                currentStory = new Storyline1(this, gameState);
+                ((Storyline1) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline1) currentStory).showDialoguePublic(data.dialogueState); // Trigger UI update
+                storyLoaded = true;
+                break;
+            case 2:
+                currentStory = new Storyline2(this, gameState);
+                // Storyline2.startStory() might be enough if no specific state
+                currentStory.startStory(); // Or a setDialogueState + showDialoguePublic if implemented
+                storyLoaded = true;
+                break;
+            case 3:
+                currentStory = new Storyline3(this, gameState);
+                currentStory.startStory(); // Or a setDialogueState + showDialoguePublic if implemented
+                storyLoaded = true;
+                break;
+            default:
+                displayText("Error: Invalid storyline ID in save data: " + data.storylineId, Color.RED);
+                return;
+        }
+        
+        if(storyLoaded) {
+            // Clear the main text area before displaying loaded content,
+            // especially if the typewriter is involved.
+            // The typewriter should handle appending to a cleared or existing area.
+            // If typewriter appends, ensure it starts fresh or from where the loaded story dictates.
+            // For simplicity, let's assume showDialoguePublic/startStory handles the initial display.
+            textArea.setText(""); // Clear previous text before loading new story text
+            if (currentStory instanceof Storyline1) { // Re-trigger display for Storyline1
+                 ((Storyline1) currentStory).showDialoguePublic(data.dialogueState);
+            } else { // For others, startStory might be enough
+                 currentStory.startStory();
+            }
+            displayText("\nGame Loaded!", Color.BLACK);
+        }
+    }
     private void styleButton(JButton button, Font font, Dimension size, Color bgColor) {
         button.setFont(font);
         button.setPreferredSize(size);
