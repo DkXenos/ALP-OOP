@@ -1,11 +1,6 @@
 import java.awt.Color;
 import javax.swing.Timer;
 
-// Make sure to import BattleManager and its enum if they are in the same package,
-// or use fully qualified names if in different packages.
-// Assuming they are in the same package (e.g., default package for src files):
-// import BattleManager.BattleResult; // Not strictly needed if using BattleManager.BattleResult directly
-
 public class Storyline1 extends Storyline {
     private int dialogueState = 0;
     private BattleManager battleManager;
@@ -15,28 +10,6 @@ public class Storyline1 extends Storyline {
         this.battleManager = new BattleManager(ui, state);
     }
 
-    public BattleManager getBattleManager() {
-        return this.battleManager;
-    }
-
-    // Getter for dialogueState
-    public int getDialogueState() {
-        return dialogueState;
-    }
-
-    // Setter for dialogueState, potentially also triggers UI update
-    public void setDialogueState(int dialogueState) {
-        this.dialogueState = dialogueState;
-        // Important: After setting state, the UI needs to reflect this.
-        // This might involve calling showDialogue directly or having GameUI manage it.
-        // For simplicity, let's assume GameUI will call showDialoguePublic after this.
-    }
-    
-    // Public wrapper for showDialogue if it's private or package-private
-    public void showDialoguePublic(int stage) {
-        this.showDialogue(stage);
-    }
-
     @Override
     public void startStory() {
         Timer timer = new Timer(500, e ->{
@@ -44,13 +17,27 @@ public class Storyline1 extends Storyline {
         });
         timer.setRepeats(false);
         timer.start();
-        showDialogue(0); // Start first dialogue
+        showDialogue(0); 
+    }
+
+    public BattleManager getBattleManager() {
+        return this.battleManager;
+    }
+
+    public int getDialogueState() {
+        return dialogueState;
+    }
+
+    public void setDialogueState(int dialogueState) {
+        this.dialogueState = dialogueState;
+    }
+    
+    public void showDialoguePublic(int stage) {
+        this.showDialogue(stage);
     }
 
     private void showDialogue(int stage) {
         dialogueState = stage;
-        // Ensure we are not in battle when showing dialogue stages
-        // The battleManager.isBattleActive() will control flow in handleChoice
         switch (stage) {
             case 0 -> showStage0();
             case 1 -> showStage1();
@@ -89,16 +76,11 @@ public class Storyline1 extends Storyline {
                 if (choice == 1) { 
                     ui.displayText("\nYour choice leads to a confrontation!", Color.BLACK);
                     Timer battleStartTimer = new Timer(1500, e -> {
-                        // Define opponent and start battle
                         battleManager.startBattle("Mysterious Assailant", 50, 8, battleResult -> {
-                            // This lambda is the callback executed when the battle ends
                             if (battleResult == BattleManager.BattleResult.WIN) {
-                                // Proceed to the next part of the story
                                 showDialogue(3); 
                             } else {
-                                // Handle game over or consequences
                                 ui.displayText("\nGame Over (for now).", Color.BLACK);
-                                // Potentially end the game or go to a specific "defeated" state
                             }
                         });
                     });
@@ -117,9 +99,6 @@ public class Storyline1 extends Storyline {
                 break;
         }
     }
-
-    // Removed battle-specific methods: startBattle, handleBattleChoice, updateBattleDisplay, endBattle
-    // These are now in BattleManager.
 
     private void showStage0() {
         Timer t = new Timer(1500, e -> {
@@ -204,14 +183,10 @@ public class Storyline1 extends Storyline {
     @Override
     public String[] getCurrentChoices() {
         if (battleManager.isBattleActive()) {
-            // The BattleManager itself calls ui.showChoicesDialog, so this might not be strictly needed
-            // for the current flow, but good for consistency if other parts of your system query for choices.
             return new String[]{
                 "1. Attack (" + state.getStat(GameState.PLAYER_ATTACK) + " dmg)",
                 "2. Use Item (Not Implemented)"};
         }
-        // Could return dialogue choices based on dialogueState if needed elsewhere
-        // For now, dialogue choices are presented directly in showStageX methods.
         return new String[0]; 
     }
 }

@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder; // For padding
 
 public class GameUI extends JFrame {
     JTextArea textArea; // For main story/dialogue
@@ -10,7 +11,7 @@ public class GameUI extends JFrame {
     private Typewriter battleLogTypewriter; // For battle log text area
 
     // Panels for CardLayout
-    private JPanel mainContentPanel;
+    private JPanel mainContentPanel; // This will hold textArea and battleDisplayPanel via CardLayout
     private CardLayout cardLayout;
     private static final String TEXT_AREA_CARD = "TextAreaCard";
     private static final String BATTLE_CARD = "BattleCard";
@@ -25,31 +26,64 @@ public class GameUI extends JFrame {
     private JButton attackButton;
     private JButton itemButtonBattle;
 
+    // New top panel for background
+    private JPanel topImagePanel;
+
     public GameUI() {
         setTitle("Text Adventure");
-        setSize(800, 600);
+        setSize(800, 600); // Keep overall size
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
+        // Main container panel for the JFrame's content pane
+        JPanel mainFramePanel = new JPanel(new BorderLayout());
+        setContentPane(mainFramePanel);
+
+        // 1. Top panel (for background image later)
+        topImagePanel = new JPanel();
+        topImagePanel.setBackground(new Color(50, 50, 60)); // Dark placeholder color
+        // This panel will be in BorderLayout.CENTER, so it will take available space.
+        // We can set a preferred size to influence layout if needed, but BorderLayout.CENTER is flexible.
+        // For now, let's give it a substantial preferred height.
+        topImagePanel.setPreferredSize(new Dimension(800, 300)); // Adjust as needed
+        mainFramePanel.add(topImagePanel, BorderLayout.CENTER);
+
+        // 2. Bottom UI Panel (will contain text area/battle UI and control buttons)
+        JPanel bottomSectionPanel = new JPanel(new BorderLayout());
+        // Set a preferred height for the entire bottom section
+        bottomSectionPanel.setPreferredSize(new Dimension(800, 250)); // Adjust as needed
+        mainFramePanel.add(bottomSectionPanel, BorderLayout.SOUTH);
+
+        // 2a. Main Content Panel (CardLayout for text and battle)
+        // This panel will contain the JScrollPanes for textArea and battleDisplayPanel
         
         textArea = new JTextArea();
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
+        textArea.setMargin(new Insets(10, 15, 10, 15)); // Added padding for readability
+        textArea.setBackground(new Color(230, 230, 230)); // Light gray background for text area
+        textArea.setForeground(Color.BLACK);
         this.typewriter = new Typewriter(textArea);
         JScrollPane textAreaScrollPane = new JScrollPane(textArea);
+        textAreaScrollPane.setBorder(BorderFactory.createCompoundBorder(
+            new EmptyBorder(5, 5, 5, 5), // Outer padding for the scroll pane
+            BorderFactory.createLineBorder(Color.DARK_GRAY) // Border around scroll pane
+        ));
 
 
         cardLayout = new CardLayout();
         mainContentPanel = new JPanel(cardLayout);
+        // mainContentPanel will be added to bottomSectionPanel's CENTER
 
-
+        // --- Battle UI Setup ---
         battleDisplayPanel = new JPanel(new BorderLayout(5, 5));
-        battleDisplayPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        battleDisplayPanel.setBorder(new EmptyBorder(5, 5, 5, 5)); // Padding for the whole battle card
+        battleDisplayPanel.setBackground(new Color(220, 220, 220)); // Slightly different background for battle
 
-
-        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0)); 
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+        statsPanel.setOpaque(false); // Make transparent if battleDisplayPanel has bg color
         playerHealthBattleLabel = new JLabel("Player HP: --", SwingConstants.LEFT);
         opponentNameBattleLabel = new JLabel("Opponent: --", SwingConstants.CENTER);
         opponentHealthBattleLabel = new JLabel("HP: --", SwingConstants.RIGHT);
@@ -58,16 +92,20 @@ public class GameUI extends JFrame {
         statsPanel.add(opponentHealthBattleLabel);
         battleDisplayPanel.add(statsPanel, BorderLayout.NORTH);
 
-
         battleLogTextArea = new JTextArea();
         battleLogTextArea.setEditable(false);
         battleLogTextArea.setLineWrap(true);
         battleLogTextArea.setWrapStyleWord(true);
+        battleLogTextArea.setMargin(new Insets(10, 15, 10, 15)); // Added padding
+        battleLogTextArea.setBackground(new Color(240, 240, 240)); // Light background for battle log
+        battleLogTextArea.setForeground(Color.BLACK);
         this.battleLogTypewriter = new Typewriter(battleLogTextArea);
-        battleDisplayPanel.add(new JScrollPane(battleLogTextArea), BorderLayout.CENTER);
-
+        JScrollPane battleLogScrollPane = new JScrollPane(battleLogTextArea);
+        battleLogScrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        battleDisplayPanel.add(battleLogScrollPane, BorderLayout.CENTER);
 
         battleActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        battleActionPanel.setOpaque(false);
         attackButton = new JButton("Attack");
         itemButtonBattle = new JButton("Use Item");
 
@@ -85,41 +123,45 @@ public class GameUI extends JFrame {
         battleActionPanel.add(attackButton);
         battleActionPanel.add(itemButtonBattle);
         battleDisplayPanel.add(battleActionPanel, BorderLayout.SOUTH);
+        // --- End of Battle UI Setup ---
 
         // Add cards to mainContentPanel
         mainContentPanel.add(textAreaScrollPane, TEXT_AREA_CARD);
         mainContentPanel.add(battleDisplayPanel, BATTLE_CARD);
 
-        add(mainContentPanel, BorderLayout.CENTER); 
+        // Add mainContentPanel to the center of bottomSectionPanel
+        bottomSectionPanel.add(mainContentPanel, BorderLayout.CENTER);
+        cardLayout.show(mainContentPanel, TEXT_AREA_CARD); // Show text area by default
 
-        // Bottom button panel (Inventory, Save/Load)
-        JPanel bottomButtonPanel = new JPanel(new GridLayout(1, 2));
-        Font buttonFont = new Font("Arial", Font.BOLD, 16);
-        Dimension buttonSize = new Dimension(200, 50);
+        // 2b. Bottom button panel (Inventory, Save)
+        JPanel bottomButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        bottomButtonPanel.setBorder(new EmptyBorder(5, 0, 10, 0)); // Padding around buttons
+        Font buttonFont = new Font("Arial", Font.BOLD, 14); // Slightly smaller font
+        Dimension buttonSize = new Dimension(130, 35); // Slightly smaller buttons
 
         inventoryBtn = new JButton("Inventory");
-        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(100, 200, 100));
-        saveBtn = new JButton("Save Game"); // Clarify button purpose
-        styleButton(saveBtn, buttonFont, buttonSize, new Color(100, 100, 200));
+        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(70, 130, 180)); // Steel Blue
+        saveBtn = new JButton("Save Game");
+        styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); // Medium Sea Green
         saveBtn.addActionListener(e -> saveCurrentGame());
 
         inventoryBtn.addActionListener(e -> showInventory());
-        // The "Load Game" button is primarily on the StartMenu.
-        // If you want a load button in GameUI, it would likely restart the game with loaded data.
-        // For now, we'll focus on StartMenu loading.
 
         bottomButtonPanel.add(inventoryBtn);
         bottomButtonPanel.add(saveBtn);
-        add(bottomButtonPanel, BorderLayout.SOUTH);
-
-        cardLayout.show(mainContentPanel, TEXT_AREA_CARD);
+        
+        // Add bottomButtonPanel to the south of bottomSectionPanel
+        bottomSectionPanel.add(bottomButtonPanel, BorderLayout.SOUTH);
     }
 
     private boolean battleManagerIsActive() {
         if (currentStory instanceof Storyline1) { 
             return ((Storyline1) currentStory).getBattleManager().isBattleActive();
+        } else if (currentStory instanceof Storyline2) {
+            return ((Storyline2) currentStory).getBattleManager().isBattleActive();
+        } else if (currentStory instanceof Storyline3) {
+            return ((Storyline3) currentStory).getBattleManager().isBattleActive();
         }
-        // Add similar checks for Storyline2, Storyline3 if they can have battles
         return false;
     }
 
@@ -144,7 +186,7 @@ public class GameUI extends JFrame {
         opponentNameBattleLabel.setText(opponentName);
         opponentHealthBattleLabel.setText("HP: " + opponentHealth);
         battleLogTextArea.setText(""); 
-        if (battleLogTypewriter != null) { // Ensure typewriter queue is cleared if it exists
+        if (battleLogTypewriter != null) { 
             battleLogTypewriter.stopAndClearQueue();
         }
         cardLayout.show(mainContentPanel, BATTLE_CARD);
@@ -156,8 +198,7 @@ public class GameUI extends JFrame {
     }
 
     public void appendBattleLog(String message, Color color) {
-        // Use the battleLogTypewriter with a short delay
-        int shortDelay = 15; // milliseconds, adjust as needed for "very quickly"
+        int shortDelay = 15; 
         this.battleLogTypewriter.typeText(message + "\n", color != null ? color : Color.BLACK, shortDelay);
     }
 
@@ -187,12 +228,10 @@ public class GameUI extends JFrame {
         });
         dialogueDialog.add(new JScrollPane(optionList));
         dialogueDialog.add(btn, BorderLayout.SOUTH);
-        dialogueDialog.pack(); // Pack first to get preferred height based on content
+        dialogueDialog.pack(); 
 
-        // Set a fixed width (e.g., 400) and an adaptive height with a maximum (e.g., 250)
         int fixedWidth = 400; 
-        int maxHeight = 250; // Example maximum height
-        // Use preferred height from pack(), add some padding, but cap at maxHeight
+        int maxHeight = 250; 
         int preferredHeightWithPadding = dialogueDialog.getPreferredSize().height + 50;
         dialogueDialog.setSize(fixedWidth, Math.min(maxHeight, preferredHeightWithPadding)); 
         
@@ -232,7 +271,6 @@ public class GameUI extends JFrame {
             displayText("\nNothing to save.", Color.BLACK);
             return;
         }
-        // For simplicity, disallow saving during active battle in this iteration
         if (battleManagerIsActive()) {
             displayText("\nCannot save during an active battle.", Color.RED);
             return;
@@ -246,20 +284,19 @@ public class GameUI extends JFrame {
             currentDialogueState = ((Storyline1) currentStory).getDialogueState();
         } else if (currentStory instanceof Storyline2) {
             storylineId = 2;
-            // Storyline2 doesn't have a complex dialogueState field yet
-            // currentDialogueState = ((Storyline2) currentStory).getDialogueState();
+            currentDialogueState = ((Storyline2) currentStory).getDialogueState();
         } else if (currentStory instanceof Storyline3) {
             storylineId = 3;
-            // Storyline3 doesn't have a complex dialogueState field yet
-            // currentDialogueState = ((Storyline3) currentStory).getDialogueState();
+            currentDialogueState = ((Storyline3) currentStory).getDialogueState();
         } else {
             displayText("\nCannot determine storyline type to save.", Color.RED);
             return;
         }
         
-        // If a storyline doesn't have a specific dialogue state to save, use a default (e.g., 0 or -1)
-        // For Storyline1, we have it. For others, adjust as they develop.
-        if (storylineId != 1 && currentDialogueState == -1) currentDialogueState = 0; // Default if not Storyline1
+        if (currentDialogueState == -1 && storylineId != -1) { 
+             displayText("\nWarning: dialogueState is -1 for Storyline " + storylineId + ". Saving as 0.", Color.ORANGE);
+             currentDialogueState = 0; 
+        }
 
         SaveData saveData = new SaveData(
             storylineId,
@@ -272,53 +309,56 @@ public class GameUI extends JFrame {
         displayText("\nGame Saved!", Color.BLACK);
     }
 
-    // Method to apply loaded data
     public void applySaveData(SaveData data) {
         if (data == null) {
             displayText("Failed to load save data.", Color.RED);
             return;
         }
 
-        this.gameState = new GameState(); // Re-initialize or create new
+        this.gameState = new GameState(); 
         this.gameState.setAllStats(data.stats);
         this.gameState.setAllFlags(data.flags);
 
         boolean storyLoaded = false;
+        
+        textArea.setText(""); 
+        if (this.typewriter != null) {
+            this.typewriter.stopAndClearQueue(); 
+        }
+
         switch (data.storylineId) {
             case 1:
                 currentStory = new Storyline1(this, gameState);
-                ((Storyline1) currentStory).setDialogueState(data.dialogueState);
-                ((Storyline1) currentStory).showDialoguePublic(data.dialogueState); // Trigger UI update
-                storyLoaded = true;
                 break;
             case 2:
                 currentStory = new Storyline2(this, gameState);
-                // Storyline2.startStory() might be enough if no specific state
-                currentStory.startStory(); // Or a setDialogueState + showDialoguePublic if implemented
-                storyLoaded = true;
                 break;
             case 3:
                 currentStory = new Storyline3(this, gameState);
-                currentStory.startStory(); // Or a setDialogueState + showDialoguePublic if implemented
-                storyLoaded = true;
                 break;
             default:
                 displayText("Error: Invalid storyline ID in save data: " + data.storylineId, Color.RED);
                 return;
         }
         
-        if(storyLoaded) {
-            // Clear the main text area before displaying loaded content,
-            // especially if the typewriter is involved.
-            // The typewriter should handle appending to a cleared or existing area.
-            // If typewriter appends, ensure it starts fresh or from where the loaded story dictates.
-            // For simplicity, let's assume showDialoguePublic/startStory handles the initial display.
-            textArea.setText(""); // Clear previous text before loading new story text
-            if (currentStory instanceof Storyline1) { // Re-trigger display for Storyline1
-                 ((Storyline1) currentStory).showDialoguePublic(data.dialogueState);
-            } else { // For others, startStory might be enough
-                 currentStory.startStory();
+        if (currentStory != null) { 
+            if (currentStory instanceof Storyline1) {
+                ((Storyline1) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline1) currentStory).showDialoguePublic(data.dialogueState);
+            } else if (currentStory instanceof Storyline2) {
+                ((Storyline2) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline2) currentStory).showDialoguePublic(data.dialogueState);
+            } else if (currentStory instanceof Storyline3) {
+                ((Storyline3) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline3) currentStory).showDialoguePublic(data.dialogueState);
             }
+            storyLoaded = true;
+        } else {
+            displayText("Failed to instantiate storyline for ID: " + data.storylineId, Color.RED);
+            return;
+        }
+            
+        if(storyLoaded) {
             displayText("\nGame Loaded!", Color.BLACK);
         }
     }
@@ -328,6 +368,28 @@ public class GameUI extends JFrame {
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createRaisedBevelBorder());
+        button.setBorder(BorderFactory.createRaisedBevelBorder()); // Keep raised bevel or change as desired
+        // Add hover effects if you like
+        Color hoverColor = bgColor.brighter();
+        Color pressedColor = bgColor.darker();
+
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                button.setBackground(pressedColor);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                if (button.getBounds().contains(evt.getPoint())) {
+                     button.setBackground(hoverColor);
+                } else {
+                     button.setBackground(bgColor);
+                }
+            }
+        });
     }
 }
