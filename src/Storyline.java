@@ -1,3 +1,4 @@
+
 public abstract class Storyline {
     protected GameUI ui;
     protected GameState state;
