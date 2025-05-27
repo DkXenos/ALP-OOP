@@ -261,11 +261,6 @@ public class GameUI extends JFrame {
         inventoryDialog.setVisible(true);
     }
 
-    private void showDialogueOptions() { 
-        String[] options = {"Hello nice to meet you!", "This is another text dialogue", "THIS IS A FAST RED TEXT"};
-        showChoicesDialog(options); 
-    }
-
     private void saveCurrentGame() {
         if (currentStory == null || gameState == null) {
             displayText("\nNothing to save.", Color.BLACK);

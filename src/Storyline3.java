@@ -36,7 +36,7 @@ public class Storyline3 extends Storyline {
     public void startStory() {
         state.setStat(GameState.PLAYER_HEALTH, 10);
         state.setStat(GameState.PLAYER_MAX_HEALTH, 10);
-        state.setStat(GameState.PLAYER_ATTACK, 1);
+        state.setStat(GameState.PLAYER_ATTACK, 6);
         state.setStat(STAT_PLAYER_DEFENSE, 0);
         state.setStat(STAT_PLAYER_WILLPOWER, 5);
         

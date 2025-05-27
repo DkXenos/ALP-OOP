@@ -164,7 +164,8 @@ public class StartMenu extends JFrame{
             gameUI.applySaveData(saveDataToLoad);
         } else {
             // Start a new game (e.g., storyline 1 by default)
-            gameUI.startGame(3); // Default to storyline 1 for a new game
+            
+            gameUI.startGame(2); // Default to storyline 1 for a new game
         }
         gameUI.setVisible(true);
         this.dispose();
