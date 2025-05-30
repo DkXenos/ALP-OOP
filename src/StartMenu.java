@@ -75,7 +75,7 @@ public class StartMenu extends JFrame{
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false); 
 
-        JLabel titleLabel = new JLabel("Chapters of a Lost Summer", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Fading Light", SwingConstants.CENTER);
         titleLabel.setFont(customFont); 
         titleLabel.setForeground(new Color(255, 215, 0));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
