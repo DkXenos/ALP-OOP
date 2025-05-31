@@ -1,24 +1,24 @@
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder; // For padding
+import javax.swing.border.EmptyBorder;
+import java.util.List; // For GameState.getInventoryForDisplay()
+import java.util.Map; // For iterating inventory in showInventory (alternative)
 
 public class GameUI extends JFrame {
-    JTextArea textArea; // For main story/dialogue
+    JTextArea textArea; 
     private JButton inventoryBtn, saveBtn;
     private Storyline currentStory;
     private GameState gameState;
-    private Typewriter typewriter; // For main text area
-    private Typewriter battleLogTypewriter; // For battle log text area
+    private Typewriter typewriter; 
+    private Typewriter battleLogTypewriter; 
 
-    // Panels for CardLayout
-    private JPanel mainContentPanel; // This will hold textArea and battleDisplayPanel via CardLayout
+    private JPanel mainContentPanel; 
     private CardLayout cardLayout;
     private static final String TEXT_AREA_CARD = "TextAreaCard";
     private static final String BATTLE_CARD = "BattleCard";
 
-    // Battle UI components
-    private JPanel battleDisplayPanel; // The main panel for the battle card
-    private JTextArea battleLogTextArea; // For battle-specific messages
+    private JPanel battleDisplayPanel; 
+    private JTextArea battleLogTextArea; 
     private JLabel playerHealthBattleLabel;
     private JLabel opponentNameBattleLabel;
     private JLabel opponentHealthBattleLabel;
@@ -26,64 +26,50 @@ public class GameUI extends JFrame {
     private JButton attackButton;
     private JButton itemButtonBattle;
 
-    // New top panel for background
     private JPanel topImagePanel;
 
     public GameUI() {
         setTitle("Text Adventure");
-        setSize(800, 600); // Keep overall size
+        setSize(800, 600); 
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        // Main container panel for the JFrame's content pane
         JPanel mainFramePanel = new JPanel(new BorderLayout());
         setContentPane(mainFramePanel);
 
-        // 1. Top panel (for background image later)
         topImagePanel = new JPanel();
-        topImagePanel.setBackground(new Color(50, 50, 60)); // Dark placeholder color
-        // This panel will be in BorderLayout.CENTER, so it will take available space.
-        // We can set a preferred size to influence layout if needed, but BorderLayout.CENTER is flexible.
-        // For now, let's give it a substantial preferred height.
-        topImagePanel.setPreferredSize(new Dimension(800, 300)); // Adjust as needed
+        topImagePanel.setBackground(new Color(50, 50, 60)); 
+        topImagePanel.setPreferredSize(new Dimension(800, 300)); 
         mainFramePanel.add(topImagePanel, BorderLayout.CENTER);
 
-        // 2. Bottom UI Panel (will contain text area/battle UI and control buttons)
         JPanel bottomSectionPanel = new JPanel(new BorderLayout());
-        // Set a preferred height for the entire bottom section
-        bottomSectionPanel.setPreferredSize(new Dimension(800, 250)); // Adjust as needed
+        bottomSectionPanel.setPreferredSize(new Dimension(800, 250)); 
         mainFramePanel.add(bottomSectionPanel, BorderLayout.SOUTH);
-
-        // 2a. Main Content Panel (CardLayout for text and battle)
-        // This panel will contain the JScrollPanes for textArea and battleDisplayPanel
         
         textArea = new JTextArea();
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setMargin(new Insets(10, 15, 10, 15)); // Added padding for readability
-        textArea.setBackground(new Color(230, 230, 230)); // Light gray background for text area
+        textArea.setMargin(new Insets(10, 15, 10, 15)); 
+        textArea.setBackground(new Color(230, 230, 230)); 
         textArea.setForeground(Color.BLACK);
         this.typewriter = new Typewriter(textArea);
         JScrollPane textAreaScrollPane = new JScrollPane(textArea);
         textAreaScrollPane.setBorder(BorderFactory.createCompoundBorder(
-            new EmptyBorder(5, 5, 5, 5), // Outer padding for the scroll pane
-            BorderFactory.createLineBorder(Color.DARK_GRAY) // Border around scroll pane
+            new EmptyBorder(5, 5, 5, 5), 
+            BorderFactory.createLineBorder(Color.DARK_GRAY) 
         ));
-
 
         cardLayout = new CardLayout();
         mainContentPanel = new JPanel(cardLayout);
-        // mainContentPanel will be added to bottomSectionPanel's CENTER
-
-        // --- Battle UI Setup ---
+        
         battleDisplayPanel = new JPanel(new BorderLayout(5, 5));
-        battleDisplayPanel.setBorder(new EmptyBorder(5, 5, 5, 5)); // Padding for the whole battle card
-        battleDisplayPanel.setBackground(new Color(220, 220, 220)); // Slightly different background for battle
+        battleDisplayPanel.setBorder(new EmptyBorder(5, 5, 5, 5)); 
+        battleDisplayPanel.setBackground(new Color(220, 220, 220)); 
 
         JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
-        statsPanel.setOpaque(false); // Make transparent if battleDisplayPanel has bg color
+        statsPanel.setOpaque(false); 
         playerHealthBattleLabel = new JLabel("Player HP: --", SwingConstants.LEFT);
         opponentNameBattleLabel = new JLabel("Opponent: --", SwingConstants.CENTER);
         opponentHealthBattleLabel = new JLabel("HP: --", SwingConstants.RIGHT);
@@ -96,8 +82,8 @@ public class GameUI extends JFrame {
         battleLogTextArea.setEditable(false);
         battleLogTextArea.setLineWrap(true);
         battleLogTextArea.setWrapStyleWord(true);
-        battleLogTextArea.setMargin(new Insets(10, 15, 10, 15)); // Added padding
-        battleLogTextArea.setBackground(new Color(240, 240, 240)); // Light background for battle log
+        battleLogTextArea.setMargin(new Insets(10, 15, 10, 15)); 
+        battleLogTextArea.setBackground(new Color(240, 240, 240)); 
         battleLogTextArea.setForeground(Color.BLACK);
         this.battleLogTypewriter = new Typewriter(battleLogTextArea);
         JScrollPane battleLogScrollPane = new JScrollPane(battleLogTextArea);
@@ -111,38 +97,34 @@ public class GameUI extends JFrame {
 
         attackButton.addActionListener(e -> {
             if (currentStory != null && battleManagerIsActive()) {
-                currentStory.handleChoice(1); // 1 for Attack
+                currentStory.handleChoice(1); 
             }
         });
         itemButtonBattle.addActionListener(e -> {
             if (currentStory != null && battleManagerIsActive()) {
-                currentStory.handleChoice(2); // 2 for Item
+                currentStory.handleChoice(2); 
             }
         });
 
         battleActionPanel.add(attackButton);
         battleActionPanel.add(itemButtonBattle);
         battleDisplayPanel.add(battleActionPanel, BorderLayout.SOUTH);
-        // --- End of Battle UI Setup ---
 
-        // Add cards to mainContentPanel
         mainContentPanel.add(textAreaScrollPane, TEXT_AREA_CARD);
         mainContentPanel.add(battleDisplayPanel, BATTLE_CARD);
 
-        // Add mainContentPanel to the center of bottomSectionPanel
         bottomSectionPanel.add(mainContentPanel, BorderLayout.CENTER);
-        cardLayout.show(mainContentPanel, TEXT_AREA_CARD); // Show text area by default
+        cardLayout.show(mainContentPanel, TEXT_AREA_CARD); 
 
-        // 2b. Bottom button panel (Inventory, Save)
         JPanel bottomButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        bottomButtonPanel.setBorder(new EmptyBorder(5, 0, 10, 0)); // Padding around buttons
-        Font buttonFont = new Font("Arial", Font.BOLD, 14); // Slightly smaller font
-        Dimension buttonSize = new Dimension(130, 35); // Slightly smaller buttons
+        bottomButtonPanel.setBorder(new EmptyBorder(5, 0, 10, 0)); 
+        Font buttonFont = new Font("Arial", Font.BOLD, 14); 
+        Dimension buttonSize = new Dimension(130, 35); 
 
         inventoryBtn = new JButton("Inventory");
-        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(70, 130, 180)); // Steel Blue
+        styleButton(inventoryBtn, buttonFont, buttonSize, new Color(70, 130, 180)); 
         saveBtn = new JButton("Save Game");
-        styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); // Medium Sea Green
+        styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); 
         saveBtn.addActionListener(e -> saveCurrentGame());
 
         inventoryBtn.addActionListener(e -> showInventory());
@@ -150,7 +132,6 @@ public class GameUI extends JFrame {
         bottomButtonPanel.add(inventoryBtn);
         bottomButtonPanel.add(saveBtn);
         
-        // Add bottomButtonPanel to the south of bottomSectionPanel
         bottomSectionPanel.add(bottomButtonPanel, BorderLayout.SOUTH);
     }
 
@@ -206,6 +187,7 @@ public class GameUI extends JFrame {
         cardLayout.show(mainContentPanel, TEXT_AREA_CARD);
     }
 
+
     public void showChoicesDialog(String[] options) {
         if (options == null || options.length == 0) return;
 
@@ -245,19 +227,61 @@ public class GameUI extends JFrame {
     }
 
     private void showInventory() {
+        if (gameState == null) {
+            displayText("\nCannot open inventory: GameState not initialized.", Color.RED);
+            return;
+        }
+        if (battleManagerIsActive()) {
+            displayText("\nCannot access inventory during battle.", Color.RED);
+            return;
+        }
+
         JDialog inventoryDialog = new JDialog(this, "Inventory", true);
-        inventoryDialog.setSize(300, 200);
-        String[] items = {"Whiskey Bottle (3 uses)", "Pocket Knife", "Car Keys"}; 
-        JList<String> itemList = new JList<>(items);
+        inventoryDialog.setSize(450, 300); // Adjusted size for descriptions
+        inventoryDialog.setLayout(new BorderLayout());
+
+        List<String> itemsForDisplay = gameState.getInventoryForDisplay();
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String itemDisplayString : itemsForDisplay) {
+            listModel.addElement(itemDisplayString);
+        }
+
+        JList<String> itemList = new JList<>(listModel);
+        itemList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
         JButton useBtn = new JButton("Use Selected");
+        useBtn.setEnabled(!itemsForDisplay.isEmpty() && !itemsForDisplay.get(0).equals("Your inventory is empty."));
+
         useBtn.addActionListener(e -> {
-            String selected = itemList.getSelectedValue();
-            inventoryDialog.dispose();
-            displayText("\nUsed: " + (selected != null ? selected : "nothing") + "...", Color.BLACK);
+            String selectedValue = itemList.getSelectedValue();
+            if (selectedValue != null && !selectedValue.equals("Your inventory is empty.")) {
+                // Extract item name (e.g., "Cigarette" from "Cigarette (x2) (A standard...)")
+                String itemName = selectedValue.substring(0, selectedValue.indexOf(" (x"));
+                inventoryDialog.dispose();
+
+                if (currentStory instanceof Storyline3) {
+                    ((Storyline3) currentStory).useInventoryItem(itemName);
+                } else {
+                    // Generic item usage or message for other storylines
+                    Item item = gameState.getItemPrototype(itemName);
+                    if (item != null && gameState.getItemQuantity(itemName) > 0) {
+                        // A generic way to call use, assuming a player name can be retrieved or is not needed
+                        // For now, this path is less defined as Storyline3 has specific useInventoryItem
+                        // item.applyEffect(gameState, this, "Player"); // Placeholder player name
+                        // gameState.consumeItem(itemName);
+                        displayText("\nUsed: " + itemName + ". (Generic use)", Color.BLACK);
+                    } else {
+                        displayText("\nCannot use " + itemName + ".", Color.ORANGE);
+                    }
+                }
+            } else {
+                 displayText("\nNo item selected or inventory is empty.", Color.BLACK);
+            }
         });
-        inventoryDialog.add(new JScrollPane(itemList));
+
+        inventoryDialog.add(new JScrollPane(itemList), BorderLayout.CENTER);
         inventoryDialog.add(useBtn, BorderLayout.SOUTH);
-        inventoryDialog.setLocationRelativeTo(null);
+        inventoryDialog.setLocationRelativeTo(this);
         inventoryDialog.setVisible(true);
     }
 
@@ -265,6 +289,7 @@ public class GameUI extends JFrame {
         String[] options = {"Hello nice to meet you!", "This is another text dialogue", "THIS IS A FAST RED TEXT"};
         showChoicesDialog(options); 
     }
+
 
     private void saveCurrentGame() {
         if (currentStory == null || gameState == null) {
@@ -302,7 +327,8 @@ public class GameUI extends JFrame {
             storylineId,
             currentDialogueState,
             gameState.getAllStats(),
-            gameState.getAllFlags()
+            gameState.getAllFlags(),
+            gameState.getInventoryQuantities() // Get quantities for saving
         );
 
         SaveManager.saveGame(saveData);
@@ -318,6 +344,7 @@ public class GameUI extends JFrame {
         this.gameState = new GameState(); 
         this.gameState.setAllStats(data.stats);
         this.gameState.setAllFlags(data.flags);
+        this.gameState.setInventoryQuantities(data.inventoryQuantities); // Set quantities, which also repopulates prototypes
 
         boolean storyLoaded = false;
         
@@ -368,8 +395,7 @@ public class GameUI extends JFrame {
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createRaisedBevelBorder()); // Keep raised bevel or change as desired
-        // Add hover effects if you like
+        button.setBorder(BorderFactory.createRaisedBevelBorder()); 
         Color hoverColor = bgColor.brighter();
         Color pressedColor = bgColor.darker();
 

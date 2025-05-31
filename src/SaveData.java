@@ -2,22 +2,22 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 public class SaveData implements Serializable {
-    private static final long serialVersionUID = 1L; // Important for versioning
+    private static final long serialVersionUID = 2L; // Increment version due to inventory change
 
     // Storyline progress
-    public int storylineId; // e.g., 1 for Storyline1
-    public int dialogueState; // Current stage within the storyline
+    public int storylineId;
+    public int dialogueState;
 
     // GameState
     public HashMap<String, Integer> stats;
     public HashMap<String, Boolean> flags;
+    public HashMap<String, Integer> inventoryQuantities; // Changed from 'inventory'
 
-    // Add any other relevant data, e.g., inventory, battle state if saving during battles
-
-    public SaveData(int storylineId, int dialogueState, HashMap<String, Integer> stats, HashMap<String, Boolean> flags) {
+    public SaveData(int storylineId, int dialogueState, HashMap<String, Integer> stats, HashMap<String, Boolean> flags, HashMap<String, Integer> inventoryQuantities) {
         this.storylineId = storylineId;
         this.dialogueState = dialogueState;
-        this.stats = stats; // Store copies to avoid modification issues
+        this.stats = stats;
         this.flags = flags;
+        this.inventoryQuantities = inventoryQuantities; // Updated
     }
 }

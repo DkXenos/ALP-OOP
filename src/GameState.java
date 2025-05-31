@@ -1,19 +1,66 @@
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map; // Import Map
+import java.util.List; // For GameUI inventory display
+import java.util.Map;    // For GameUI inventory display
+import java.util.function.Supplier; // For item factories
 
 public class GameState {
     private HashMap<String, Integer> stats = new HashMap<>();
     private HashMap<String, Boolean> flags = new HashMap<>();
+    
+    // Inventory: Store item prototypes and their quantities
+    private Map<String, Item> itemPrototypes = new HashMap<>();
+    private Map<String, Integer> inventoryQuantities = new HashMap<>();
 
     // Define keys for player stats
     public static final String PLAYER_HEALTH = "playerHealth";
     public static final String PLAYER_MAX_HEALTH = "playerMaxHealth";
     public static final String PLAYER_ATTACK = "playerAttack";
 
+    // Item Factories for repopulating items on load
+    // These need access to stat keys. For Storyline3 items, these keys are in Storyline3.
+    // We'll make them public in Storyline3 or define them here/in a constants class.
+    // For this example, assuming Storyline3.UNIQUE_STAT_KEY_S3 etc. are made public.
+    private static final Map<String, Supplier<Item>> KNOWN_ITEM_FACTORIES = new HashMap<>();
+
+    static {
+        // INI PENTINGGGGG BAWAH INII YES YES YES
+
+        // This block will be problematic if Storyline3 stat keys are private.
+        // We will define them directly here for now or assume they are made public in Storyline3.
+        // To avoid direct dependency on Storyline3 class here, let's use string literals
+        // and ensure Storyline3 uses the same literals when creating items.
+        String nicotineKey = "nicotineAddictionLevel"; // Storyline3.UNIQUE_STAT_KEY_S3
+        String willpowerKey = "playerWillpower";     // Storyline3.STAT_PLAYER_WILLPOWER
+        String defenseKey = "playerDefense";         // Storyline3.STAT_PLAYER_DEFENSE
+        String socialStatusKey = "socialStatus";     // Storyline3.STAT_SOCIAL_STATUS
+
+
+        KNOWN_ITEM_FACTORIES.put("Cigarette", () -> new SmokingItem(
+            "Cigarette", 
+            "A standard, mass-produced cigarette.",
+            "smokes a Cigarette. A brief, harsh buzz...",
+            Map.of(nicotineKey, 2, willpowerKey, -1)
+        ));
+        KNOWN_ITEM_FACTORIES.put("Vape Pen", () -> new SmokingItem(
+            "Vape Pen", 
+            "A sleek, modern vape pen. Produces flavored vapor.",
+            "uses the Vape Pen. Smooth vapor, lingering desire...",
+            Map.of(nicotineKey, 3, willpowerKey, -1, defenseKey, -1) // Example: Vape might also affect defense
+        ));
+        KNOWN_ITEM_FACTORIES.put("Premium Cigarette", () -> new SmokingItem(
+            "Premium Cigarette", 
+            "A high-quality, expensive cigarette. Promises a richer experience.",
+            "lights up the Premium Cigarette. It's strong, a noticeable kick.",
+            Map.of(nicotineKey, 5, willpowerKey, -2, PLAYER_HEALTH, -1, socialStatusKey, -1)
+        ));
+    }
+
+
     public GameState() {
         // Initialize default player stats
         setStat(PLAYER_MAX_HEALTH, 100);
-        setStat(PLAYER_HEALTH, getStat(PLAYER_MAX_HEALTH)); // Start with full health
+        setStat(PLAYER_HEALTH, getStat(PLAYER_MAX_HEALTH));
         setStat(PLAYER_ATTACK, 10);
     }
 
@@ -65,6 +112,97 @@ public class GameState {
         this.flags.clear();
         if (newFlags != null) {
             this.flags.putAll(newFlags);
+        }
+    }
+
+    // --- New Inventory Methods ---
+    public void addItem(Item item, int quantity) {
+        if (item == null || quantity <= 0) return;
+        itemPrototypes.putIfAbsent(item.getItemName(), item);
+        inventoryQuantities.put(item.getItemName(), inventoryQuantities.getOrDefault(item.getItemName(), 0) + quantity);
+        System.out.println("Added " + quantity + " " + item.getItemName() + "(s). Total: " + inventoryQuantities.get(item.getItemName()));
+    }
+
+    public boolean consumeItem(String itemName) {
+        if (inventoryQuantities.containsKey(itemName) && inventoryQuantities.get(itemName) > 0) {
+            inventoryQuantities.put(itemName, inventoryQuantities.get(itemName) - 1);
+            if (inventoryQuantities.get(itemName) == 0) {
+                inventoryQuantities.remove(itemName);
+                // Optionally remove from itemPrototypes if no longer needed and won't be re-added,
+                // but generally safer to keep prototypes if they might be acquired again.
+            }
+            System.out.println("Consumed 1 " + itemName + ".");
+            return true;
+        }
+        System.out.println("Cannot consume " + itemName + ": Not enough quantity or item unknown.");
+        return false;
+    }
+    
+    // For removing items without using them (e.g., dropping, selling)
+    public boolean removeItemCompletely(String itemName, int quantity) {
+        int currentQuantity = inventoryQuantities.getOrDefault(itemName, 0);
+        if (currentQuantity >= quantity) {
+            inventoryQuantities.put(itemName, currentQuantity - quantity);
+            if (inventoryQuantities.get(itemName) == 0) {
+                inventoryQuantities.remove(itemName);
+                // itemPrototypes.remove(itemName); // Consider if prototype should be removed
+            }
+            System.out.println("Removed " + quantity + " " + itemName + "(s) from inventory.");
+            return true;
+        }
+        System.out.println("Not enough " + itemName + "(s) to remove.");
+        return false;
+    }
+
+
+    public int getItemQuantity(String itemName) {
+        return inventoryQuantities.getOrDefault(itemName, 0);
+    }
+
+    public Item getItemPrototype(String itemName) {
+        return itemPrototypes.get(itemName);
+    }
+
+    // For displaying inventory in UI
+    public List<String> getInventoryForDisplay() {
+        List<String> displayList = new ArrayList<>();
+        if (inventoryQuantities.isEmpty()) {
+            displayList.add("Your inventory is empty.");
+        } else {
+            for (Map.Entry<String, Integer> entry : inventoryQuantities.entrySet()) {
+                Item proto = itemPrototypes.get(entry.getKey());
+                String desc = (proto != null) ? " (" + proto.getDescription() + ")" : "";
+                displayList.add(entry.getKey() + " (x" + entry.getValue() + ")" + desc);
+            }
+        }
+        return displayList;
+    }
+    
+    public Map<String, Integer> getInventoryQuantities() { // For saving
+        return new HashMap<>(this.inventoryQuantities);
+    }
+
+    public void setInventoryQuantities(Map<String, Integer> newQuantities) { // For loading
+        this.inventoryQuantities.clear();
+        this.itemPrototypes.clear(); // Clear old prototypes
+        if (newQuantities != null) {
+            this.inventoryQuantities.putAll(newQuantities);
+            repopulateItemPrototypesFromQuantities();
+        }
+    }
+
+    private void repopulateItemPrototypesFromQuantities() {
+        if (inventoryQuantities == null) return;
+        for (String itemName : inventoryQuantities.keySet()) {
+            if (!itemPrototypes.containsKey(itemName)) { // Only add if not already (e.g. from addItem)
+                Supplier<Item> factory = KNOWN_ITEM_FACTORIES.get(itemName);
+                if (factory != null) {
+                    itemPrototypes.put(itemName, factory.get());
+                } else {
+                    System.err.println("Unknown item type during prototype repopulation: " + itemName);
+                    // Potentially add a placeholder/error item or remove from quantities
+                }
+            }
         }
     }
 }
