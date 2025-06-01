@@ -3,47 +3,50 @@ import java.awt.event.MouseAdapter; // Add for exception handling
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.imageio.ImageIO;
-import javax.swing.*; // For hover effects
-import javax.swing.border.EmptyBorder;  // For hover effects
-import javax.swing.border.LineBorder; // For flatter button border
+import javax.swing.*;
+import javax.swing.border.EmptyBorder; // For hover effects
+import javax.swing.border.LineBorder;  // For hover effects
 
 
-// Inner class for drawing a background image (if you added it from previous suggestion)
+// Replace the existing ImagePanel class with this one:
 class ImagePanel extends JPanel {
-    private Image backgroundImage;
+    private ImageIcon backgroundImageIcon; // Use ImageIcon to handle GIFs
 
     public ImagePanel(String imagePath) {
         try {
-            InputStream is = getClass().getResourceAsStream(imagePath);
-            if (is == null) {
+            java.net.URL imgUrl = getClass().getResource(imagePath);
+            if (imgUrl == null) {
                 System.err.println("Background image not found: " + imagePath);
-                backgroundImage = null;
+                backgroundImageIcon = null;
             } else {
-                backgroundImage = ImageIO.read(is);
+                backgroundImageIcon = new ImageIcon(imgUrl);
             }
-        } catch (IOException e) {
+        } catch (Exception e) { // ImageIcon constructor doesn't throw checked IOExceptions
+            System.err.println("Error loading background image: " + imagePath);
             e.printStackTrace();
-            backgroundImage = null;
+            backgroundImageIcon = null;
         }
-        setLayout(new BorderLayout()); 
+        setLayout(new BorderLayout());
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        if (backgroundImageIcon != null && backgroundImageIcon.getImage() != null) {
+            // Draw the image, scaling it to the panel's size.
+            // 'this' (the ImagePanel itself) acts as the ImageObserver,
+            // which is necessary for animated GIFs to update and repaint.
+            g.drawImage(backgroundImageIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
         } else {
+            // Fallback if image failed to load
             g.setColor(Color.DARK_GRAY);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 }
 
-
 public class StartMenu extends JFrame{
-    private JButton startButton, loadGameButton; // Renamed saveFileButton
+    private JButton startButton, loadGameButton; 
     private Font customFont;
 
     public StartMenu(){
@@ -66,10 +69,8 @@ public class StartMenu extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        // Assuming ImagePanel is used as content pane from previous suggestion
-        ImagePanel backgroundPanel = new ImagePanel("/Resources/Assets/start_menu_background.jpg"); // Ensure path is correct
+        ImagePanel backgroundPanel = new ImagePanel("/Resources/Assets/start-menu.gif"); 
         setContentPane(backgroundPanel);
-
 
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
@@ -108,7 +109,7 @@ public class StartMenu extends JFrame{
         startButton = new JButton("Start Game");
         styleButton(startButton, buttonFont, buttonSize, new Color(50, 50, 50), new Color(0, 150, 136)); 
 
-        loadGameButton = new JButton("Load Game"); // Changed from saveFileButton
+        loadGameButton = new JButton("Load Game"); 
         styleButton(loadGameButton, buttonFont, buttonSize, new Color(50, 50, 50), new Color(0, 100, 120));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -123,7 +124,7 @@ public class StartMenu extends JFrame{
         buttonContainer.add(buttonPanel, BorderLayout.CENTER);
         backgroundPanel.add(buttonContainer, BorderLayout.SOUTH);
 
-        startButton.addActionListener(e -> startGame(null)); // Pass null for new game
+        startButton.addActionListener(e -> startGame(null)); 
         loadGameButton.addActionListener(e -> {
             String[] options = {
                 "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
@@ -149,6 +150,10 @@ public class StartMenu extends JFrame{
                 }
             }
         });
+
+        // Play main menu BGM
+        // Ensure you have a "main_menu_bgm.wav" in "src/Resources/Audio/"
+        AudioManager.getInstance().playMusic("/Resources/Audio/start-bgm.wav", true); 
     }
 
     private void styleButton(JButton button, Font font, Dimension size, Color bgColor, Color hoverColor) {
@@ -174,14 +179,14 @@ public class StartMenu extends JFrame{
         });
     }
 
-    // Modified startGame to accept SaveData
     public void startGame(SaveData saveDataToLoad){
+        AudioManager.getInstance().stopMusic(); // Stop menu music
+
         GameUI gameUI = new GameUI();
         if (saveDataToLoad != null) {
             gameUI.applySaveData(saveDataToLoad);
         } else {
-            // Start a new game (e.g., storyline 1 by default)
-            gameUI.startGame(3); // Default to storyline 1 for a new game
+            gameUI.startGame(3); 
         }
         gameUI.setVisible(true);
         this.dispose();

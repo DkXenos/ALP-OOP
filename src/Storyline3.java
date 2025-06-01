@@ -183,16 +183,16 @@ public class Storyline3 extends Storyline {
                 String textOutput = "";
                 switch (choice) {
                     case 1:
-                        textOutput = "\n" + playerName + ": (Whoa... what's that smell)";
+                        textOutput = "\n" + playerName + ": Whoa... what's that smell";
                         break;
                     case 2:
-                        textOutput = "\n" + playerName + ": (Nice to meet you ALex!)";
+                        textOutput = "\n" + playerName + ": Nice to meet you ALex!";
                         break;
                     case 3:
-                        textOutput = "\n" + playerName + ": (Whats that you're holding?)";
+                        textOutput = "\n" + playerName + ": Whats that you're holding?";
                         break;
                     default:
-                        textOutput = "\n" + playerName + ": (Hmm, what to do first?)";
+                        textOutput = "\n" + playerName + ": Hmm, what to do first?";
                         break;
                 }
                 ui.displayText(textOutput, Color.BLACK);
@@ -218,6 +218,25 @@ public class Storyline3 extends Storyline {
                     proceed.start();
                 }
                 break;
+            case 5: // Small talk during study session break
+                String smallTalkText = "";
+                switch (choice) {
+                    case 1:
+                        smallTalkText = "\n" + playerName + ": (This studying is killing me...)";
+                        break;
+                    case 2:
+                        smallTalkText = "\n" + playerName + ": (Maybe I should take a break and explore the campus.)";
+                        break;
+                    case 3:
+                        smallTalkText = "\n" + playerName + ": (I hope I can keep up with this pace.)";
+                        break;
+                    default:
+                        smallTalkText = "\n" + playerName + ": (Focus, Kai. You can do this.)";
+                        break;
+                }
+                ui.displayText(smallTalkText, Color.BLACK);
+                proceedTimerStage5.start();
+                break;
             case 6: // Late Night Study Session - Vape offer
                 if (choice == 1) { // "fine..." - leads to vape battle/use
                     // Option 1: Battle to resist
@@ -239,6 +258,49 @@ public class Storyline3 extends Storyline {
                     proceed.start();
                 }
                 break;
+            case 7: // Kai's reflection after vape encounter/choice
+                String kaiReflectionVape = "";
+                switch (choice) {
+                    case 1:
+                        kaiReflectionVape = "\n" + playerName + ": (Is this becoming a habit? I need to be careful...)";
+                        break;
+                    case 2:
+                        kaiReflectionVape = "\n" + playerName + ": (That wasn't so bad. Maybe it does help with stress a bit.)";
+                        break;
+                    case 3:
+                        kaiReflectionVape = "\n" + playerName + ": (I should talk to Alex about this later. Or maybe not.)";
+                        break;
+                    default:
+                        kaiReflectionVape = "\n" + playerName + ": (My head feels... fuzzy.)";
+                        break;
+                }
+                ui.displayText(kaiReflectionVape, Color.GRAY);
+                // Original next step from showStage7 was to proceed to showDialogue(8)
+                Timer proceedAfterReflectionVape = new Timer(3000, e -> showDialogue(8));
+                proceedAfterReflectionVape.setRepeats(false);
+                proceedAfterReflectionVape.start();
+                break;
+            case 9: // Kai's thoughts on filling the void
+                String voidFillingThoughts = "";
+                switch (choice) {
+                    case 1:
+                        voidFillingThoughts = "\n" + playerName + ": (Maybe joining a club could help...)";
+                        break;
+                    case 2:
+                        voidFillingThoughts = "\n" + playerName + ": (I should focus on my studies and try out for the team.)";
+                        break;
+                    case 3:
+                        voidFillingThoughts = "\n" + playerName + ": (It's time to stop procrastinating and start living.)";
+                        break;
+                    default:
+                        voidFillingThoughts = "\n" + playerName + ": (This emptiness... I need to fill it with something meaningful.)";
+                        break;
+                }
+                ui.displayText(voidFillingThoughts, Color.GRAY);
+                Timer proceedTimerStage9 = new Timer(3000, e -> showDialogue(10));
+                proceedTimerStage9.setRepeats(false);
+                proceedTimerStage9.start();
+                break;
             case 11: // Locker Room - Premium Cigarette offer
                 if (choice == 1) { // Try the premium cigarette
                     // Option 1: Battle to resist
@@ -259,6 +321,28 @@ public class Storyline3 extends Storyline {
                     proceed.setRepeats(false);
                     proceed.start();
                 }
+                break;
+            case 12: // Kai's reflection after premium cigarette encounter/game
+                String kaiReflectionPremium = "";
+                switch (choice) {
+                    case 1:
+                        kaiReflectionPremium = "\n" + playerName + ": (That was a close call. Or was it? The game felt off.)";
+                        break;
+                    case 2:
+                        kaiReflectionPremium = "\n" + playerName + ": (I need to focus on my health if I want to keep playing.)";
+                        break;
+                    case 3:
+                        kaiReflectionPremium = "\n" + playerName + ": (These 'breaks' are getting more intense. Is this what it takes?)";
+                        break;
+                    default:
+                        kaiReflectionPremium = "\n" + playerName + ": (My lungs feel heavy. Not good.)";
+                        break;
+                }
+                ui.displayText(kaiReflectionPremium, Color.GRAY);
+                // Original next step from showStage12 was to proceed to showDialogue(13)
+                Timer proceedAfterReflectionPremium = new Timer(3000, e -> showDialogue(13));
+                proceedAfterReflectionPremium.setRepeats(false);
+                proceedAfterReflectionPremium.start();
                 break;
             // --- CHAPTER 4 CHOICES ---
             case 14: // Choices from showStage14_Chapter4Intro
@@ -426,7 +510,7 @@ public class Storyline3 extends Storyline {
         Timer t1 = new Timer(1500, e -> ui.displayText("\nRoomate: \"Hey, I'm Alex! Looks like we're roommates.\"", Color.BLUE.darker()));
         t1.setRepeats(false); t1.start();
         Timer t3 = new Timer(5000, e -> { 
-            ui.displayText("\n" + playerName + ": (Hey Alex, im Kai)", Color.GRAY); 
+            ui.displayText("\n" + playerName + ": Hey Alex, im Kai", Color.GRAY); 
             Timer choiceTimer = new Timer(2000, e2 -> ui.showChoicesDialog(new String[]{"Whoa... whats that smell", "Nice to meet you!", "Whats that you're holding?"}));
             choiceTimer.setRepeats(false); choiceTimer.start();
         });
@@ -491,12 +575,25 @@ public class Storyline3 extends Storyline {
         choiceTimer.setRepeats(false);
         choiceTimer.start();
     }
+
     private void showStage7() { 
-        ui.displayText("\n" + playerName + ": (Another one down... or am I going down?)", Color.BLACK);
-        Timer proceedTimer = new Timer(3000, e -> showDialogue(8));
-        proceedTimer.setRepeats(false);
-        proceedTimer.start();
+        // Original: ui.displayText("\n" + playerName + ": (Another one down... or am I going down?)", Color.BLACK);
+        // Original: Timer proceedTimer = new Timer(3000, e -> showDialogue(8));
+        // Original: proceedTimer.setRepeats(false);
+        // Original: proceedTimer.start();
+
+        // Now, showStage7 will present choices for Kai's reflection
+        ui.displayText("\n" + playerName + ": (That whole situation with the vape...)", Color.GRAY.darker()); // Context setter
+        Timer choiceTimer = new Timer(1500, e_ct -> ui.showChoicesDialog(new String[]{
+            "\"Is this becoming a habit?\"",
+            "\"That wasn't so bad...\"",
+            "\"I should talk to someone.\""
+        }));
+        choiceTimer.setRepeats(false);
+        choiceTimer.start();
+        // The rest of the sequence (Kai's actual thought + proceeding) is in handleDialogueChoice case 7
     }
+
     private void showStage8() { 
         ui.displayText("\nNarrator: The pressure of exams and new social dynamics continues to mount.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\n[End of Chapter 2]", Color.DARK_GRAY));
@@ -568,12 +665,25 @@ public class Storyline3 extends Storyline {
         choiceTimer.setRepeats(false);
         choiceTimer.start();
     }
+
     private void showStage12() { 
-        ui.displayText("\n" + playerName + ": (The game is over... but what about my game?)", Color.BLACK);
-        Timer proceedTimer = new Timer(3000, e -> showDialogue(13));
-        proceedTimer.setRepeats(false);
-        proceedTimer.start();
+        // Original: ui.displayText("\n" + playerName + ": (The game is over... but what about my game?)", Color.BLACK);
+        // Original: Timer proceedTimer = new Timer(3000, e -> showDialogue(13));
+        // Original: proceedTimer.setRepeats(false);
+        // Original: proceedTimer.start();
+
+        // Now, showStage12 will present choices for Kai's reflection
+        ui.displayText("\n" + playerName + ": (That game... and that cigarette before...)", Color.GRAY.darker()); // Context setter
+        Timer choiceTimer = new Timer(1500, e_ct -> ui.showChoicesDialog(new String[]{
+            "\"That was a close call.\"",
+            "\"Need to focus on health.\"",
+            "\"Are these 'breaks' worth it?\""
+        }));
+        choiceTimer.setRepeats(false);
+        choiceTimer.start();
+        // The rest of the sequence (Kai's actual thought + proceeding) is in handleDialogueChoice case 12
     }
+
     private void showStage13() { 
         ui.displayText("\nNarrator: The semester wears on, bringing new challenges and temptations.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\n[End of Chapter 3]", Color.DARK_GRAY));
