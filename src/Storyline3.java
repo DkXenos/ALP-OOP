@@ -1,6 +1,9 @@
 import java.awt.Color;
 import java.util.Map;
 import javax.swing.Timer; // Required for Map.of
+// Make sure AudioManager is imported if it's in a different package,
+// or accessible if in the same package. Assuming it's accessible.
+// import AudioManager; // If needed
 
 public class Storyline3 extends Storyline {
     private int dialogueState = 0;
@@ -40,6 +43,7 @@ public class Storyline3 extends Storyline {
     public Storyline3(GameUI ui, GameState state) {
         super(ui, state);
         this.battleManager = new BattleManager(ui, state);
+        ui.setTitle("Storyline 3"); //ini buat ngganti title e yang diatas itu
     }
 
     // ... getBattleManager, getDialogueState, setDialogueState, showDialoguePublic ...
@@ -92,10 +96,9 @@ public class Storyline3 extends Storyline {
         state.setStat(UNIQUE_STAT_KEY_S3, 0); 
         state.setStat(STAT_SOCIAL_STATUS, 0);
         state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, false); // Initialize new flag
-
-        // Example: Give player an item at the start for testing
-        // state.addItem(CIGARETTE_ITEM, 1);
-        // ui.displayText("\n(You found a " + CIGARETTE_ITEM.getItemName() + "!)", Color.GREEN);
+        
+        ui.setStageImage("/Resources/Images/Story3/dorm-room.png"); // Initial image for the story
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/chapter1_intro_bgm.wav", true); // Initial BGM
 
         Timer timer = new Timer(500, e ->{
             ui.displayText("Chapter 1: First Encounter", Color.BLACK);
@@ -147,7 +150,7 @@ public class Storyline3 extends Storyline {
     }
 
     @Override
-    public void handleChoice(int choice) {
+    public void handleChoice(int choice) { // Note: Storyline abstract class expects String
         if (battleManager.isBattleActive()) {
             battleManager.processPlayerTurn(choice);
         } else {
@@ -163,12 +166,15 @@ public class Storyline3 extends Storyline {
                 switch (choice) {
                     case 1: 
                         choiceText = "\n" + playerName + ": (The view from up here is pretty nice. New city, new life.)";
+                        // ui.setStageImage("/Resources/Images/Story3/dorm_window_selected.png"); // Optional: image change on choice
                         break;
                     case 2: 
                         choiceText = "\n" + playerName + ": (Empty hangers. A blank slate, just like my social life right now.)";
+                        // ui.setStageImage("/Resources/Images/Story3/dorm_closet_selected.png"); // Optional
                         break;
                     case 3: 
                         choiceText = "\n" + playerName + ": (No new messages. Guess everyone's busy settling in too.)";
+                        // ui.setStageImage("/Resources/Images/Story3/dorm_phone_selected.png"); // Optional
                         break;
                     default:
                         choiceText = "\n" + playerName + ": (Hmm, what to do first?)";
@@ -201,15 +207,14 @@ public class Storyline3 extends Storyline {
                 t2.setRepeats(false); t2.start();
                 Timer proceedTimer = new Timer(7000, e -> showDialogue(2));
                 proceedTimer.setRepeats(false); proceedTimer.start();
-
-                // Timer timerStage01 = new Timer(3000, e -> showDialogue(2)); // Removed this problematic timer
-                // timerStage01.setRepeats(false);
-                // timerStage01.start();
                 break;
             case 2: // University Welcome Party
                 if (choice == 1) { // Face the Temptation (Battle)
+                    // Image for battle might be set by BattleManager or here
+                    // ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle.png");
                     startChapter1Battle();
                 } else if (choice == 2) { // New option: Take the cigarette
+                    ui.setStageImage("/Resources/Images/Story3/kai_takes_cigarette.png"); // Image for taking cigarette
                     ui.displayText("\n" + playerName + ": \"Uh, okay... I'll hold onto it.\"", Color.BLACK);
                     state.addItem(CIGARETTE_ITEM, 1);
                     ui.displayText("\nSystem: Added 1 " + CIGARETTE_ITEM.getItemName() + " to inventory.", Color.GREEN.darker());
@@ -241,17 +246,14 @@ public class Storyline3 extends Storyline {
                 break;
             case 6: // Late Night Study Session - Vape offer
                 if (choice == 1) { // "fine..." - leads to vape battle/use
-                    // Option 1: Battle to resist
-                    // startChapter2Battle(); 
-                    // Option 2: Directly use/acquire (if battle means "succumb")
+                    ui.setStageImage("/Resources/Images/Story3/kai_accepts_vape.png"); // Image for accepting vape
                     ui.displayText("\n" + playerName + ": \"...fine.\"", Color.BLACK);
-                    // Simulate succumbing: apply effects and/or add item
-                    VAPE_PEN_ITEM.applyEffect(state, ui, playerName); // Directly apply effect as if used
-                    // state.addItem(VAPE_PEN_ITEM, 1); // Or add to inventory if they keep it
-                    Timer proceedAfterVape = new Timer(3000, e -> showDialogue(7)); // Proceed
+                    VAPE_PEN_ITEM.applyEffect(state, ui, playerName); 
+                    Timer proceedAfterVape = new Timer(3000, e -> showDialogue(7)); 
                     proceedAfterVape.setRepeats(false);
                     proceedAfterVape.start();
                 } else { // "No thanks, coffee for me."
+                    ui.setStageImage("/Resources/Images/Story3/kai_declines_vape.png"); // Image for declining vape
                     ui.displayText("\n" + playerName + ": \"No thanks, I think I'll just grab some coffee instead. Need to keep my head clear.\"", Color.BLACK);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
                     ui.displayText("\nSystem Status: Willpower +1", Color.GREEN.darker());
@@ -277,7 +279,6 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(kaiReflectionVape, Color.GRAY);
-                // Original next step from showStage7 was to proceed to showDialogue(8)
                 Timer proceedAfterReflectionVape = new Timer(3000, e -> showDialogue(8));
                 proceedAfterReflectionVape.setRepeats(false);
                 proceedAfterReflectionVape.start();
@@ -305,17 +306,14 @@ public class Storyline3 extends Storyline {
                 break;
             case 11: // Locker Room - Premium Cigarette offer
                 if (choice == 1) { // Try the premium cigarette
-                    // Option 1: Battle to resist
-                    // startChapter3Battle();
-                    // Option 2: Directly use/acquire
+                    ui.setStageImage("/Resources/Images/Story3/kai_tries_premium_cig.png"); // Image for trying premium
                     ui.displayText("\n" + playerName + ": \"Alright, just one then...\"", Color.BLACK);
                     PREMIUM_CIGARETTE_ITEM.applyEffect(state, ui, playerName);
-                    // state.addItem(PREMIUM_CIGARETTE_ITEM, 1);
-                    // ui.displayText("\nSystem: Added 1 " + PREMIUM_CIGARETTE_ITEM.getItemName() + " to inventory.", Color.GREEN.darker());
-                    Timer proceedAfterPremium = new Timer(3000, e -> showDialogue(12)); // Proceed
+                    Timer proceedAfterPremium = new Timer(3000, e -> showDialogue(12)); 
                     proceedAfterPremium.setRepeats(false);
                     proceedAfterPremium.start();
                 } else { // Decline politely
+                    ui.setStageImage("/Resources/Images/Story3/kai_declines_premium_cig.png"); // Image for declining
                     ui.displayText("\n" + playerName + ": \"Nah, I'm good. Trying to keep my lungs clear for the game.\"", Color.BLACK);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     ui.displayText("\nSystem Status: Willpower +2", Color.GREEN.darker());
@@ -341,7 +339,6 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(kaiReflectionPremium, Color.GRAY);
-                // Original next step from showStage12 was to proceed to showDialogue(13)
                 Timer proceedAfterReflectionPremium = new Timer(3000, e -> showDialogue(13));
                 proceedAfterReflectionPremium.setRepeats(false);
                 proceedAfterReflectionPremium.start();
@@ -349,27 +346,28 @@ public class Storyline3 extends Storyline {
             // --- CHAPTER 4 CHOICES ---
             case 14: // Choices from showStage14_Chapter4Intro
                 if (choice == 1) { // Join them (Face another enemy encounter)
+                    // Image for battle might be set by BattleManager or here
+                    // ui.setStageImage("/Resources/Images/Story3/balcony_vape_battle.png");
                     startChapter4Battle();
                 } else { // Find another group (Risk isolation)
-                    showDialogue(15); // -> showStage15_IsolationPath
+                    showDialogue(15); // -> showStage15_IsolationPath will set its own image
                 }
                 break;
+            // case 17: // For "Back to Main Menu" - no image change needed here usually
+            //    break; 
         }
     }
 
     // --- Battle Methods ---
-    // If losing a battle means acquiring an item or having it used on you,
-    // you can modify these. For now, they directly apply stat changes.
-    // Example: if losing to "Temptation: Cigarette" means you smoked one:
-    // CIGARETTE_ITEM.applyEffect(state, ui, playerName);
-    // instead of direct state.adjustStat calls for addiction/willpower.
-
     private void startChapter1Battle() {
+        ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle_bg.png"); // Battle background
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true); // Battle BGM
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             battleManager.startBattle("Temptation: Cigarette", 10, 5, battleResult -> {
+                // BGM will be changed by the next showDialogue stage
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    // ... existing win logic ...
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png"); // Victory image
                     ui.displayText("\nNarrator: \"You feel a strange sense of accomplishment having resisted.\"", Color.GRAY);
                     Timer r1 = new Timer(2500, res -> ui.displayText("\nNarrator: \"Something tells you this won't be the last time you're tested.\"", Color.GRAY));
                     r1.setRepeats(false);
@@ -386,10 +384,9 @@ public class Storyline3 extends Storyline {
                     proceed.setRepeats(false);
                     proceed.start();
                 } else { // LOSS - Player succumbs
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_cigarette.png"); // Defeat image
                     ui.displayText("\nNarrator: \"The smoke fills your lungs. It burns slightly, but there's also a strange buzz...\"", Color.GRAY);
-                    // Apply item effect directly instead of manual stat changes
                     CIGARETTE_ITEM.applyEffect(state, ui, playerName); 
-                    // state.addItem(CIGARETTE_ITEM, 1); // Optionally, player also gets one
                     Timer proceed = new Timer(6000, res -> showDialogue(3));
                     proceed.setRepeats(false);
                     proceed.start();
@@ -401,11 +398,14 @@ public class Storyline3 extends Storyline {
     }
     
     private void startChapter2Battle() { 
+        ui.setStageImage("/Resources/Images/Story3/vape_temptation_battle_bg.png"); // Battle background
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation2_bgm.wav", true); // Battle BGM
         ui.displayText("\nNarrator: The sleek vape pen gleams. Another test of will.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             battleManager.startBattle("Temptation: Vape", 15, 4, battleResult -> {
+                // BGM will be changed by the next showDialogue stage
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    // ... existing win logic ...
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_vape.png"); // Victory image
                     state.adjustStat(GameState.PLAYER_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_ATTACK, 1);
@@ -414,22 +414,19 @@ public class Storyline3 extends Storyline {
                     ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker());
                     Timer t1 = new Timer(2500, res -> ui.displayText("\n" + playerName + ": \"I think I'll just grab some coffee instead. Need to keep my head clear.\"", Color.BLACK));
                     t1.setRepeats(false); t1.start();
-                    Timer proceed = new Timer(5000, res -> showDialogue(7)); // Ensure proceed timer is here for WIN
+                    Timer proceed = new Timer(5000, res -> showDialogue(7)); 
                     proceed.setRepeats(false);
                     proceed.start();
                 } else { // LOSS
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_vape.png"); // Defeat image
                     ui.displayText("\nStudy Partner: \"See? Feels better, right? You can borrow it anytime.\"", Color.CYAN.darker());
                     VAPE_PEN_ITEM.applyEffect(state, ui, playerName);
-                    // state.addItem(VAPE_PEN_ITEM, 1); // Optionally, player gets the vape
-                    Timer t2 = new Timer(3000, res -> ui.displayText("\nNarrator: “Later, Kai struggles to fall asleep...\"", Color.GRAY)); // Adjusted delay
+                    Timer t2 = new Timer(3000, res -> ui.displayText("\nNarrator: “Later, Kai struggles to fall asleep...\"", Color.GRAY)); 
                     t2.setRepeats(false); t2.start();
-                    Timer proceed = new Timer(6000, res -> showDialogue(7)); // Ensure proceed timer is here for LOSS
+                    Timer proceed = new Timer(6000, res -> showDialogue(7)); 
                     proceed.setRepeats(false);
                     proceed.start();
                 }
-                // Timer proceed = new Timer(9000, res -> showDialogue(7)); // This was outside, moved into if/else
-                // proceed.setRepeats(false);
-                // proceed.start();
             });
         });
         startBattleActual.setRepeats(false);
@@ -437,11 +434,14 @@ public class Storyline3 extends Storyline {
     }
 
     private void startChapter3Battle() { 
+        ui.setStageImage("/Resources/Images/Story3/premium_cig_battle_bg.png"); // Battle background
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation3_bgm.wav", true); // Battle BGM
         ui.displayText("\nNarrator: This cigarette feels different, heavier. A true test of resolve.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             battleManager.startBattle("Temptation: Premium Cigarette", 25, 8, battleResult -> {
+                // BGM will be changed by the next showDialogue stage
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    // ... existing win logic ...
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_premium_cig.png"); // Victory image
                     ui.displayText("\nCoach: \"Good endurance out there. You've got potential, next round, you’ll play.\"", Color.MAGENTA.darker());
                     state.adjustStat(GameState.PLAYER_HEALTH, 2);
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 2);
@@ -450,10 +450,10 @@ public class Storyline3 extends Storyline {
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     Timer r1 = new Timer(3000, res -> ui.displayText("\nSystem Status: \"Level Up! Health +2, Max Health +2, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker()));
                     r1.setRepeats(false); r1.start();
-                } else { // LOSS
+                } else { // Defeat image and apply item effect
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_premium_cig.png"); // Defeat image
                     ui.displayText("\nNarrator: \"During the game, you notice your lungs burning... Your performance suffers.\"", Color.GRAY);
                     PREMIUM_CIGARETTE_ITEM.applyEffect(state, ui, playerName);
-                    // state.addItem(PREMIUM_CIGARETTE_ITEM, 1); // Optionally, player gets one
                     if(state.getStat(GameState.PLAYER_HEALTH) > state.getStat(GameState.PLAYER_MAX_HEALTH)) {
                         state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
                     }
@@ -469,11 +469,12 @@ public class Storyline3 extends Storyline {
 
     // --- CHAPTER 4 BATTLE ---
     private void startChapter4Battle() {
+        ui.setStageImage("/Resources/Images/Story3/balcony_vape_battle_bg.png"); // Battle background
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_boss_social_bgm.wav", true); // Boss Battle BGM
         ui.displayText("\nNarrator: Kai heads to the balcony, a cloud of sweet-smelling vapor hangs in the air.", Color.GRAY);
         Timer preBattleTimer = new Timer(2500, e -> {
             ui.displayText("\nSocial Smoking Boss: \"EVERYONE DOES IT! ONE WON'T HURT! DON'T BE ANTISOCIAL!\"", Color.RED.darker());
             Timer startBattleActual = new Timer(3000, e2 -> {
-                // Boss designed to be unbeatable: High health, high attack
                 battleManager.startBattle("Social Smoking (Vape Form)", 999, 25, battleResult -> {
                     // Regardless of actual win/loss, the story dictates a "near defeat" scenario
                     // For simplicity, we'll use the LOSS path to trigger the cutscene.
@@ -492,8 +493,10 @@ public class Storyline3 extends Storyline {
 
 
     // --- Stage Methods ---
-    // ... showStage0 ...
     private void showStage0() { 
+        ui.setStageImage("/Resources/Images/Story3/dorm-room.png"); // Kai waking up
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage-0.wav", true); // Stage BGM
+        
         ui.displayText("\n[University Campus - Dorm Room]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + ": \"Finally, I'm on my own. No parents, no rules.\"", Color.BLACK));
         t1.setRepeats(false); t1.start();
@@ -506,8 +509,10 @@ public class Storyline3 extends Storyline {
         });
         t3.setRepeats(false); t3.start();
     }
-    // ... showStage1 ...
     private void showStage1() { 
+        ui.setStageImage("/Resources/Images/Story3/stage-1.png"); // Alex entering
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage-1.wav", true); // Stage BGM
+        
         ui.displayText("\n[A moment later, someone enters the room]", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\nRoomate: \"Hey, I'm Alex! Looks like we're roommates.\"", Color.BLUE.darker()));
         t1.setRepeats(false); t1.start();
@@ -520,7 +525,9 @@ public class Storyline3 extends Storyline {
     }
 
 
-    private void showStage2() { // University Welcome Party
+    private void showStage2() { 
+        ui.setStageImage("/Resources/Images/Story3/welcome_party_crowd.png"); // Party scene
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage2_party_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Later that night - University Welcome Party]", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\nParty-goer: \"Hey freshman! Want a cigarette?\"", Color.ORANGE.darker()));
         t1.setRepeats(false); t1.start();
@@ -529,20 +536,23 @@ public class Storyline3 extends Storyline {
         Timer t3 = new Timer(7000, e -> {
             ui.displayText("\nNarrator: Uh oh...", Color.RED.darker());
             Timer choiceTimer = new Timer(1500, e2 -> ui.showChoicesDialog(new String[]{
-                "Face the Temptation (Battle)", // Choice 1
-                playerName + ": \"Uh, maybe just one to hold onto...\"" // Choice 2
+                "Face the Temptation (Battle)", 
+                playerName + ": \"Uh, maybe just one to hold onto...\"" 
             }));
             choiceTimer.setRepeats(false); choiceTimer.start();
         });
         t3.setRepeats(false); t3.start();
     }
-    // ... other showStage methods ...
     private void showStage3() { 
+        ui.setStageImage("/Resources/Images/Story3/kai_reflects_after_party.png"); // Kai thinking
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage3_reflection_bgm.wav", true); // Stage BGM
         ui.displayText("\n" + playerName + ": (That was intense... I need to stay strong.)", Color.BLACK);
         Timer proceedTimer = new Timer(3000, e -> showDialogue(4));
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
     private void showStage4() { 
+        ui.setStageImage("/Resources/Images/Story3/campus_night_end_chapter1.png"); // Campus at night
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage4_chapter_end_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: The night continues, filled with music, laughter, and the lingering scent of smoke from a distance.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\nNarrator: University life has begun, and its first test has passed.", Color.GRAY));
         t1.setRepeats(false); t1.start();
@@ -553,6 +563,8 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage5() { 
+        ui.setStageImage("/Resources/Images/Story3/study_session_late.png"); // Late night study
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage5_study_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Days 8-14: Late Night Study Session]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\nStudy Partner: \"Ughhh, how do you do this? My brain is fried.\"", Color.CYAN.darker()));
         t1.setRepeats(false); t1.start();
@@ -566,12 +578,14 @@ public class Storyline3 extends Storyline {
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
 
-    private void showStage6() { // Late Night Study Session - Vape offer
+    private void showStage6() { 
+        ui.setStageImage("/Resources/Images/Story3/study_partner_offers_vape.png"); // Vape offer
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage6_vape_offer_bgm.wav", true); // Stage BGM
         ui.displayText("\nStudy Partner: \"What, ugh fine. My roommate left his vape pen, how 'bout that? Helps with stress.\"", Color.CYAN.darker());
         Timer choiceTimer = new Timer(3000, e -> {
             ui.showChoicesDialog(new String[]{
-                playerName + ": \"fine…\"", // Choice 1
-                playerName + ": \"No thanks, coffee for me.\"" // Choice 2
+                playerName + ": \"fine…\"", 
+                playerName + ": \"No thanks, coffee for me.\"" 
             });
         });
         choiceTimer.setRepeats(false);
@@ -579,13 +593,9 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage7() { 
-        // Original: ui.displayText("\n" + playerName + ": (Another one down... or am I going down?)", Color.BLACK);
-        // Original: Timer proceedTimer = new Timer(3000, e -> showDialogue(8));
-        // Original: proceedTimer.setRepeats(false);
-        // Original: proceedTimer.start();
-
-        // Now, showStage7 will present choices for Kai's reflection
-        ui.displayText("\n" + playerName + ": (That whole situation with the vape...)", Color.GRAY.darker()); // Context setter
+        ui.setStageImage("/Resources/Images/Story3/kai_reflects_vape_choice.png"); // Kai thinking about vape
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage7_vape_reflection_bgm.wav", true); // Stage BGM
+        ui.displayText("\n" + playerName + ": (That whole situation with the vape...)", Color.GRAY.darker()); 
         Timer choiceTimer = new Timer(1500, e_ct -> ui.showChoicesDialog(new String[]{
             "\"Is this becoming a habit?\"",
             "\"That wasn't so bad...\"",
@@ -593,10 +603,11 @@ public class Storyline3 extends Storyline {
         }));
         choiceTimer.setRepeats(false);
         choiceTimer.start();
-        // The rest of the sequence (Kai's actual thought + proceeding) is in handleDialogueChoice case 7
     }
 
     private void showStage8() { 
+        ui.setStageImage("/Resources/Images/Story3/exam_pressure_end_chapter2.png"); // Exam pressure montage
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage8_chapter_end_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: The pressure of exams and new social dynamics continues to mount.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\n[End of Chapter 2]", Color.DARK_GRAY));
         t1.setRepeats(false); t1.start();
@@ -605,6 +616,8 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage9() { 
+        ui.setStageImage("/Resources/Images/Story3/university_grounds_contemplation.png"); // Kai on campus thinking
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage9_contemplation_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Days 15-30: University Grounds]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + ": \"It's been a few months since I became a uni student, I should do something else to fill this void…\"", Color.BLACK));
         t1.setRepeats(false); t1.start();
@@ -617,9 +630,12 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage10() { 
+        ui.setStageImage("/Resources/Images/Story3/sports_tryouts_field.png"); // Sports tryouts
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage10_tryouts_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Sports Tryouts]", Color.DARK_GRAY);
         Timer decisionTimer = new Timer(1500, e-> {
             if (state.getStat(UNIQUE_STAT_KEY_S3) < 10) { 
+                ui.setStageImage("/Resources/Images/Story3/kai_joins_team.png"); // Kai successful at tryouts
                 ui.displayText("\nCoach: \"Good lung capacity, freshman! You've got potential.\"", Color.MAGENTA.darker());
                 Timer t1 = new Timer(3000, e2 -> ui.displayText("\n[Scene] Kai Joins the Sports Team.", Color.DARK_GRAY));
                 t1.setRepeats(false); t1.start();
@@ -629,6 +645,7 @@ public class Storyline3 extends Storyline {
                 proceed.setRepeats(false);
                 proceed.start();
             } else {
+                ui.setStageImage("/Resources/Images/Story3/kai_fails_tryouts.png"); // Kai struggling at tryouts
                 ui.displayText("\n[Scene] During tryouts, Kai struggles to keep up.", Color.DARK_GRAY);
                 Timer t1 = new Timer(2500, e2 -> ui.displayText("\nCoach: \"You need to work on your stamina, kid. Come back when you're serious.\"", Color.MAGENTA.darker()));
                 t1.setRepeats(false); t1.start();
@@ -643,11 +660,15 @@ public class Storyline3 extends Storyline {
         decisionTimer.start();
     }
 
-    private void showStage11() { // Locker Room - Premium Cigarette offer
+    private void showStage11() { 
         if (!state.getFlag("joinedSportsTeam")) { 
+            ui.setStageImage("/Resources/Images/Story3/kai_not_on_team_generic.png");
+            AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage11_alt_path_bgm.wav", true); // Alt path BGM
             showDialogue(13); 
             return;
         }
+        ui.setStageImage("/Resources/Images/Story3/locker_room_before_game.png"); // Locker room scene
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage11_locker_room_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Team Locker Room - Before First Game]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\nTeammate: \"Coach is brutal, man. Most of us take a quick break behind the bleachers to calm our nerves before our first game.\"", Color.GREEN.darker()));
         t1.setRepeats(false); t1.start();
@@ -660,8 +681,8 @@ public class Storyline3 extends Storyline {
 
         Timer choiceTimer = new Timer(13000, e -> {
             ui.showChoicesDialog(new String[]{
-                "Try the premium cigarette", // Choice 1
-                "Decline politely"           // Choice 2
+                "Try the premium cigarette", 
+                "Decline politely"           
             });
         });
         choiceTimer.setRepeats(false);
@@ -669,13 +690,9 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage12() { 
-        // Original: ui.displayText("\n" + playerName + ": (The game is over... but what about my game?)", Color.BLACK);
-        // Original: Timer proceedTimer = new Timer(3000, e -> showDialogue(13));
-        // Original: proceedTimer.setRepeats(false);
-        // Original: proceedTimer.start();
-
-        // Now, showStage12 will present choices for Kai's reflection
-        ui.displayText("\n" + playerName + ": (That game... and that cigarette before...)", Color.GRAY.darker()); // Context setter
+        ui.setStageImage("/Resources/Images/Story3/kai_reflects_premium_choice.png"); // Kai thinking after premium cig choice/game
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage12_premium_reflection_bgm.wav", true); // Stage BGM
+        ui.displayText("\n" + playerName + ": (That game... and that cigarette before...)", Color.GRAY.darker()); 
         Timer choiceTimer = new Timer(1500, e_ct -> ui.showChoicesDialog(new String[]{
             "\"That was a close call.\"",
             "\"Need to focus on health.\"",
@@ -683,15 +700,15 @@ public class Storyline3 extends Storyline {
         }));
         choiceTimer.setRepeats(false);
         choiceTimer.start();
-        // The rest of the sequence (Kai's actual thought + proceeding) is in handleDialogueChoice case 12
     }
 
     private void showStage13() { 
+        ui.setStageImage("/Resources/Images/Story3/semester_ends_end_chapter3.png"); // End of semester/chapter
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage13_chapter_end_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: The semester wears on, bringing new challenges and temptations.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\n[End of Chapter 3]", Color.DARK_GRAY));
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(5000, e -> {
-             // Proceed to Chapter 4
              showDialogue(14);
         });
         t2.setRepeats(false); t2.start();
@@ -700,6 +717,8 @@ public class Storyline3 extends Storyline {
     // --- CHAPTER 4 STAGE METHODS ---
 
     private void showStage14_Chapter4Intro() {
+        ui.setStageImage("/Resources/Images/Story3/jock_party_house_exterior.png"); // Party house
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage14_party_intro_bgm.wav", true); // Stage BGM
         ui.displayText("\n\n--- Chapter 4: Social Pressures (Days 31-45) ---", Color.MAGENTA.darker());
         Timer t0 = new Timer(1500, e -> ui.displayText("\n[Scene] Weekend party at popular student's house", Color.DARK_GRAY));
         t0.setRepeats(false); t0.start();
@@ -712,26 +731,29 @@ public class Storyline3 extends Storyline {
 
         Timer t3 = new Timer(10000, e -> {
             ui.showChoicesDialog(new String[]{
-                "Join them on the balcony.", // Choice 1
-                "Nah, I'll find another group."  // Choice 2
+                "Join them on the balcony.", 
+                "Nah, I'll find another group."  
             });
         });
         t3.setRepeats(false); t3.start();
     }
 
     private void showStage15_IsolationPath() {
+        ui.setStageImage("/Resources/Images/Story3/kai_alone_at_party.png"); // Kai feeling isolated
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage15_isolation_bgm.wav", true); // Stage BGM
         ui.displayText("\n" + playerName + ": \"Nah, I think I'll pass. Maybe later.\"", Color.BLACK);
         Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: Kai wanders through the party, feeling a bit out of place. The laughter from the balcony seems distant.", Color.GRAY));
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(5000, e -> ui.displayText("\n" + playerName + ": (Maybe I should've just gone... it's hard to connect when you're always on the outside.)", Color.GRAY.darker()));
         t2.setRepeats(false); t2.start();
-        Timer proceedTimer = new Timer(8000, e -> showDialogue(17)); // Proceed to Chapter 4 End
+        Timer proceedTimer = new Timer(8000, e -> showDialogue(17)); 
         proceedTimer.setRepeats(false);
         proceedTimer.start();
     }
 
     private void showStage16_PostBattleCutscene() {
-        // This stage is triggered after the "Social Smoking" boss encounter (expected loss)
+        ui.setStageImage("/Resources/Images/Story3/kai_overwhelmed_balcony_skill_gain.png"); // Kai after "unbeatable" battle
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage16_skill_gain_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: Overwhelmed, Kai stumbles back, the pressure immense.", Color.RED.darker());
         Timer t1 = new Timer(3000, e -> ui.displayText("\n" + playerName + "'s Inner Voice: \"I... I can't win this now. But I understand now. Each attempt, each failure... it teaches me something new.\"", Color.BLUE.darker()));
         t1.setRepeats(false); t1.start();
@@ -742,20 +764,27 @@ public class Storyline3 extends Storyline {
         });
         t2.setRepeats(false); t2.start();
 
-        Timer proceedTimer = new Timer(11000, e -> showDialogue(17)); // Proceed to Chapter 4 End
+        Timer proceedTimer = new Timer(11000, e -> showDialogue(17)); 
         proceedTimer.setRepeats(false);
         proceedTimer.start();
     }
 
     private void showStage17_Chapter4End() {
+        ui.setStageImage("/Resources/Images/Story3/party_ends_kai_reflects_end_chapter4.png"); // End of party, end of chapter
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage17_story_ending_bgm.wav", true); // Ending BGM
         ui.displayText("\nNarrator: The party fades into the night, leaving Kai with new experiences and a growing understanding of the challenges ahead.", Color.GRAY);
         Timer t1 = new Timer(4000, e -> ui.displayText("\n[End of Chapter 4]", Color.DARK_GRAY));
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(6000, e -> {
              ui.displayText("\nTo be continued...", Color.BLACK);
-             // Here you would typically end the game or proceed to a main menu/next storyline selection
+             ui.setStageImage(null); // Clear image or set a "To be continued" screen
+             // Music will be stopped by handleChoice case 17 when user selects an option
         });
         t2.setRepeats(false); t2.start();
+        // Note: The "Back to Main Menu" choices are handled in handleDialogueChoice case 17
+        // and will appear after "To be continued..."
+        // If you want an image during that choice, it should be set before the choice dialog appears.
+        // For now, the image is cleared with "To be continued..."
     }
 
 
@@ -764,8 +793,9 @@ public class Storyline3 extends Storyline {
         if (battleManager.isBattleActive()) {
             return new String[]{
                 "1. Resist (Attack)", 
-                "2. Use Item (Not Implemented)"};
+                "2. Use Item (Not Implemented)"}; // Consider if items can be used in battle
         }
+        // Return empty or specific choices if your GameUI needs them outside of showChoicesDialog calls
         return new String[0]; 
     }
 }

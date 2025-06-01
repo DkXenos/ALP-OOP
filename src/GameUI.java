@@ -1,13 +1,13 @@
 import java.awt.*;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.util.List; // For GameState.getInventoryForDisplay()
-import java.util.Map; // For iterating inventory in showInventory (alternative)
-import java.util.HashMap; // <-- Add this import
+import javax.swing.border.EmptyBorder; 
 
 public class GameUI extends JFrame {
     JTextArea textArea; 
-    private JButton inventoryBtn, saveBtn, loadBtn;
+    private JButton inventoryBtn, saveBtn, loadBtn, backToMenuBtn; // Added backToMenuBtn
     private Storyline currentStory;
     private GameState gameState;
     private Typewriter typewriter; 
@@ -28,9 +28,10 @@ public class GameUI extends JFrame {
     private JButton itemButtonBattle;
 
     private JPanel topImagePanel;
+    private Image currentStageImage; // To hold the image for topImagePanel
 
     public GameUI() {
-        setTitle("Text Adventure");
+        setTitle("Text Adventure"); // Assuming you want a title for GameUI
         setSize(800, 600); 
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,8 +40,21 @@ public class GameUI extends JFrame {
         JPanel mainFramePanel = new JPanel(new BorderLayout());
         setContentPane(mainFramePanel);
 
-        topImagePanel = new JPanel();
-        topImagePanel.setBackground(new Color(50, 50, 60)); 
+        // Modify topImagePanel initialization to enable custom painting
+        topImagePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (currentStageImage != null) {
+                    // Scale image to fill the panel
+                    g.drawImage(currentStageImage, 0, 0, getWidth(), getHeight(), this);
+                } else {
+                    // If no image, just use the background color set below
+                    // Or draw a placeholder string/shape if you prefer
+                }
+            }
+        };
+        topImagePanel.setBackground(new Color(50, 50, 60)); // Fallback background if no image
         topImagePanel.setPreferredSize(new Dimension(800, 300)); 
         mainFramePanel.add(topImagePanel, BorderLayout.CENTER);
 
@@ -117,28 +131,38 @@ public class GameUI extends JFrame {
         bottomSectionPanel.add(mainContentPanel, BorderLayout.CENTER);
         cardLayout.show(mainContentPanel, TEXT_AREA_CARD); 
 
-        JPanel bottomButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        JPanel bottomButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10)); // Adjusted gap
         bottomButtonPanel.setBorder(new EmptyBorder(5, 0, 10, 0)); 
         Font buttonFont = new Font("Arial", Font.BOLD, 14); 
         Dimension buttonSize = new Dimension(130, 35); 
 
         inventoryBtn = new JButton("Inventory");
         styleButton(inventoryBtn, buttonFont, buttonSize, new Color(70, 130, 180)); 
-        saveBtn = new JButton("Save Game");
         
+        saveBtn = new JButton("Save Game");
         styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); 
         saveBtn.addActionListener(e -> saveCurrentGame());
 
         loadBtn = new JButton("Load Game");
-        styleButton(loadBtn, buttonFont, buttonSize, new Color(60, 179, 113));
-        loadBtn.addActionListener(e -> loadGameFromSlot());
+        styleButton(loadBtn, buttonFont, buttonSize, new Color(255, 165, 0)); // Orange color for load
 
+        backToMenuBtn = new JButton("Back to Menu"); // Create the button
+        styleButton(backToMenuBtn, buttonFont, buttonSize, new Color(220, 50, 50)); // Reddish color for back to menu
+        backToMenuBtn.addActionListener(e -> {
+            AudioManager.getInstance().stopMusic(); // Stop current game music
+            this.dispose(); // Close the GameUI window
+            StartMenu startMenu = new StartMenu(); // Create a new StartMenu
+            startMenu.setVisible(true); // Show the StartMenu (it will play its own BGM)
+        });
+        
+        loadBtn.addActionListener(e -> loadGameFromSlot());
         inventoryBtn.addActionListener(e -> showInventory());
 
         bottomButtonPanel.add(inventoryBtn);
         bottomButtonPanel.add(saveBtn);
         bottomButtonPanel.add(loadBtn);
-        
+        bottomButtonPanel.add(backToMenuBtn); 
+                
         bottomSectionPanel.add(bottomButtonPanel, BorderLayout.SOUTH);
     }
 
@@ -146,15 +170,41 @@ public class GameUI extends JFrame {
         if (currentStory instanceof Storyline1) { 
             return ((Storyline1) currentStory).getBattleManager().isBattleActive();
         } else if (currentStory instanceof Storyline2) {
-            return ((Storyline2) currentStory).getBattleManager().isBattleActive();
+            // Assuming Storyline2 might have a BattleManager in the future or a similar check
+            // If Storyline2 definitely won't have battles, this can be simplified or removed.
+            BattleManager bm = ((Storyline2) currentStory).getBattleManager();
+            return bm != null && bm.isBattleActive();
         } else if (currentStory instanceof Storyline3) {
             return ((Storyline3) currentStory).getBattleManager().isBattleActive();
         }
         return false;
     }
 
+    // Method to set the image for the top panel
+    public void setStageImage(String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            this.currentStageImage = null;
+        } else {
+            try {
+                URL imgUrl = getClass().getResource(imagePath);
+                if (imgUrl != null) {
+                    this.currentStageImage = new ImageIcon(imgUrl).getImage();
+                } else {
+                    System.err.println("Image not found: " + imagePath);
+                    this.currentStageImage = null; // Clear if not found
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading image: " + imagePath);
+                e.printStackTrace();
+                this.currentStageImage = null;
+            }
+        }
+        topImagePanel.repaint(); // Trigger a repaint to show the new image (or lack thereof)
+    }
+    
     public void startGame(int storylineId) {
         this.gameState = new GameState();
+        setStageImage(null); // Clear any previous stage image
         switch (storylineId) {
             case 1 -> currentStory = new Storyline1(this, gameState);
             case 2 -> currentStory = new Storyline2(this, gameState);
@@ -368,6 +418,7 @@ public class GameUI extends JFrame {
             displayText("Failed to load save data.", Color.RED);
             return;
         }
+        setStageImage(null); // Clear any previous stage image
 
         this.gameState = new GameState(); 
         this.gameState.setAllStats(data.stats);
