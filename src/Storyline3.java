@@ -56,7 +56,29 @@ public class Storyline3 extends Storyline {
     }
     
     public void showDialoguePublic(int stage) {
-        this.showDialogue(stage);
+        // Always start the requested stage from the beginning
+        this.dialogueState = stage;
+        switch (stage) {
+            case 0 -> showStage0();
+            case 1 -> showStage1();
+            case 2 -> showStage2();
+            case 3 -> showStage3();
+            case 4 -> showStage4();
+            case 5 -> showStage5();
+            case 6 -> showStage6();
+            case 7 -> showStage7();
+            case 8 -> showStage8();
+            case 9 -> showStage9();
+            case 10 -> showStage10();
+            case 11 -> showStage11();
+            case 12 -> showStage12();
+            case 13 -> showStage13();
+            case 14 -> showStage14_Chapter4Intro();
+            case 15 -> showStage15_IsolationPath();
+            case 16 -> showStage16_PostBattleCutscene();
+            case 17 -> showStage17_Chapter4End();
+            default -> showStage0();
+        }
     }
 
     @Override
@@ -532,9 +554,9 @@ public class Storyline3 extends Storyline {
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(5000, e -> ui.displayText("\n" + playerName + ": \"Yeah, I think I could use some break.\"", Color.BLACK));
         t2.setRepeats(false); t2.start();
-        Timer t3 = new Timer(7500, e -> ui.displayText("\nTeammate #2: \"Yeah, here you go, the latest and most premium cigs you’ll ever see. IT costs a lot you know, you’ll have to try that out. I promise it’ll help.\"", Color.ORANGE.darker()));
+        Timer t3 = new Timer(7500, e -> ui.displayText("\nTeammate #2: \"Yeah, here you go, the latest and most premium cigs you'll ever see. It costs a lot you know, you’ll have to try that out. I promise it’ll help.\"", Color.ORANGE.darker()));
         t3.setRepeats(false); t3.start();
-        Timer t4 = new Timer(11000, e -> ui.displayText("\n" + playerName + ": (in his head) ”will it really?”", Color.GRAY));
+        Timer t4 = new Timer(11000, e -> ui.displayText("\n" + playerName + ": (in his head) \"will it really?\"", Color.GRAY));
         t4.setRepeats(false); t4.start();
 
         Timer choiceTimer = new Timer(13000, e -> {
@@ -570,7 +592,7 @@ public class Storyline3 extends Storyline {
         Timer t0 = new Timer(1500, e -> ui.displayText("\n[Scene] Weekend party at popular student's house", Color.DARK_GRAY));
         t0.setRepeats(false); t0.start();
 
-        Timer t1 = new Timer(3500, e -> ui.displayText("\nNarrator: “After the first months, one of the popular jocks invites most of the freshmen to a party in a rented house.”", Color.GRAY));
+        Timer t1 = new Timer(3500, e -> ui.displayText("\nNarrator: \"After the first months, one of the popular jocks invites most of the freshmen to a party in a rented house.\"", Color.GRAY));
         t1.setRepeats(false); t1.start();
 
         Timer t2 = new Timer(7000, e -> ui.displayText("\nParty Host (Jock): \"Yo, Kai! Everyone's heading to the balcony for vapes. Coming?\"", Color.ORANGE.darker()));

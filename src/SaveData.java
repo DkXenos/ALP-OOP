@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 public class SaveData implements Serializable {
-    private static final long serialVersionUID = 2L; // Increment version due to inventory change
+    private static final long serialVersionUID = 2L;
 
     // Storyline progress
     public int storylineId;
@@ -19,5 +19,9 @@ public class SaveData implements Serializable {
         this.stats = stats;
         this.flags = flags;
         this.inventoryQuantities = inventoryQuantities; // Updated
+    }
+    
+    public int getDialogueState() {
+        return dialogueState;
     }
 }

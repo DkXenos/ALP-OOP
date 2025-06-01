@@ -125,11 +125,28 @@ public class StartMenu extends JFrame{
 
         startButton.addActionListener(e -> startGame(null)); // Pass null for new game
         loadGameButton.addActionListener(e -> {
-            SaveData saveData = SaveManager.loadGame();
-            if (saveData != null) {
-                startGame(saveData); // Pass loaded data
-            } else {
-                JOptionPane.showMessageDialog(this, "No save file found or error loading.", "Load Game", JOptionPane.INFORMATION_MESSAGE);
+            String[] options = {
+                "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
+                "Slot 2 (" + SaveManager.getSlotStage(2) + ")",
+                "Slot 3 (" + SaveManager.getSlotStage(3) + ")"
+            };
+            String choice = (String) JOptionPane.showInputDialog(
+                this,
+                "Select a slot to load:",
+                "Load Game",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                options[0]
+            );
+            if (choice != null) {
+                int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3;
+                SaveData saveData = SaveManager.loadGame(slot);
+                if (saveData != null) {
+                    startGame(saveData);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No save file found or error loading.", "Load Game", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }

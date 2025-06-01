@@ -3,10 +3,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.util.List; // For GameState.getInventoryForDisplay()
 import java.util.Map; // For iterating inventory in showInventory (alternative)
+import java.util.HashMap; // <-- Add this import
 
 public class GameUI extends JFrame {
     JTextArea textArea; 
-    private JButton inventoryBtn, saveBtn;
+    private JButton inventoryBtn, saveBtn, loadBtn;
     private Storyline currentStory;
     private GameState gameState;
     private Typewriter typewriter; 
@@ -124,13 +125,19 @@ public class GameUI extends JFrame {
         inventoryBtn = new JButton("Inventory");
         styleButton(inventoryBtn, buttonFont, buttonSize, new Color(70, 130, 180)); 
         saveBtn = new JButton("Save Game");
+        
         styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); 
         saveBtn.addActionListener(e -> saveCurrentGame());
+
+        loadBtn = new JButton("Load Game");
+        styleButton(loadBtn, buttonFont, buttonSize, new Color(60, 179, 113));
+        loadBtn.addActionListener(e -> loadGameFromSlot());
 
         inventoryBtn.addActionListener(e -> showInventory());
 
         bottomButtonPanel.add(inventoryBtn);
         bottomButtonPanel.add(saveBtn);
+        bottomButtonPanel.add(loadBtn);
         
         bottomSectionPanel.add(bottomButtonPanel, BorderLayout.SOUTH);
     }
@@ -317,22 +324,43 @@ public class GameUI extends JFrame {
             displayText("\nCannot determine storyline type to save.", Color.RED);
             return;
         }
-        
-        if (currentDialogueState == -1 && storylineId != -1) { 
-             displayText("\nWarning: dialogueState is -1 for Storyline " + storylineId + ". Saving as 0.", Color.ORANGE);
-             currentDialogueState = 0; 
+
+        // Prompt user for slot selection (1-3)
+        String[] options = {
+            "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
+            "Slot 2 (" + SaveManager.getSlotStage(2) + ")",
+            "Slot 3 (" + SaveManager.getSlotStage(3) + ")"
+        };
+        String choice = (String) JOptionPane.showInputDialog(
+            this,
+            "Select a slot to save:",
+            "Save Game",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+        if (choice == null) {
+            displayText("\nSave cancelled.", Color.BLACK);
+            return;
         }
+        int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3;
 
         SaveData saveData = new SaveData(
             storylineId,
             currentDialogueState,
             gameState.getAllStats(),
             gameState.getAllFlags(),
-            gameState.getInventoryQuantities() // Get quantities for saving
+            new HashMap<>(gameState.getInventoryQuantities())
         );
 
-        SaveManager.saveGame(saveData);
-        displayText("\nGame Saved!", Color.BLACK);
+        try {
+            SaveManager.saveGame(saveData, slot);
+            displayText("\nGame Saved to slot " + slot + "!", Color.BLACK);
+        } catch (Exception ex) {
+            displayText("\nFailed to save game: " + ex.getMessage(), Color.RED);
+            ex.printStackTrace();
+        }
     }
 
     public void applySaveData(SaveData data) {
@@ -344,10 +372,8 @@ public class GameUI extends JFrame {
         this.gameState = new GameState(); 
         this.gameState.setAllStats(data.stats);
         this.gameState.setAllFlags(data.flags);
-        this.gameState.setInventoryQuantities(data.inventoryQuantities); // Set quantities, which also repopulates prototypes
+        this.gameState.setInventoryQuantities(data.inventoryQuantities);
 
-        boolean storyLoaded = false;
-        
         textArea.setText(""); 
         if (this.typewriter != null) {
             this.typewriter.stopAndClearQueue(); 
@@ -356,38 +382,25 @@ public class GameUI extends JFrame {
         switch (data.storylineId) {
             case 1:
                 currentStory = new Storyline1(this, gameState);
+                ((Storyline1) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline1) currentStory).showDialoguePublic(data.dialogueState);
                 break;
             case 2:
                 currentStory = new Storyline2(this, gameState);
+                ((Storyline2) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline2) currentStory).showDialoguePublic(data.dialogueState);
                 break;
             case 3:
                 currentStory = new Storyline3(this, gameState);
+                ((Storyline3) currentStory).setDialogueState(data.dialogueState);
+                ((Storyline3) currentStory).showDialoguePublic(data.dialogueState);
                 break;
             default:
                 displayText("Error: Invalid storyline ID in save data: " + data.storylineId, Color.RED);
                 return;
         }
-        
-        if (currentStory != null) { 
-            if (currentStory instanceof Storyline1) {
-                ((Storyline1) currentStory).setDialogueState(data.dialogueState);
-                ((Storyline1) currentStory).showDialoguePublic(data.dialogueState);
-            } else if (currentStory instanceof Storyline2) {
-                ((Storyline2) currentStory).setDialogueState(data.dialogueState);
-                ((Storyline2) currentStory).showDialoguePublic(data.dialogueState);
-            } else if (currentStory instanceof Storyline3) {
-                ((Storyline3) currentStory).setDialogueState(data.dialogueState);
-                ((Storyline3) currentStory).showDialoguePublic(data.dialogueState);
-            }
-            storyLoaded = true;
-        } else {
-            displayText("Failed to instantiate storyline for ID: " + data.storylineId, Color.RED);
-            return;
-        }
-            
-        if(storyLoaded) {
-            displayText("\nGame Loaded!", Color.BLACK);
-        }
+
+        displayText("\nGame Loaded!", Color.BLACK);
     }
     private void styleButton(JButton button, Font font, Dimension size, Color bgColor) {
         button.setFont(font);
@@ -417,5 +430,41 @@ public class GameUI extends JFrame {
                 }
             }
         });
+    }
+
+    private int promptForSaveSlot(String action) {
+        String input = JOptionPane.showInputDialog(this, "Enter save slot (1-3) to " + action + ":");
+        try {
+            int slot = Integer.parseInt(input);
+            if (slot >= 1 && slot <= 3) return slot;
+        } catch (Exception ignored) {}
+        JOptionPane.showMessageDialog(this, "Invalid slot. Please enter 1, 2, or 3.");
+        return -1;
+    }
+
+    private void loadGameFromSlot() {
+        String[] options = {
+            "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
+            "Slot 2 (" + SaveManager.getSlotStage(2) + ")",
+            "Slot 3 (" + SaveManager.getSlotStage(3) + ")"
+        };
+        String choice = (String) JOptionPane.showInputDialog(
+            this,
+            "Select a slot to load:",
+            "Load Game",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+        if (choice != null) {
+            int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3;
+            SaveData data = SaveManager.loadGame(slot);
+            if (data != null) {
+                applySaveData(data);
+            } else {
+                displayText("\nNo save found in slot " + slot + ".", Color.RED);
+            }
+        }
     }
 }

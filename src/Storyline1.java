@@ -32,8 +32,28 @@ public class Storyline1 extends Storyline {
         this.dialogueState = dialogueState;
     }
     
-    public void showDialoguePublic(int stage) {
-        this.showDialogue(stage);
+    public void showDialoguePublic(int state) {
+        // Instead of always starting from the beginning, use a switch or if-else to jump to the correct state
+        switch(state) {
+            case 0:
+                showStage0();
+                break;
+            case 1:
+                showStage1();
+                break;
+            case 2:
+                showStage2();
+                break;
+            case 3:
+                showStage3(); 
+                break;
+            case 4:
+                showStage4();
+                break;
+            default:
+                // fallback or error
+                break;
+        }
     }
 
     private void showDialogue(int stage) {
