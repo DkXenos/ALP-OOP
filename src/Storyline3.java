@@ -235,6 +235,8 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(smallTalkText, Color.BLACK);
+                Timer proceedTimerStage5 = new Timer(3000, e -> showDialogue(6));
+                proceedTimerStage5.setRepeats(false);
                 proceedTimerStage5.start();
                 break;
             case 6: // Late Night Study Session - Vape offer
