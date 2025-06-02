@@ -18,6 +18,7 @@ public class BattleManager {
     }
 
     public BattleManager(GameUI ui, GameState gameState) {
+        
         this.ui = ui;
         this.gameState = gameState;
     }
