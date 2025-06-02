@@ -1,5 +1,6 @@
 import java.io.*;
 import java.sql.*;
+import java.util.HashMap;
 
 public class SaveManager {
 
@@ -28,6 +29,8 @@ public class SaveManager {
             pstmt.setInt(1, slot);
             pstmt.setBytes(2, serialize(data));
             pstmt.executeUpdate();
+            // Save inventory to inventory table
+            InventoryDBManager.saveInventory(slot, data.inventoryQuantities);
             System.out.println("Game saved to slot " + slot);
         } catch (Exception e) {
             System.err.println("Failed to save game: " + e.getMessage());
@@ -40,19 +43,22 @@ public class SaveManager {
     public static SaveData loadGame(int slot) {
         createTableIfNotExists();
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(
-                 "SELECT data FROM saves WHERE slot = ?"
-             )) {
-            pstmt.setInt(1, slot);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                byte[] saveBytes = rs.getBytes("data");
-                return (SaveData) deserialize(saveBytes);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load game: " + e.getMessage());
+         PreparedStatement pstmt = conn.prepareStatement(
+             "SELECT data FROM saves WHERE slot = ?"
+         )) {
+        pstmt.setInt(1, slot);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            byte[] saveBytes = rs.getBytes("data");
+            SaveData data = (SaveData) deserialize(saveBytes);
+            // Load inventory from inventory table
+            data.inventoryQuantities = new HashMap<>(InventoryDBManager.loadInventory(slot));
+            return data;
         }
-        return null;
+    } catch (Exception e) {
+        System.err.println("Failed to load game: " + e.getMessage());
+    }
+    return null;
     }
 
     // Creates the saves table if it doesn't exist.   
@@ -113,4 +119,4 @@ public class SaveManager {
 // serialization itu untuk ngubah object saveData ke kaya format yg bisa disimpen, makanya diubah ke byte
 // soale sqlite cuma bisa store basic type kaya int, string, blob, ga bisa store object
 // kalo serialization itu berarti ngubah object ke byte array, spy bisa di store di databse typenya BLOB binary large object
-// jadi habis load data,  derizalize itungubah byte back to java object, biar isa dipake di code 
+// jadi habis load data,  derizalize itungubah byte back to java object, biar isa dipake di code

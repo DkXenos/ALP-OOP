@@ -186,7 +186,7 @@ public class StartMenu extends JFrame{
         if (saveDataToLoad != null) {
             gameUI.applySaveData(saveDataToLoad);
         } else {
-            gameUI.startGame(2); 
+            gameUI.startGame(3); 
         }
         gameUI.setVisible(true);
         this.dispose();
