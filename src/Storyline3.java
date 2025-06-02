@@ -1,9 +1,6 @@
 import java.awt.Color;
 import java.util.Map;
-import javax.swing.Timer; // Required for Map.of
-// Make sure AudioManager is imported if it's in a different package,
-// or accessible if in the same package. Assuming it's accessible.
-// import AudioManager; // If needed
+import javax.swing.Timer;
 
 public class Storyline3 extends Storyline {
     private int dialogueState = 0;
@@ -360,37 +357,33 @@ public class Storyline3 extends Storyline {
 
     // --- Battle Methods ---
     private void startChapter1Battle() {
-        ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle_bg.png"); // Battle background
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true); // Battle BGM
+        ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle_bg.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true);
         
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
-            battleManager.startBattle("Temptation: Cigarette", 10, 5, battleResult -> {
-                // BGM will be changed by the next showDialogue stage
+            Enemy enemy = new CigaretteEnemy("Temptation: Cigarette", 10, 5); // Create enemy
+            battleManager.startBattle(enemy, battleResult -> { // Pass enemy object
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png"); // Victory image
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png");
                     ui.displayText("\nNarrator: \"You feel a strange sense of accomplishment having resisted.\"", Color.GRAY);
                     Timer r1 = new Timer(2500, res -> ui.displayText("\nNarrator: \"Something tells you this won't be the last time you're tested.\"", Color.GRAY));
-                    r1.setRepeats(false);
-                    r1.start();
+                    r1.setRepeats(false); r1.start();
                     state.adjustStat(GameState.PLAYER_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_ATTACK, 1);
                     state.adjustStat(STAT_PLAYER_DEFENSE, 1);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker()));
-                    r2.setRepeats(false);
-                    r2.start();
+                    r2.setRepeats(false); r2.start();
                     Timer proceed = new Timer(7500, res -> showDialogue(3));
-                    proceed.setRepeats(false);
-                    proceed.start();
-                } else { // LOSS - Player succumbs
-                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_cigarette.png"); // Defeat image
+                    proceed.setRepeats(false); proceed.start();
+                } else { 
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_cigarette.png");
                     ui.displayText("\nNarrator: \"The smoke fills your lungs. It burns slightly, but there's also a strange buzz...\"", Color.GRAY);
                     CIGARETTE_ITEM.applyEffect(state, ui, playerName); 
                     Timer proceed = new Timer(6000, res -> showDialogue(3));
-                    proceed.setRepeats(false);
-                    proceed.start();
+                    proceed.setRepeats(false); proceed.start();
                 }
             });
         });
@@ -399,14 +392,14 @@ public class Storyline3 extends Storyline {
     }
     
     private void startChapter2Battle() { 
-        ui.setStageImage("/Resources/Images/Story3/vape_temptation_battle_bg.png"); // Battle background
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation2_bgm.wav", true); // Battle BGM
+        ui.setStageImage("/Resources/Images/Story3/vape_temptation_battle_bg.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation2_bgm.wav", true);
         ui.displayText("\nNarrator: The sleek vape pen gleams. Another test of will.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
-            battleManager.startBattle("Temptation: Vape", 15, 4, battleResult -> {
-                // BGM will be changed by the next showDialogue stage
+            Enemy enemy = new VapeEnemy("Temptation: Vape", 15, 4); // Create enemy
+            battleManager.startBattle(enemy, battleResult -> { // Pass enemy object
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    ui.setStageImage("/Resources/Images/Story3/kai_resists_vape.png"); // Victory image
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_vape.png");
                     state.adjustStat(GameState.PLAYER_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_ATTACK, 1);
@@ -416,17 +409,15 @@ public class Storyline3 extends Storyline {
                     Timer t1 = new Timer(2500, res -> ui.displayText("\n" + playerName + ": \"I think I'll just grab some coffee instead. Need to keep my head clear.\"", Color.BLACK));
                     t1.setRepeats(false); t1.start();
                     Timer proceed = new Timer(5000, res -> showDialogue(7)); 
-                    proceed.setRepeats(false);
-                    proceed.start();
-                } else { // LOSS
-                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_vape.png"); // Defeat image
+                    proceed.setRepeats(false); proceed.start();
+                } else { 
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_vape.png");
                     ui.displayText("\nStudy Partner: \"See? Feels better, right? You can borrow it anytime.\"", Color.CYAN.darker());
                     VAPE_PEN_ITEM.applyEffect(state, ui, playerName);
                     Timer t2 = new Timer(3000, res -> ui.displayText("\nNarrator: “Later, Kai struggles to fall asleep...\"", Color.GRAY)); 
                     t2.setRepeats(false); t2.start();
                     Timer proceed = new Timer(6000, res -> showDialogue(7)); 
-                    proceed.setRepeats(false);
-                    proceed.start();
+                    proceed.setRepeats(false); proceed.start();
                 }
             });
         });
@@ -435,14 +426,14 @@ public class Storyline3 extends Storyline {
     }
 
     private void startChapter3Battle() { 
-        ui.setStageImage("/Resources/Images/Story3/premium_cig_battle_bg.png"); // Battle background
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation3_bgm.wav", true); // Battle BGM
+        ui.setStageImage("/Resources/Images/Story3/premium_cig_battle_bg.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation3_bgm.wav", true);
         ui.displayText("\nNarrator: This cigarette feels different, heavier. A true test of resolve.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
-            battleManager.startBattle("Temptation: Premium Cigarette", 25, 8, battleResult -> {
-                // BGM will be changed by the next showDialogue stage
+            Enemy enemy = new CigaretteEnemy("Temptation: Premium Cigarette", 25, 8); 
+            battleManager.startBattle(enemy, battleResult -> { 
                 if (battleResult == BattleManager.BattleResult.WIN) {
-                    ui.setStageImage("/Resources/Images/Story3/kai_resists_premium_cig.png"); // Victory image
+                    ui.setStageImage("/Resources/Images/Story3/kai_resists_premium_cig.png");
                     ui.displayText("\nCoach: \"Good endurance out there. You've got potential, next round, you’ll play.\"", Color.MAGENTA.darker());
                     state.adjustStat(GameState.PLAYER_HEALTH, 2);
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 2);
@@ -451,8 +442,8 @@ public class Storyline3 extends Storyline {
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     Timer r1 = new Timer(3000, res -> ui.displayText("\nSystem Status: \"Level Up! Health +2, Max Health +2, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker()));
                     r1.setRepeats(false); r1.start();
-                } else { // Defeat image and apply item effect
-                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_premium_cig.png"); // Defeat image
+                } else { 
+                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_premium_cig.png");
                     ui.displayText("\nNarrator: \"During the game, you notice your lungs burning... Your performance suffers.\"", Color.GRAY);
                     PREMIUM_CIGARETTE_ITEM.applyEffect(state, ui, playerName);
                     if(state.getStat(GameState.PLAYER_HEALTH) > state.getStat(GameState.PLAYER_MAX_HEALTH)) {
@@ -460,8 +451,7 @@ public class Storyline3 extends Storyline {
                     }
                 }
                 Timer proceed = new Timer(6000, res -> showDialogue(12)); 
-                proceed.setRepeats(false);
-                proceed.start();
+                proceed.setRepeats(false); proceed.start();
             });
         });
         startBattleActual.setRepeats(false);
@@ -470,19 +460,15 @@ public class Storyline3 extends Storyline {
 
     // --- CHAPTER 4 BATTLE ---
     private void startChapter4Battle() {
-        ui.setStageImage("/Resources/Images/Story3/balcony_vape_battle_bg.png"); // Battle background
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_boss_social_bgm.wav", true); // Boss Battle BGM
+        ui.setStageImage("/Resources/Images/Story3/balcony_vape_battle_bg.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_boss_social_bgm.wav", true);
         ui.displayText("\nNarrator: Kai heads to the balcony, a cloud of sweet-smelling vapor hangs in the air.", Color.GRAY);
         Timer preBattleTimer = new Timer(2500, e -> {
             ui.displayText("\nSocial Smoking Boss: \"EVERYONE DOES IT! ONE WON'T HURT! DON'T BE ANTISOCIAL!\"", Color.RED.darker());
             Timer startBattleActual = new Timer(3000, e2 -> {
-                battleManager.startBattle("Social Smoking (Vape Form)", 999, 25, battleResult -> {
-                    // Regardless of actual win/loss, the story dictates a "near defeat" scenario
-                    // For simplicity, we'll use the LOSS path to trigger the cutscene.
-                    // If you want a true "near defeat" trigger, BattleManager would need modification.
-                    
-                    // Cutscene and Skill Acquisition
-                    showDialogue(16); // -> showStage16_PostBattleCutscene
+                Enemy enemy = new CigaretteEnemy("Social Smoking (Vape Form)", 999, 25); 
+                battleManager.startBattle(enemy, battleResult -> { 
+                    showDialogue(16); 
                 });
             });
             startBattleActual.setRepeats(false);

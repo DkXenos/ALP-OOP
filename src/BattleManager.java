@@ -5,9 +5,10 @@ import javax.swing.Timer;
 public class BattleManager {
     private GameUI ui;
     private GameState gameState;
-    private String opponentName;
-    private int opponentHealth;
-    private int opponentAttack;
+    // private String opponentName; // Will be replaced by currentEnemy.getName()
+    // private int opponentHealth; // Will be replaced by currentEnemy.getCurrentHealth()
+    // private int opponentAttack; // Will be replaced by currentEnemy.getAttack()
+    private Enemy currentEnemy; // Stores the current enemy object
     private Consumer<BattleResult> onBattleEndCallback;
     private boolean isBattleActive = false;
 
@@ -21,20 +22,20 @@ public class BattleManager {
         this.gameState = gameState;
     }
 
-    public void startBattle(String name, int health, int attack, Consumer<BattleResult> callback) {
-        this.opponentName = name;
-        this.opponentHealth = health;
-        this.opponentAttack = attack;
+    // Modified startBattle method
+    public void startBattle(Enemy enemy, Consumer<BattleResult> callback) {
+        this.currentEnemy = enemy;
+        // this.opponentName = enemy.getName(); // No longer needed as separate field
+        // this.opponentHealth = enemy.getCurrentHealth(); // No longer needed as separate field
+        // this.opponentAttack = enemy.getAttack(); // No longer needed as separate field
         this.onBattleEndCallback = callback;
         this.isBattleActive = true;
 
-        // These messages will appear in the main text area before the UI switches
-        ui.displayText("\n--- BATTLE START ---", Color.BLACK); // Changed to BLACK
-        ui.displayText("\n" + opponentName + " appears!", Color.BLACK); // Changed to BLACK
+        ui.displayText("\n--- BATTLE START ---", Color.BLACK);
+        ui.displayText("\n" + currentEnemy.getName() + " appears!", Color.BLACK);
 
-        // Switch to battle UI and show initial stats
-        ui.showBattleInterface(this.opponentName, gameState.getStat(GameState.PLAYER_HEALTH), this.opponentHealth);
-        ui.appendBattleLog("--- Your Turn ---", Color.BLACK); // Changed to BLACK
+        ui.showBattleInterface(currentEnemy.getName(), gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
+        ui.appendBattleLog("--- Your Turn ---", Color.BLACK);
     }
 
     public boolean isBattleActive() {
@@ -42,7 +43,7 @@ public class BattleManager {
     }
 
     public void processPlayerTurn(int choice) {
-        if (!isBattleActive) {
+        if (!isBattleActive || currentEnemy == null) {
             return;
         }
 
@@ -50,34 +51,33 @@ public class BattleManager {
 
         switch (choice) {
             case 1: // Attack
-                opponentHealth -= playerAttackValue;
-                opponentHealth = Math.max(0, opponentHealth);
-                ui.appendBattleLog("You attack " + opponentName + " for " + playerAttackValue + " damage!", Color.BLACK); // Changed to BLACK
-                ui.appendBattleLog(opponentName + " health: " + opponentHealth, Color.BLACK); // Changed to BLACK
-                ui.updateBattleInterfaceHealth(gameState.getStat(GameState.PLAYER_HEALTH), opponentHealth);
+                currentEnemy.takeDamage(playerAttackValue);
+                ui.appendBattleLog("You attack " + currentEnemy.getName() + " for " + playerAttackValue + " damage!", Color.BLACK);
+                ui.appendBattleLog(currentEnemy.getName() + " health: " + currentEnemy.getCurrentHealth(), Color.BLACK);
+                ui.updateBattleInterfaceHealth(gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
 
-                if (opponentHealth <= 0) {
+                if (currentEnemy.isDefeated()) {
                     endBattle(BattleResult.WIN);
                     return;
                 }
                 break;
             case 2: // Use Item (Placeholder)
-                ui.appendBattleLog("Item functionality not yet implemented.", Color.BLACK); // Changed to BLACK
+                ui.appendBattleLog("Item functionality not yet implemented.", Color.BLACK);
                 // Item use might take a turn or not, adjust opponent's turn accordingly
                 break;
             default:
-                ui.appendBattleLog("Invalid battle action. Try again.", Color.BLACK); // Changed to BLACK
-                // Don't proceed to opponent's turn if action was invalid
+                ui.appendBattleLog("Invalid battle action. Try again.", Color.BLACK);
                 return; 
         }
 
         // Opponent's turn (if opponent is still alive and player didn't win)
-        if (opponentHealth > 0) {
-            gameState.adjustStat(GameState.PLAYER_HEALTH, -opponentAttack);
+        if (!currentEnemy.isDefeated()) {
+            int enemyAttackValue = currentEnemy.getAttack();
+            gameState.adjustStat(GameState.PLAYER_HEALTH, -enemyAttackValue);
             int playerCurrentHealth = gameState.getStat(GameState.PLAYER_HEALTH);
-            ui.appendBattleLog(opponentName + " attacks you for " + opponentAttack + " damage!", Color.BLACK); // Changed to BLACK
-            ui.appendBattleLog("Your health: " + playerCurrentHealth, Color.BLACK); // Changed to BLACK
-            ui.updateBattleInterfaceHealth(playerCurrentHealth, opponentHealth);
+            ui.appendBattleLog(currentEnemy.getName() + " attacks you for " + enemyAttackValue + " damage!", Color.BLACK);
+            ui.appendBattleLog("Your health: " + playerCurrentHealth, Color.BLACK);
+            ui.updateBattleInterfaceHealth(playerCurrentHealth, currentEnemy.getCurrentHealth());
 
             if (playerCurrentHealth <= 0) {
                 endBattle(BattleResult.LOSS);
@@ -85,28 +85,25 @@ public class BattleManager {
             }
         }
         
-        // If battle is still ongoing, prompt for next player turn
         if (isBattleActive) {
-            ui.appendBattleLog("\n--- Your Turn ---", Color.BLACK); // Changed to BLACK
+            ui.appendBattleLog("\n--- Your Turn ---", Color.BLACK);
         }
     }
 
-    // updateBattleUI() is no longer needed as UI updates are pushed directly
-
     private void endBattle(BattleResult result) {
         isBattleActive = false;
+        String enemyNameForMessage = (currentEnemy != null) ? currentEnemy.getName() : "The opponent";
+
         if (result == BattleResult.WIN) {
-            ui.appendBattleLog("\n--- VICTORY! ---", Color.BLACK); // Changed to BLACK
-            ui.appendBattleLog("You defeated " + opponentName + "!", Color.BLACK); // Changed to BLACK
+            ui.appendBattleLog("\n--- VICTORY! ---", Color.BLACK);
+            ui.appendBattleLog("You defeated " + enemyNameForMessage + "!", Color.BLACK);
         } else {
-            ui.appendBattleLog("\n--- DEFEAT ---", Color.BLACK); // Changed to BLACK
-            ui.appendBattleLog("You were defeated by " + opponentName + ".", Color.BLACK); // Changed to BLACK
+            ui.appendBattleLog("\n--- DEFEAT ---", Color.BLACK);
+            ui.appendBattleLog("You were defeated by " + enemyNameForMessage + ".", Color.BLACK);
         }
         
-        // Short delay before hiding battle UI to let player read final message
         Timer endBattleTimer = new Timer(2000, e -> {
             ui.hideBattleInterface();
-            // Optionally, display a summary in the main text area after hiding battle UI
             if (result == BattleResult.WIN) {
                 ui.displayText("\nYou reflect on your victory...", Color.BLACK);
             } else {
@@ -116,7 +113,9 @@ public class BattleManager {
             if (onBattleEndCallback != null) {
                 onBattleEndCallback.accept(result);
             }
+            this.currentEnemy = null; // Clear the enemy reference
         });
+        // registerTimer(endBattleTimer); // This timer is internal to BattleManager, not Storyline
         endBattleTimer.setRepeats(false);
         endBattleTimer.start();
     }

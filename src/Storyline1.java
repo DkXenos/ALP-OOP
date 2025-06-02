@@ -96,7 +96,8 @@ public class Storyline1 extends Storyline {
                 if (choice == 1) { 
                     ui.displayText("\nYour choice leads to a confrontation!", Color.BLACK);
                     Timer battleStartTimer = new Timer(1500, e -> {
-                        battleManager.startBattle("Mysterious Assailant", 50, 8, battleResult -> {
+                        Enemy enemy = new Enemy("Temptation: Cigarette", 10, 5); // Create enemy
+                        battleManager.startBattle(enemy, battleResult -> { //ini maish ada eror, ini kek teko for now gituan
                             if (battleResult == BattleManager.BattleResult.WIN) {
                                 showDialogue(3); 
                             } else {
