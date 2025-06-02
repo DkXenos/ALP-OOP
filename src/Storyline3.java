@@ -43,7 +43,7 @@ public class Storyline3 extends Storyline {
     public Storyline3(GameUI ui, GameState state) {
         super(ui, state);
         this.battleManager = new BattleManager(ui, state);
-        ui.setTitle("Storyline 3"); //ini buat ngganti title e yang diatas itu
+        ui.setTitle("A Burning Melody"); //ini buat ngganti title e yang diatas itu
     }
 
     // ... getBattleManager, getDialogueState, setDialogueState, showDialoguePublic ...
@@ -362,6 +362,7 @@ public class Storyline3 extends Storyline {
     private void startChapter1Battle() {
         ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle_bg.png"); // Battle background
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true); // Battle BGM
+        
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             battleManager.startBattle("Temptation: Cigarette", 10, 5, battleResult -> {

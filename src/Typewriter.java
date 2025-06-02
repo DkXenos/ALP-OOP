@@ -35,7 +35,7 @@ public class Typewriter {
             timer = new Timer(this.currentDelayMs, e -> processQueue());
             timer.setInitialDelay(0); // Process first character immediately
         } else {
-            timer.setDelay(this.currentDelayMs); // Ensure timer has the latest delay
+            timer.setDelay(30); // Ensure timer has the latest delay
         }
         
         if (!timer.isRunning() && !messageQueue.isEmpty()) {
