@@ -39,7 +39,6 @@ public class SaveManager {
 
     
     //  Loads  data from  specified slot.
-   
     public static SaveData loadGame(int slot) {
         createTableIfNotExists();
         try (Connection conn = getConnection();

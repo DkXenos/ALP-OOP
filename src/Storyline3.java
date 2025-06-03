@@ -362,7 +362,7 @@ public class Storyline3 extends Storyline {
         
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
-            Enemy enemy = new CigaretteEnemy("Temptation: Cigarette", 10, 5); // Create enemy
+            Enemy enemy = new CigaretteEnemy("Basic Cigarette", 10, 5); // Create enemy
             battleManager.startBattle(enemy, battleResult -> { // Pass enemy object
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png");

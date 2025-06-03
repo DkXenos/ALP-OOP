@@ -1,6 +1,8 @@
 import java.awt.Color;
+import java.util.Random;
 import java.util.function.Consumer;
 import javax.swing.Timer;
+import java.util.Random;
 
 public class BattleManager {
     private GameUI ui;
@@ -43,25 +45,31 @@ public class BattleManager {
         return isBattleActive;
     }
 
+
+    public int calculatePlayerDamage() {
+    int baseAttack = gameState.getStat(GameState.PLAYER_ATTACK);
+    // Returns random value between baseAttack-1 and baseAttack+2
+    return baseAttack - 1 + new Random().nextInt(4);
+}
+
     public void processPlayerTurn(int choice) {
         if (!isBattleActive || currentEnemy == null) {
             return;
         }
 
-        int playerAttackValue = gameState.getStat(GameState.PLAYER_ATTACK);
+         switch (choice) {
+        case 1: // Attack
+            int damageDealt = calculatePlayerDamage(); // Use random damage
+            currentEnemy.takeDamage(damageDealt);
+            ui.appendBattleLog("You attack " + currentEnemy.getName() + " for " + damageDealt + " damage!", Color.BLACK);
+            ui.appendBattleLog(currentEnemy.getName() + " health: " + currentEnemy.getCurrentHealth(), Color.BLACK);
+            ui.updateBattleInterfaceHealth(gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
 
-        switch (choice) {
-            case 1: // Attack
-                currentEnemy.takeDamage(playerAttackValue);
-                ui.appendBattleLog("You attack " + currentEnemy.getName() + " for " + playerAttackValue + " damage!", Color.BLACK);
-                ui.appendBattleLog(currentEnemy.getName() + " health: " + currentEnemy.getCurrentHealth(), Color.BLACK);
-                ui.updateBattleInterfaceHealth(gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
-
-                if (currentEnemy.isDefeated()) {
-                    endBattle(BattleResult.WIN);
-                    return;
-                }
-                break;
+            if (currentEnemy.isDefeated()) {
+                endBattle(BattleResult.WIN);
+                return;
+            }
+            break;
             case 2: // Use Item (Placeholder)
                 ui.appendBattleLog("Item functionality not yet implemented.", Color.BLACK);
                 // Item use might take a turn or not, adjust opponent's turn accordingly
@@ -106,9 +114,9 @@ public class BattleManager {
         Timer endBattleTimer = new Timer(2000, e -> {
             ui.hideBattleInterface();
             if (result == BattleResult.WIN) {
-                ui.displayText("\nYou reflect on your victory...", Color.BLACK);
+                ui.displayText("\n\nYou reflect on your victory...\n", Color.BLACK);
             } else {
-                ui.displayText("\nThe sting of defeat lingers...", Color.BLACK);
+                ui.displayText("\n\nThe sting of defeat lingers...\n", Color.BLACK);
             }
 
             if (onBattleEndCallback != null) {
