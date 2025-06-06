@@ -397,36 +397,35 @@ private static final Item XANAX_ITEM = new SmokingItem(
         ui.setStageImage("/Resources/Images/Story2/.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
  
-        Timer startBattleActual = new Timer(1000, e2 -> {
-            Enemy enemy = new DrugEnemy("Aderall", 15, 3); 
+        ui.displayText("\nNarrator: \"This is your first encounter with real prescription drugs. Your hands shake as you hold the bottle.\"", Color.GRAY);
+        Timer fearMessage = new Timer(2000, e -> ui.displayText("\n" + playerName + " (trembling): \"This... this is different from caffeine pills. This is actual medication. What am I doing?\"", Color.BLACK));
+        fearMessage.setRepeats(false); fearMessage.start();
+        
+        Timer startBattleActual = new Timer(4000, e2 -> {
+            Enemy enemy = new DrugEnemy("Adderall", 15, 3); 
             battleManager.startBattle(enemy, battleResult -> { 
-                if (battleResult == BattleManager.BattleResult.WIN) {
-                    ui.setStageImage("/Resources/Images/Story3/aderall.png");
-                    ui.displayText("\nNarrator: \"You feel a strange sense of accomplishment having resisted.\"", Color.GRAY);
-                    Timer r1 = new Timer(2500, res -> ui.displayText("\nNarrator: \"Something tells you this won't be the last time you're tested.\"", Color.GRAY));
-                    r1.setRepeats(false); r1.start();
-                    Timer r2 = new Timer(5000, e -> ui.displayText("\n" + playerName + " (closing laptop): \"No. I just need better time management. I can handle this.\"", Color.BLACK));
-                    r2.setRepeats(false); r2.start();
-
-                    state.adjustStat(GameState.PLAYER_HEALTH, 1);
-                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
-                    state.adjustStat(GameState.PLAYER_ATTACK, 1);
-                    state.adjustStat(STAT_PLAYER_DEFENSE, 1);
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
-                    Timer r3 = new Timer(7500, res -> ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker()));
-                    r3.setRepeats(false); r3.start();
-                    Timer proceed = new Timer(10000, res -> showDialogue(7));
-                    proceed.setRepeats(false); proceed.start();
-                } else { 
-                    ui.setStageImage("/Resources/Images/Story2/.png");
-                    ui.displayText("\nNarrator: \"You were too afraid to fight back effectively. Addiction Level +2\"", Color.GRAY);
-                     Timer r1 = new Timer(2500, res -> ui.displayText("\nNew Skill Unlocked: OVERCOME - You've learned from this failure and won't be paralyzed by fear again.\"", Color.GREEN.darker()));
-                    r1.setRepeats(false); r1.start();
-                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Defense +1, Willpower +2\"", Color.GREEN.darker()));
-                    r2.setRepeats(false); r2.start();
-                    Timer proceed = new Timer(7500, res -> showDialogue(7));
-                    proceed.setRepeats(false); proceed.start();
-                }
+                // This battle is designed to be lost due to fear
+                ui.setStageImage("/Resources/Images/Story2/.png");
+                ui.displayText("\nNarrator: \"You were too afraid to fight back effectively. The fear of using real drugs paralyzed you.\"", Color.GRAY);
+                Timer r1 = new Timer(2500, res -> ui.displayText("\n" + playerName + " (defeated): \"I... I couldn't resist. The pressure was too much. I took it.\"", Color.BLACK));
+                r1.setRepeats(false); r1.start();
+                Timer r2 = new Timer(5000, res -> ui.displayText("\nNarrator: \"The Adderall takes effect quickly. Laser focus floods your mind, but something feels fundamentally wrong.\"", Color.GRAY));
+                r2.setRepeats(false); r2.start();
+                Timer r3 = new Timer(7500, res -> ui.displayText("\nNew Skill Unlocked: OVERCOME - You've learned from this failure and won't be paralyzed by fear again.\"", Color.GREEN.darker()));
+                r3.setRepeats(false); r3.start();
+                Timer r4 = new Timer(10000, res -> ui.displayText("\nSystem Status: \"Defeat! Addiction Level +2, but you've gained experience. Health +1, Max Health +1, Attack +1, Defense +1, Willpower +1\"", Color.ORANGE.darker()));
+                r4.setRepeats(false); r4.start();
+                
+                // Apply the consequences of losing
+                state.adjustStat(UNIQUE_STAT_KEY_S2, 2); // Addiction increases
+                state.adjustStat(GameState.PLAYER_HEALTH, 1);
+                state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
+                state.adjustStat(GameState.PLAYER_ATTACK, 1);
+                state.adjustStat(STAT_PLAYER_DEFENSE, 1);
+                state.adjustStat(STAT_PLAYER_WILLPOWER, 1); // Less willpower gain due to failure
+                
+                Timer proceed = new Timer(12500, res -> showDialogue(7));
+                proceed.setRepeats(false); proceed.start();
             });
         });
         startBattleActual.setRepeats(false);
@@ -537,7 +536,7 @@ private void startFinalBossBattle() {
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage1_night_bgm.wav", true); 
         
         ui.displayText("\n\n[Milo's Bedroom - Later that Night, 7:00 PM]", Color.DARK_GRAY);
-        Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (looking at a color-coded study schedule): \"AP Physics, AP Calculus, AP Literature, Mandarin, Robotics Club, Debate Team... I can do this. I have to do this.\"", Color.BLACK));
+        Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (looking at a color-coded study schedule): \"OOP, WebProg, Database, Calculus, UKM, SU... I can do this. I have to do this.\"", Color.BLACK));
         t1.setRepeats(false); t1.start();
         
         Timer t2 = new Timer(5000, e -> ui.displayText("\n" + playerName + ": \"This is nothing compared to my previous school.\"", Color.BLACK));
@@ -554,7 +553,7 @@ private void startFinalBossBattle() {
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + " (rubbing bloodshot eyes, surrounded by energy drink cans): \"Third test this week. Can't focus anymore... I need something even more refreshing.\"", Color.BLACK));
         t1.setRepeats(false); t1.start();
         
-        Timer t2 = new Timer(4000, e -> ui.displayText("\nNarrator: \"You open your laptop, searching for study tips. An anonymous forum thread catches your eye: 'How I Aced My APs While Getting 4 Hours of Sleep.'\"", Color.GRAY));
+        Timer t2 = new Timer(4000, e -> ui.displayText("\nNarrator: \"You open your laptop, searching for study tips. An anonymous forum thread catches your eye: 'How I Aced My Exams While Getting 4 Hours of Sleep.'\"", Color.GRAY));
         t2.setRepeats(false); t2.start();
         
         Timer t3 = new Timer(8000, e -> ui.displayText("\nAnonymous Post: \"The secret isn't working harder, it's working smarter. Adderall. Not from some dealer, just ask your doctor about ADHD symptoms. Changed my academic life.\"", Color.BLUE.darker()));
@@ -817,6 +816,15 @@ private void showBadEnding() {
     public String[] getCurrentChoices() {
     if (battleManager.isBattleActive()) {
         int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
+        
+        // Check if this is the Adderall battle (first real drug encounter)
+        if (dialogueState == 6) { // During the counselor/Adderall encounter
+            return new String[]{
+                "1. Try to resist (Fear prevents effective action)",
+                "2. Use Item (Too scared to think clearly)"
+            };
+        }
+        
         return new String[]{
             "1. Attack (" + (baseAttack-1) + "-" + (baseAttack+2) + " dmg)",
             "2. Use Item (Not Implemented)"};
