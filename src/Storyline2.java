@@ -64,7 +64,8 @@ private static final Item XANAX_ITEM = new SmokingItem(
             case 12 -> showStage12();
             case 13 -> showStage13();
             case 14 -> showStage14();
-
+            case 15 -> showStage15();
+            case 16 -> showStage16();
 
         }
     }
@@ -269,8 +270,91 @@ private static final Item XANAX_ITEM = new SmokingItem(
                 Timer researchProceed = new Timer(3000, e -> showDialogue(11));
                 researchProceed.setRepeats(false); researchProceed.start();
                 break;
-        }
+                 case 12: //  dealer choices
+            String dealerChoiceText = "";
+            switch (choice) {
+                case 1:
+                    dealerChoiceText = "\nNarrator: \"You slam the laptop shut, your hands shaking. This has gone too far.\"";
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
+                    break;
+                case 2:
+                    dealerChoiceText = "\nNarrator: \"Curiosity and desperation override your better judgment.\"";
+                    state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
+                    break;
+                case 3:
+                    dealerChoiceText = "\nNarrator: \"You've crossed a line you never thought you would cross.\"";
+                    state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+                    break;
+            }
+            ui.displayText(dealerChoiceText, Color.GRAY);
+            Timer dealerProceed = new Timer(3000, e -> showDialogue(13));
+            dealerProceed.setRepeats(false); dealerProceed.start();
+            break;
+            
+        case 15: 
+            String finalChoiceText = "";
+            switch (choice) {
+                case 1:
+                    finalChoiceText = "\nNarrator: \"You gather all your remaining strength to fight the monster you've become.\"";
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
+                    break;
+                case 2:
+                    finalChoiceText = "\nNarrator: \"The addiction whispers sweetly, promising relief from all the pain.\"";
+                    state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+                    break;
+                case 3:
+                    finalChoiceText = "\nNarrator: \"Maybe something in your inventory can help in this desperate moment.\"";
+                    // Check if player has items and potentially use them
+                    if (state.getItemQuantity("XANAX") > 0) {
+                        finalChoiceText += "\n" + playerName + " (reaching for the Xanax): \"Maybe... maybe this will help me think clearly.\"";
+                        
+                        Timer xanaxUse = new Timer(2000, e -> {
+                            ui.displayText("\nNarrator: \"You swallow the Xanax. Within minutes, your anxiety melts away, but reality begins to blur...\"", Color.GRAY);
+                            Timer t1 = new Timer(3000, e2 -> ui.displayText("\n" + playerName + " (vision blurring): \"What... what's happening? The room is spinning...\"", Color.BLACK));
+                            t1.setRepeats(false); t1.start();
+                                    Timer t2 = new Timer(5000, e2 -> ui.displayText("\nNarrator: \"The Addicted Milo in the mirror begins to transform. His face melts and reshapes into something monstrous...\"", Color.GRAY));
+                            t2.setRepeats(false); t2.start();
+                                    Timer t3 = new Timer(7000, e2 -> ui.displayText("\nAddicted Milo (voice distorting): \"Yesssss... let the chemicals flow. You're mine now, completely mine!\"", Color.RED.darker()));
+                            t3.setRepeats(false); t3.start();
+                                     Timer t10 = new Timer(9000, e2 -> ui.displayText("\n" + playerName + " (hallucinating): \"No... you're not real... this isn't real... I can't tell what's real anymore!\"", Color.BLACK));
+                            t10.setRepeats(false); t10.start();
+                                     Timer t5 = new Timer(11000, e2 -> ui.displayText("\nNarrator: \"The hallucinations intensify. Multiple versions of your addicted self surround you, each more terrifying than the last.\"", Color.GRAY));
+                            t5.setRepeats(false); t5.start();
+                                     Timer t6 = new Timer(13000, e2 -> ui.displayText("\nAddicted Milo (multiplying voices): \"You can't fight us all! We ARE you! Your weakness, your fear, your need!\"", Color.RED.darker()));
+                            t6.setRepeats(false); t6.start();
+                            
+                            Timer t7 = new Timer(15000, e2 -> {
+                                ui.displayText("\nSystem Status: \"Xanax consumed! Hallucinations active - Attack Power decreased by 2! Addiction Level +1\"", Color.RED.darker());
+                                state.consumeItem("XANAX");
+                                state.adjustStat(GameState.PLAYER_ATTACK, -2);
+                                state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
+                                state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
+                            });
+                            t7.setRepeats(false); t7.start();
+                            
+                            Timer t8 = new Timer(17000, e2 -> ui.displayText("\n" + playerName + " (weakened, confused): \"I... I made it worse. I can barely focus... can barely fight...\"", Color.BLACK));
+                            t8.setRepeats(false); t8.start();
+                        });
+                        xanaxUse.setRepeats(false); xanaxUse.start();
+                        
+                        Timer finalProceed = new Timer(20000, e -> showDialogue(16));
+                        finalProceed.setRepeats(false); finalProceed.start();
+                        return; // Exit early to prevent the normal flow
+                    } else {
+                        finalChoiceText += "\nNarrator: \"You reach for your inventory, but find nothing that could help in this moment.\"";
+                        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+                    }
+                    break;
+            }
+            ui.displayText(finalChoiceText, Color.GRAY);
+            Timer finalProceed = new Timer(3000, e -> showDialogue(16));
+            finalProceed.setRepeats(false); finalProceed.start();
+            break;
     }
+}
+                
+    
+
 
      private void startChapter3Battle() {
         ui.setStageImage("/Resources/Images/Story2/.png"); // Battle background
@@ -390,6 +474,48 @@ private static final Item XANAX_ITEM = new SmokingItem(
         startBattleActual.start();
     }
 
+private void startFinalBossBattle() {
+    ui.setStageImage("/Resources/Images/Story2/final_boss_battle.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/final_boss_battle_bgm.wav", true);
+    
+    Timer startBattleActual = new Timer(1000, e2 -> {
+        Enemy enemy = new DrugEnemy("Addicted Self", 35, 5);
+        battleManager.startBattle(enemy, battleResult -> {
+            if (battleResult == BattleManager.BattleResult.WIN) {
+                ui.setStageImage("/Resources/Images/Story2/victory_moment.png");
+                ui.displayText("\nNarrator: \"You've won this battle, but the war continues. You used your OVERCOME skill and newfound strength.\"", Color.GRAY);
+                Timer r1 = new Timer(3000, res -> ui.displayText("\n" + playerName + ": \"I... I did it. I can fight this.\"", Color.BLACK));
+                r1.setRepeats(false); r1.start();
+                
+                state.adjustStat(GameState.PLAYER_HEALTH, 2);
+                state.adjustStat(GameState.PLAYER_MAX_HEALTH, 2);
+                state.adjustStat(GameState.PLAYER_ATTACK, 2);
+                state.adjustStat(STAT_PLAYER_DEFENSE, 2);
+                state.adjustStat(STAT_PLAYER_WILLPOWER, 3);
+                
+                Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Final Level Up! Health +2, Max Health +2, Attack +2, Defense +2, Willpower +3\"", Color.GREEN.darker()));
+                r2.setRepeats(false); r2.start();
+                Timer proceed = new Timer(8000, res -> showBadEnding());
+                proceed.setRepeats(false); proceed.start();
+            } else {
+                ui.setStageImage("/Resources/Images/Story2/defeat_moment.png");
+                ui.displayText("\nNarrator: \"The addiction was too strong. Even with your OVERCOME skill, you couldn't break free completely.\"", Color.GRAY);
+                Timer r1 = new Timer(3000, res -> ui.displayText("\nAddicted Milo: \"You see? You'll never be free from me. Never.\"", Color.RED.darker()));
+                r1.setRepeats(false); r1.start();
+                
+                state.adjustStat(UNIQUE_STAT_KEY_S2, 3); 
+                Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Final Level Up! But Addiction Level +3\"", Color.RED.darker()));
+                r2.setRepeats(false); r2.start();
+                Timer proceed = new Timer(7000, res -> showBadEnding());
+                proceed.setRepeats(false); proceed.start();
+            }
+        });
+    });
+
+    
+    startBattleActual.setRepeats(false);
+    startBattleActual.start();
+}
    private void showStage0() {
         ui.setStageImage("/Resources/Images/Story2/highschool.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage0_bgm.wav", true);
@@ -447,8 +573,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
         
         Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: You try to look for anything to help you stay awake, and found the caffeine pills that your dad owned.", Color.GRAY));
         t1.setRepeats(false); t1.start();
-        
-        Timer t2 = new Timer(5000, e -> startChapter3Battle());
+        Timer t2 = new Timer(6000, e -> startChapter3Battle());
         t2.setRepeats(false); t2.start();
     }
 
@@ -512,7 +637,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
         Timer t6 = new Timer(14000, e -> ui.displayText("\nJake: \"Hey, you look rough, Did those pills help?\"", Color.GREEN.darker()));
         t6.setRepeats(false); t6.start();
         
-        Timer t7 = new Timer(45000, e -> ui.showChoicesDialog(new String[]{"Admit they helped but you need more", "Lie and say you didn't use them", "Ask if he has anything stronger"}));
+        Timer t7 = new Timer(28000, e -> ui.showChoicesDialog(new String[]{"Admit they helped but you need more", "Lie and say you didn't use them", "Ask if he has anything stronger"}));
         t7.setRepeats(false); t7.start();
     }
 
@@ -552,7 +677,7 @@ private void showStage10() {
     t4.setRepeats(false); t4.start();
     Timer t5 = new Timer(8000, e -> ui.displayText("\n" + "(Milo slams the door and walks out of the room)", Color.GRAY));
     t5.setRepeats(false); t5.start();
-    Timer proceedTimer = new Timer(25000, e -> showDialogue(11));
+    Timer proceedTimer = new Timer(23000, e -> showDialogue(11));
     proceedTimer.setRepeats(false); proceedTimer.start();
 }
 
@@ -562,7 +687,7 @@ private void showStage11() {
     t1.setRepeats(false); t1.start();
     Timer t2 = new Timer(5000, e -> ui.displayText("\n" + "Narrator: \"You decide to ask the person behind the advertisement.", Color.BLACK));
     t2.setRepeats(false); t2.start();
-    Timer proceedTimer = new Timer(6500, e -> showDialogue(12));
+    Timer proceedTimer = new Timer(8500, e -> showDialogue(12));
     proceedTimer.setRepeats(false); proceedTimer.start();
 }
 
@@ -580,7 +705,7 @@ private void showStage12() {
     Timer t3 = new Timer(6000, e -> ui.displayText("\nDealer_X: \"Everything's dangerous if you're not smart about it. You're smart, right? Top of your class?\"", Color.RED.darker()));
     t3.setRepeats(false); t3.start();
     
-    Timer showChoices = new Timer(8000, e -> ui.showChoicesDialog(new String[]{"Close the laptop and try to resist", "Ask more questions about the drug", "Agree to meet in person"}));
+    Timer showChoices = new Timer(10000, e -> ui.showChoicesDialog(new String[]{"Close the laptop and try to resist", "Ask more questions about the drug", "Agree to meet in person"}));
     showChoices.setRepeats(false); showChoices.start();
 }
 
@@ -591,14 +716,102 @@ private void showStage13() {
     ui.displayText("\n\n[Milo's Room - Same Night]", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: \"You stare at the Xanax Jake gave you weeks ago. You've been saving it, but tonight feels different. The pressure is crushing.\"", Color.GRAY));
     t1.setRepeats(false); t1.start();
-    
-    Timer t2 = new Timer(4000, e -> ui.displayText("\n" + playerName + " (shaking): \"Just one. Just to calm down. I can't think straight anymore.\"", Color.BLACK));
+        Timer t2 = new Timer(4000, e -> ui.displayText("\n" + playerName + " (shaking): \"Just one. Just to calm down. I can't think straight anymore.\"", Color.BLACK));
     t2.setRepeats(false); t2.start();
+        Timer t3 = new Timer(6000, e -> startChapter13Battle());
+    t3.setRepeats(false); t3.start();
+}
+private void showStage14() {
+    ui.setStageImage("/Resources/Images/Story2/empty_prescription.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage14_withdrawal_bgm.wav", true);
     
-    Timer t3 = new Timer(6000, e -> startChapter13Battle());
+    ui.displayText("\n\n[Milo's Room - Month 7, Week 3]", Color.DARK_GRAY);
+    Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: \"Your prescription ran out. The doctor refused to refill it, citing 'signs of dependency.'\"", Color.GRAY));
+    t1.setRepeats(false); t1.start();
+    Timer t2 = new Timer(3500, e -> ui.displayText("\n" + playerName + " (sweating, shaking): \"I can't... think straight. My head... everything hurts.\"", Color.BLACK));
+    t2.setRepeats(false); t2.start();
+    Timer t3 = new Timer(6000, e -> ui.displayText("\nNarrator: \"Withdrawal hits hard. The crushing fatigue. The inability to focus. The overwhelming depression.\"", Color.GRAY));
+    t3.setRepeats(false); t3.start();
+    Timer t4 = new Timer(9000, e -> ui.displayText("\n" + playerName + " (looking at phone): \"Jake isn't answering. The dealer wants too much money...\"", Color.BLACK));
+    t4.setRepeats(false); t4.start();
+    Timer t5 = new Timer(12000, e -> ui.displayText("\nNarrator: \"Your grades begin to slip. Teachers notice. Your parents are called for another meeting. You prepare for the worst.\"", Color.GRAY));
+    t5.setRepeats(false); t5.start();
+    Timer proceedTimer = new Timer(15000, e -> showDialogue(15));
+    proceedTimer.setRepeats(false); proceedTimer.start();
+}
+private void showStage15() {
+    ui.setStageImage("/Resources/Images/Story2/mirror_confrontation.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage14_final_bgm.wav", true);
+    
+    ui.displayText("\n\n[Milo's Room - 3 AM, Month 8]", Color.DARK_GRAY);
+    Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: \"You stand in front of your mirror, barely recognizing the person staring back. Hollow eyes, gaunt cheeks, trembling hands.\"", Color.GRAY));
+    t1.setRepeats(false); t1.start();
+        Timer t2 = new Timer(4000, e -> ui.displayText("\n" + playerName + " (whispering): \"Who... who am I anymore?\"", Color.BLACK));
+    t2.setRepeats(false); t2.start();
+        Timer t3 = new Timer(6000, e -> ui.displayText("\nNarrator: \"The reflection begins to speak...\"", Color.GRAY));
+    t3.setRepeats(false); t3.start();
+        Timer t4 = new Timer(8000, e -> ui.displayText("\nAddicted Milo: \"You're nothing without me. You think you can just stop? You NEED me to function, to succeed, to be worthy of anything.\"", Color.RED.darker()));
+    t4.setRepeats(false); t4.start();
+        Timer t5 = new Timer(11000, e -> ui.displayText("\n" + playerName + ": \"No... this isn't who I wanted to become.\"", Color.BLACK));
+    t5.setRepeats(false); t5.start();
+        Timer t6 = new Timer(13000, e -> ui.displayText("\nAddicted Milo: \"But it's who you ARE now. Without the pills, you're just ordinary. Mediocre. A disappointment.\"", Color.RED.darker()));
+    t6.setRepeats(false); t6.start();
+    
+    Timer showChoices = new Timer(16000, e -> ui.showChoicesDialog(new String[]{"Fight against your addiction", "Give in to the voices", "Try to use an item from inventory"}));
+    showChoices.setRepeats(false); showChoices.start();
+}
+
+private void showStage16() {
+    ui.setStageImage("/Resources/Images/Story2/final_battle_prep.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/final_battle_bgm.wav", true);
+    
+    ui.displayText("\n\nNarrator: \"This is it. The final confrontation with the monster you've become.\"", Color.GRAY);
+    Timer t1 = new Timer(2000, e -> ui.displayText("\n" + playerName + ": \"I won't let you control me anymore!\"", Color.BLACK));
+    t1.setRepeats(false); t1.start();
+    Timer t2 = new Timer(4000, e -> ui.displayText("\nAddicted Milo: \"You're weak without me. You've always been weak!\"", Color.RED.darker()));
+    t2.setRepeats(false); t2.start();
+    Timer t3 = new Timer(6000, e -> startFinalBossBattle());
     t3.setRepeats(false); t3.start();
 }
 
+
+
+
+private void showBadEnding() {
+    int addictionLevel = state.getStat(UNIQUE_STAT_KEY_S2);
+    
+    if (addictionLevel >= 7) {
+        // worse ending
+        ui.setStageImage("/Resources/Images/Story2/death_ending.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/tragic_ending_bgm.wav", true);
+        
+        ui.displayText("\n\n[Six Months Later - Hospital Room]", Color.DARK_GRAY);
+        Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The overdose was inevitable. Your body couldn't handle all the substances anymore.\"", Color.GRAY));
+        t1.setRepeats(false); t1.start();
+        Timer t2 = new Timer(5000, e -> ui.displayText("\nDoctor: \"We did everything we could. I'm sorry.\"", Color.BLUE.darker()));
+        t2.setRepeats(false); t2.start();
+        Timer t3 = new Timer(7000, e -> ui.displayText("\nMom (sobbing): \"He was just trying to be perfect... we just wanted him to succeed...\"", Color.MAGENTA.darker()));
+        t3.setRepeats(false); t3.start();
+        Timer t5 = new Timer(15000, e -> ui.displayText("\n\n=== THE END ===\n\"Sometimes the cost of 'success' is everything we truly value.\"\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
+        t5.setRepeats(false); t5.start();
+    } else {
+        // bad ending
+        ui.setStageImage("/Resources/Images/Story2/family_tragedy.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad_ending_bgm", true);
+        
+        ui.displayText("\n\n[Living Room - One Year Later]", Color.DARK_GRAY);
+        Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: \"You survived, but the stress you caused your family had consequences you never imagined.\"", Color.GRAY));
+        t1.setRepeats(false); t1.start();       
+        Timer t2 = new Timer(5000, e -> ui.displayText("\n" + playerName + " (at father's funeral): \"The doctor said it was a heart attack. But I know... the stress of watching me destroy myself...\"", Color.BLACK));
+        t2.setRepeats(false); t2.start();
+          Timer t3 = new Timer(8000, e -> ui.displayText("\nMom (barely audible): \"He loved you so much. He just wanted you to be happy and successful.\"", Color.MAGENTA.darker()));
+        t3.setRepeats(false); t3.start();
+        Timer t4 = new Timer(11000, e -> ui.displayText("\n" + playerName + ": \"I'm clean now, but it's too late. The damage is done.\"", Color.BLACK));
+        t4.setRepeats(false); t4.start();
+         Timer t6 = new Timer(18000, e -> ui.displayText("\n\n=== THE END ===\n\"Addiction doesn't just destroy the Milo, it destroys everyone who loves them.\"\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
+        t6.setRepeats(false); t6.start();
+    }
+}
 
    @Override
     public String[] getCurrentChoices() {
