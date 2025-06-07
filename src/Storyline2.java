@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.util.Map;
 import java.util.Random;
-
 import javax.swing.Timer;
 
 public class Storyline2 extends Storyline {
@@ -518,7 +517,7 @@ private void startFinalBossBattle() {
 }
    private void showStage0() {
         ui.setStageImage("/Resources/Images/Story2/highschool.png"); 
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage0_bgm.wav", true);
+        AudioManager.getInstance().playMusic("./Resources/Audio/Story2/story2-0.wav", true);
         
         ui.displayText("\n[High School - 3rd year] ", Color.DARK_GRAY);
         Timer t0 = new Timer(1000, e -> ui.displayText("\nMilo arrives at a prestigious high school after his family moves to another city. He walks through hallways lined with trophy cases showcasing the extraordinary students and their achievements.", Color.BLACK));

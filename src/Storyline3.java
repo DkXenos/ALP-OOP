@@ -208,10 +208,10 @@ public class Storyline3 extends Storyline {
             case 2: // University Welcome Party
                 if (choice == 1) { // Face the Temptation (Battle)
                     // Image for battle might be set by BattleManager or here
-                    // ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle.png");
+                    ui.setStageImage("/Resources/Images/Story3/ontobattle10.png"); 
                     startChapter1Battle();
                 } else if (choice == 2) { // New option: Take the cigarette
-                    ui.setStageImage("/Resources/Images/Story3/kai_takes_cigarette.png"); // Image for taking cigarette
+                    ui.setStageImage("/Resources/Images/Story3/ontobattle10.png"); // Image for taking cigarette
                     ui.displayText("\n" + playerName + ": \"Uh, okay... I'll hold onto it.\"", Color.BLACK);
                     state.addItem(CIGARETTE_ITEM, 1);
                     ui.displayText("\nSystem: Added 1 " + CIGARETTE_ITEM.getItemName() + " to inventory.", Color.GREEN.darker());
@@ -357,7 +357,7 @@ public class Storyline3 extends Storyline {
 
     // --- Battle Methods ---
     private void startChapter1Battle() {
-        ui.setStageImage("/Resources/Images/Story3/cigarette_temptation_battle_bg.png");
+        ui.setStageImage("/Resources/Images/Story3/battle1.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true);
         
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
@@ -379,7 +379,7 @@ public class Storyline3 extends Storyline {
                     Timer proceed = new Timer(7500, res -> showDialogue(3));
                     proceed.setRepeats(false); proceed.start();
                 } else { 
-                    ui.setStageImage("/Resources/Images/Story3/kai_succumbs_cigarette.png");
+                    ui.setStageImage("/Resources/Images/Story3/ontobattle10.png");
                     ui.displayText("\nNarrator: \"The smoke fills your lungs. It burns slightly, but there's also a strange buzz...\"", Color.GRAY);
                     CIGARETTE_ITEM.applyEffect(state, ui, playerName); 
                     Timer proceed = new Timer(6000, res -> showDialogue(3));
@@ -392,7 +392,7 @@ public class Storyline3 extends Storyline {
     }
     
     private void startChapter2Battle() { 
-        ui.setStageImage("/Resources/Images/Story3/vape_temptation_battle_bg.png");
+        ui.setStageImage("/Resources/Images/Story3/battle20.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation2_bgm.wav", true);
         ui.displayText("\nNarrator: The sleek vape pen gleams. Another test of will.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
@@ -513,7 +513,7 @@ public class Storyline3 extends Storyline {
 
 
     private void showStage2() { 
-        ui.setStageImage("/Resources/Images/Story3/welcome_party_crowd.png"); // Party scene
+        ui.setStageImage("/Resources/Images/Story3/stage20.png"); // Party scene
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage2_party_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Later that night - University Welcome Party]", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\nParty-goer: \"Hey freshman! Want a cigarette?\"", Color.ORANGE.darker()));
@@ -531,14 +531,14 @@ public class Storyline3 extends Storyline {
         t3.setRepeats(false); t3.start();
     }
     private void showStage3() { 
-        ui.setStageImage("/Resources/Images/Story3/kai_reflects_after_party.png"); // Kai thinking
+        ui.setStageImage("/Resources/Images/Story3/stage3.png"); // Kai thinking
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage3_reflection_bgm.wav", true); // Stage BGM
         ui.displayText("\n" + playerName + ": (That was intense... I need to stay strong.)", Color.BLACK);
         Timer proceedTimer = new Timer(3000, e -> showDialogue(4));
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
     private void showStage4() { 
-        ui.setStageImage("/Resources/Images/Story3/campus_night_end_chapter1.png"); // Campus at night
+        ui.setStageImage("/Resources/Images/Story3/stage40.png"); // Campus at night
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage4_chapter_end_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: The night continues, filled with music, laughter, and the lingering scent of smoke from a distance.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\nNarrator: University life has begun, and its first test has passed.", Color.GRAY));
@@ -550,7 +550,7 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage5() { 
-        ui.setStageImage("/Resources/Images/Story3/study_session_late.png"); // Late night study
+        ui.setStageImage("/Resources/Images/Story3/stage50.png"); // Late night study
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage5_study_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Days 8-14: Late Night Study Session]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\nStudy Partner: \"Ughhh, how do you do this? My brain is fried.\"", Color.CYAN.darker()));
@@ -566,7 +566,7 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage6() { 
-        ui.setStageImage("/Resources/Images/Story3/study_partner_offers_vape.png"); // Vape offer
+        ui.setStageImage("/Resources/Images/Story3/stage60.png"); // Vape offer
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage6_vape_offer_bgm.wav", true); // Stage BGM
         ui.displayText("\nStudy Partner: \"What, ugh fine. My roommate left his vape pen, how 'bout that? Helps with stress.\"", Color.CYAN.darker());
         Timer choiceTimer = new Timer(3000, e -> {
@@ -580,7 +580,7 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage7() { 
-        ui.setStageImage("/Resources/Images/Story3/kai_reflects_vape_choice.png"); // Kai thinking about vape
+        ui.setStageImage("/Resources/Images/Story3/stage70.png"); // Kai thinking about vape
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage7_vape_reflection_bgm.wav", true); // Stage BGM
         ui.displayText("\n" + playerName + ": (That whole situation with the vape...)", Color.GRAY.darker()); 
         Timer choiceTimer = new Timer(1500, e_ct -> ui.showChoicesDialog(new String[]{
@@ -593,7 +593,7 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage8() { 
-        ui.setStageImage("/Resources/Images/Story3/exam_pressure_end_chapter2.png"); // Exam pressure montage
+        ui.setStageImage("/Resources/Images/Story3/stage80.png"); // Exam pressure montage
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage8_chapter_end_bgm.wav", true); // Stage BGM
         ui.displayText("\nNarrator: The pressure of exams and new social dynamics continues to mount.", Color.GRAY);
         Timer t1 = new Timer(3000, e -> ui.displayText("\n[End of Chapter 2]", Color.DARK_GRAY));
@@ -603,7 +603,7 @@ public class Storyline3 extends Storyline {
     }
 
     private void showStage9() { 
-        ui.setStageImage("/Resources/Images/Story3/university_grounds_contemplation.png"); // Kai on campus thinking
+        ui.setStageImage("/Resources/Images/Story3/stage90.png"); // Kai on campus thinking
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/stage9_contemplation_bgm.wav", true); // Stage BGM
         ui.displayText("\n[Days 15-30: University Grounds]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + ": \"It's been a few months since I became a uni student, I should do something else to fill this void…\"", Color.BLACK));

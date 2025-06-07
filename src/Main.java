@@ -10,13 +10,8 @@ public class Main {
         }
         
         SwingUtilities.invokeLater(() -> {
-            // Path to your loading screen GIF
-            String loadingGifPath = "/Resources/Assets/opening-screen.gif"; // CHANGE THIS to your actual GIF path
-            String loadingSfxPath = "/Resources/Audio/loading-sfx.wav"; // ADD PATH TO YOUR SFX
-            int loadingDurationMs = 3000; // 3 seconds
-
-            new LoadingScreen(loadingGifPath, loadingDurationMs, loadingSfxPath);
-            // The LoadingScreen will handle opening the StartMenu after the duration
+            // Show initial loading screen that leads to StartMenu
+            new LoadingScreen(4, 3000); 
         });
     }
 }
