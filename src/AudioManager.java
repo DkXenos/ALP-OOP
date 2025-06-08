@@ -35,7 +35,6 @@ public class AudioManager {
             currentClip = AudioSystem.getClip();
             currentClip.open(audioStream);
             
-            setVolumeInternal(this.volume); // Apply current volume setting
 
             if (loop) {
                 currentClip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -64,40 +63,8 @@ public class AudioManager {
         }
     }
 
-    private void setVolumeInternal(float vol) {
-        if (currentClip != null && currentClip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-            FloatControl gainControl = (FloatControl) currentClip.getControl(FloatControl.Type.MASTER_GAIN);
-            if (vol < 0.0f) vol = 0.0f;
-            if (vol > 1.0f) vol = 1.0f;
-            
-            // Convert linear volume (0-1) to dB. 0 means silence (-80dB or min), 1 means 0dB (original).
-            float min = gainControl.getMinimum(); // e.g., -80.0f
-            float max = gainControl.getMaximum(); // e.g., 6.0206f
-            
-            float dB;
-            if (vol == 0.0f) {
-                dB = min; // Mute
-            } else {
-                // A common formula: dB = 20 * log10(volume)
-                // This maps 1.0 to 0dB. Values < 1.0 become negative dB.
-                dB = (float) (Math.log10(vol) * 20.0);
-            }
-            
-            // Clamp to the control's actual min/max range
-            if (dB < min) dB = min;
-            if (dB > max) dB = max;
-            
-            gainControl.setValue(dB);
-        }
-    }
-
-    public void setVolume(float volume) { 
-        this.volume = volume;
-        if (currentClip != null) {
-            setVolumeInternal(this.volume);
-        }
-    }
     
+
     public float getVolume() {
         return this.volume;
     }

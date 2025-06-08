@@ -1,49 +1,12 @@
 import java.awt.*;
-import java.awt.event.MouseAdapter; // Add for exception handling
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder; // For hover effects
-import javax.swing.border.LineBorder;  // For hover effects
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
-
-// Replace the existing ImagePanel class with this one:
-class ImagePanel extends JPanel {
-    private ImageIcon backgroundImageIcon; // Use ImageIcon to handle GIFs
-
-    public ImagePanel(String imagePath) {
-        try {
-            java.net.URL imgUrl = getClass().getResource(imagePath);
-            if (imgUrl == null) {
-                System.err.println("Background image not found: " + imagePath);
-                backgroundImageIcon = null;
-            } else {
-                backgroundImageIcon = new ImageIcon(imgUrl);
-            }
-        } catch (Exception e) { // ImageIcon constructor doesn't throw checked IOExceptions
-            System.err.println("Error loading background image: " + imagePath);
-            e.printStackTrace();
-            backgroundImageIcon = null;
-        }
-        setLayout(new BorderLayout());
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (backgroundImageIcon != null && backgroundImageIcon.getImage() != null) {
-            // Draw the image, scaling it to the panel's size.
-            // 'this' (the ImagePanel itself) acts as the ImageObserver,
-            // which is necessary for animated GIFs to update and repaint.
-            g.drawImage(backgroundImageIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
-        } else {
-            // Fallback if image failed to load
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(0, 0, getWidth(), getHeight());
-        }
-    }
-}
 
 public class StartMenu extends JFrame{
     private JButton startButton, loadGameButton; 
@@ -124,7 +87,7 @@ public class StartMenu extends JFrame{
         buttonContainer.add(buttonPanel, BorderLayout.CENTER);
         backgroundPanel.add(buttonContainer, BorderLayout.SOUTH);
 
-        startButton.addActionListener(e -> startGame(null)); 
+        startButton.addActionListener(e -> showStorylineSelection()); // Changed this line
         loadGameButton.addActionListener(e -> {
             String[] options = {
                 "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
@@ -179,14 +142,57 @@ public class StartMenu extends JFrame{
         });
     }
 
-    public void startGame(SaveData saveDataToLoad){
+    // New method to show storyline selection
+    private void showStorylineSelection() {
+        String[] storylineOptions = {
+            "Storyline 1: Lullaby of Empty Bottles",
+            "Storyline 2: A Lost Euphoria", 
+            "Storyline 3: A Burning Melody"
+        };
+        
+        String choice = (String) JOptionPane.showInputDialog(
+            this,
+            "Select a storyline to play:",
+            "Choose Your Story",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            storylineOptions,
+            storylineOptions[0] // Default selection
+        );
+        
+        if (choice != null) {
+            int storylineId;
+            if (choice.startsWith("Storyline 1")) {
+                storylineId = 1;
+            } else if (choice.startsWith("Storyline 2")) {
+                storylineId = 2;
+            } else {
+                storylineId = 3;
+            }
+            
+            startGameWithCutscene(storylineId);
+        }
+    }
+
+    public void startGameWithCutscene(int storylineId) {
         AudioManager.getInstance().stopMusic(); // Stop menu music
+        
+        this.dispose(); // Close start menu
+        
+        // Show loading screen with storyline-specific cutscene
+        int cutsceneDurationMs = 5000; // 5 seconds cutscene
+        new LoadingScreen(storylineId, cutsceneDurationMs);
+    }
+
+    public void startGame(SaveData saveDataToLoad){
+        AudioManager.getInstance().stopMusic();
 
         GameUI gameUI = new GameUI();
         if (saveDataToLoad != null) {
             gameUI.applySaveData(saveDataToLoad);
         } else {
-            gameUI.startGame(2); 
+            // Default to storyline 2 for backward compatibility
+            gameUI.startGame(1); 
         }
         gameUI.setVisible(true);
         this.dispose();
