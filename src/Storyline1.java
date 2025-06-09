@@ -12,12 +12,23 @@ public class Storyline1 extends Storyline {
 
     @Override
     public void startStory() {
-        Timer timer = new Timer(500, e ->{
-            ui.displayText("[Lullaby of Empty Bottles]", Color.BLACK);
-        });
-        timer.setRepeats(false);
-        timer.start();
-        showDialogue(0); 
+        startStory(false);
+    }
+
+    public void startStory(boolean fromSave) {
+        // Only initialize if NOT loading from save
+        if (!fromSave) {
+            Timer timer = new Timer(500, e ->{
+                ui.displayText("[Lullaby of Empty Bottles]", Color.BLACK);
+            });
+            timer.setRepeats(false);
+            timer.start();
+            showDialogue(0);
+        } else {
+            // Loading from save - get the saved dialogue state and show that stage
+            int savedDialogueState = state.getStat("currentDialogueState");
+            showDialogue(savedDialogueState);
+        }
     }
 
     public BattleManager getBattleManager() {

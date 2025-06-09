@@ -4,98 +4,159 @@ import java.util.HashMap;
 
 public class SaveManager {
 
-    // load the SQLite JDBC driver when the class is loaded
+    // Static initialization block - runs when class is first loaded
+    // This ensures the SQLite JDBC driver is available before any database operations
     static {
         try {
+            // Class.forName() - Dynamically loads and registers the SQLite JDBC driver
+            // "org.sqlite.JDBC" - Fully qualified class name of SQLite driver
+            // This step is required for JDBC to know how to handle "jdbc:sqlite:" URLs
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
+            // Error handling if SQLite JAR file is missing from classpath
             System.err.println("SQLite JDBC driver not found. Please add the driver to your project.");
         }
     }
 
-    //  Opens a connection to the savegame database.
+    // Creates and returns a database connection
+    // Private method used internally by other methods in this class
     private static Connection getConnection() throws SQLException {
+        // DriverManager.getConnection() - Factory method that creates database connections
+        // "jdbc:sqlite:savegame.db" breakdown:
+        //   - "jdbc:" - Java Database Connectivity protocol
+        //   - "sqlite:" - Tells JDBC to use SQLite driver (loaded above)
+        //   - "savegame.db" - Database file name (created if doesn't exist)
         return DriverManager.getConnection("jdbc:sqlite:savegame.db");
     }
 
-   
-    // Saves data to specified slot.
+    // Saves game data to specified save slot in database
     public static void saveGame(SaveData data, int slot) {
-        createTableIfNotExists();
-        try (Connection conn = getConnection();
+        createTableIfNotExists();  // Ensure saves table exists before inserting
+        
+        // try-with-resources pattern ensures proper resource cleanup
+        try (Connection conn = getConnection();  // Get database connection
              PreparedStatement pstmt = conn.prepareStatement(
+                 // INSERT OR REPLACE - SQLite specific command
+                 // If slot exists: UPDATE the existing record
+                 // If slot doesn't exist: INSERT new record
+                 // This prevents duplicate slot numbers
                  "INSERT OR REPLACE INTO saves (slot, data) VALUES (?, ?)"
              )) {
-            pstmt.setInt(1, slot);
-            pstmt.setBytes(2, serialize(data));
+            
+            // Set parameters for the prepared statement
+            pstmt.setInt(1, slot);                    // ? position 1: save slot number
+            pstmt.setBytes(2, serialize(data));       // ? position 2: serialized game data as bytes
+            
+            // executeUpdate() - Execute the INSERT/REPLACE command
+            // Returns number of rows affected (should be 1 for successful save)
             pstmt.executeUpdate();
-            // Save inventory to inventory table
+            
+            // Save inventory data to separate inventory table using InventoryDBManager
+            // This maintains data normalization (separates complex inventory from main save data)
             InventoryDBManager.saveInventory(slot, data.inventoryQuantities);
+            
             System.out.println("Game saved to slot " + slot);
-        } catch (Exception e) {
+        } catch (Exception e) {  // Catch both SQL and serialization exceptions
             System.err.println("Failed to save game: " + e.getMessage());
         }
     }
 
-    
-    //  Loads  data from  specified slot.
+    // Loads game data from specified save slot
     public static SaveData loadGame(int slot) {
-        createTableIfNotExists();
-        try (Connection conn = getConnection();
+        createTableIfNotExists();  // Ensure table exists before querying
+        
+        // try-with-resources for automatic connection cleanup
+        try (Connection conn = getConnection();  // Get database connection
          PreparedStatement pstmt = conn.prepareStatement(
+             // SELECT query to retrieve saved game data
+             // Only get 'data' column for specified slot
              "SELECT data FROM saves WHERE slot = ?"
          )) {
+        
+        // Set the slot parameter in the query
         pstmt.setInt(1, slot);
+        
+        // executeQuery() - Execute SELECT statement, returns ResultSet
         ResultSet rs = pstmt.executeQuery();
-        if (rs.next()) {
+        
+        // Check if query returned any results
+        if (rs.next()) {  // next() returns true if row exists, moves cursor to that row
+            // getBytes() - Retrieve BLOB data as byte array
             byte[] saveBytes = rs.getBytes("data");
+            
+            // deserialize() - Convert byte array back to SaveData object
             SaveData data = (SaveData) deserialize(saveBytes);
-            // Load inventory from inventory table
+            
+            // Load inventory data from separate inventory table
+            // new HashMap<>() creates a new instance to avoid reference issues
             data.inventoryQuantities = new HashMap<>(InventoryDBManager.loadInventory(slot));
-            return data;
+            
+            return data;  // Return fully loaded save data
         }
-    } catch (Exception e) {
+    } catch (Exception e) {  // Handle SQL and deserialization errors
         System.err.println("Failed to load game: " + e.getMessage());
     }
-    return null;
+    return null;  // Return null if slot is empty or error occurred
     }
 
-    // Creates the saves table if it doesn't exist.   
+    // Creates the main saves table if it doesn't exist
+    // Private method called by save/load operations
     private static void createTableIfNotExists() {
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
+        // try-with-resources for proper resource management
+        try (Connection conn = getConnection();      // Get database connection
+             Statement stmt = conn.createStatement()) {  // Create statement for SQL execution
+            
+            // executeUpdate() - Execute DDL (Data Definition Language) command
             stmt.executeUpdate(
+                // CREATE TABLE IF NOT EXISTS - Only create if table doesn't exist
                 "CREATE TABLE IF NOT EXISTS saves (" +
-                "slot INTEGER PRIMARY KEY, " +
-                "data BLOB NOT NULL)");
-        } catch (SQLException e) {
+                    // slot INTEGER PRIMARY KEY - Save slot number, unique identifier
+                    // PRIMARY KEY ensures no duplicate slots and creates index for fast lookups
+                    "slot INTEGER PRIMARY KEY, " + 
+                    // data BLOB NOT NULL - Binary data column for serialized SaveData
+                    // BLOB = Binary Large Object, can store any binary data
+                    // NOT NULL = This column must have a value
+                    "data BLOB NOT NULL)");
+        } catch (SQLException e) {  // Handle table creation errors
             System.err.println("Failed to create saves table: " + e.getMessage());
         }
     }
 
-    
-    //  ngasih desc for the saveslot
-   
+    // Gets display description for save slot (used in save/load menu)
     public static String getSlotStage(int slot) {
-        createTableIfNotExists();
-        try (Connection conn = getConnection();
+        createTableIfNotExists();  // Ensure table exists before querying
+        
+        // try-with-resources for connection management
+        try (Connection conn = getConnection();  // Get database connection
              PreparedStatement pstmt = conn.prepareStatement(
+                     // SELECT query to get save data for stage information
                      "SELECT data FROM saves WHERE slot = ?"
              )) {
+            
+            // Set slot parameter
             pstmt.setInt(1, slot);
+            
+            // Execute query and get results
             ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
+            
+            // Check if save slot has data
+            if (rs.next()) {  // If row exists
+                // Extract serialized data
                 byte[] saveBytes = rs.getBytes("data");
+                
+                // Deserialize to get SaveData object
                 SaveData data = (SaveData) deserialize(saveBytes);
+                
+                // Return formatted stage description
                 return "Stage " + data.getDialogueState();
             }
         } catch (Exception e) {
-            // Ignore errors for empty slots
+            // Ignore errors for empty slots (expected behavior)
+            // This allows the method to return "Empty" for non-existent saves
         }
-        return "Empty";
+        return "Empty";  // Return if slot has no save data
     }
 
-   
     //  Serializes an object to a byte array.
          private static byte[] serialize(Object obj) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();

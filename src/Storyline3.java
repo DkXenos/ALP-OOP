@@ -57,8 +57,11 @@ public class Storyline3 extends Storyline {
     }
     
     public void showDialoguePublic(int stage) {
-        // Always start the requested stage from the beginning
-        this.dialogueState = stage;
+        this.showDialogue(stage);
+    }
+    
+    private void showDialogue(int stage) {
+        dialogueState = stage;
         switch (stage) {
             case 0 -> showStage0();
             case 1 -> showStage1();
@@ -104,34 +107,6 @@ public class Storyline3 extends Storyline {
         timer.start();
         showDialogue(0); 
     }
-
-    // ... showDialogue(int stage) method ...
-    private void showDialogue(int stage) {
-        dialogueState = stage;
-        switch (stage) {
-            case 0 -> showStage0();
-            case 1 -> showStage1();
-            case 2 -> showStage2();
-            case 3 -> showStage3();
-            case 4 -> showStage4();
-            case 5 -> showStage5();
-            case 6 -> showStage6();
-            case 7 -> showStage7();
-            case 8 -> showStage8();
-            case 9 -> showStage9();
-            case 10 -> showStage10();
-            case 11 -> showStage11();
-            case 12 -> showStage12();
-            case 13 -> showStage13();
-            // Chapter 4 Stages
-            case 14 -> showStage14_Chapter4Intro();
-            case 15 -> showStage15_IsolationPath();
-            case 16 -> showStage16_PostBattleCutscene();
-            case 17 -> showStage17_Chapter4End();
-        }
-    }
-
-
     // New method to use an item from inventory
     public void useInventoryItem(String itemName) {
         Item itemToUse = state.getItemPrototype(itemName);

@@ -34,11 +34,11 @@ public class BattleManager {
         this.onBattleEndCallback = callback;
         this.isBattleActive = true;
 
-        ui.displayText("\n--- BATTLE START ---", Color.BLACK);
+        ui.displayText("\n\n--- BATTLE START ---", Color.BLACK);
         ui.displayText("\n" + currentEnemy.getName() + " appears!", Color.BLACK);
 
         ui.showBattleInterface(currentEnemy.getName(), gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
-        ui.appendBattleLog("--- Your Turn ---", Color.BLACK);
+        ui.appendBattleLog("\n--- Your Turn ---", Color.BLACK);
     }
 
     public boolean isBattleActive() {
@@ -114,9 +114,9 @@ public class BattleManager {
         Timer endBattleTimer = new Timer(2000, e -> {
             ui.hideBattleInterface();
             if (result == BattleResult.WIN) {
-                ui.displayText("\n\nYou reflect on your victory...\n", Color.BLACK);
+                ui.displayText("\nYou reflect on your victory...\n", Color.ORANGE);
             } else {
-                ui.displayText("\n\nThe sting of defeat lingers...\n", Color.BLACK);
+                ui.displayText("\nThe sting of defeat lingers...\n", Color.ORANGE);
             }
 
             if (onBattleEndCallback != null) {

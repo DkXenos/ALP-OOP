@@ -318,14 +318,12 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
 
                 if (currentStory instanceof Storyline3) { // Kalo cerita yang lagi jalan itu Storyline3
                     ((Storyline3) currentStory).useInventoryItem(itemName); // Panggil metode useInventoryItem khusus buat Storyline3
+                } else if (currentStory instanceof Storyline2) { // Kalo cerita yang lagi jalan itu Storyline2
+                    ((Storyline2) currentStory).useInventoryItem(itemName); // Panggil metode useInventoryItem khusus buat Storyline2
                 } else { // Kalo cerita lain
                     // Penggunaan item generik atau pesan buat storyline lain
                     Item item = gameState.getItemPrototype(itemName); // Dapetin prototype item dari GameState
                     if (item != null && gameState.getItemQuantity(itemName) > 0) { // Kalo itemnya ada dan jumlahnya lebih dari 0
-                        // Cara generik buat manggil penggunaan item, asumsi nama player bisa diambil atau gak dibutuhin
-                        // Untuk sekarang, jalur ini kurang jelas karena Storyline3 punya useInventoryItem sendiri
-                        // item.applyEffect(gameState, this, "Player"); // Nama player placeholder
-                        // gameState.consumeItem(itemName); // Kurangin item dari inventory
                         displayText("\nUsed: " + itemName + ". (Generic use)", Color.BLACK); // Tampilin pesan penggunaan generik
                     } else { // Kalo item gak bisa dipake
                         displayText("\nCannot use " + itemName + ".", Color.ORANGE); // Tampilin pesan error
@@ -367,7 +365,7 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         } else if (currentStory instanceof Storyline2) { // Kalo cerita yang jalan Storyline2
             storylineId = 2; // ID-nya 2
             currentDialogueState = ((Storyline2) currentStory).getDialogueState(); // Ambil state dialog dari Storyline2
-        } else if (currentStory instanceof Storyline3) { // Kalo cerita yang jalan Storyline3
+        }  else if (currentStory instanceof Storyline3) { // Kalo cerita yang jalan Storyline3
             storylineId = 3; // ID-nya 3
             currentDialogueState = ((Storyline3) currentStory).getDialogueState(); // Ambil state dialog dari Storyline3
         } else { // Kalo tipe ceritanya gak dikenal
@@ -418,6 +416,7 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
             displayText("Failed to load save data.", Color.RED); // Tampilin pesan error
             return; // Keluar
         }
+
         setStageImage(null); // Hapus gambar suasana yang mungkin ada
 
         this.gameState = new GameState(); // Bikin objek GameState baru
@@ -439,7 +438,7 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
             case 2: // Kalo ID 2
                 currentStory = new Storyline2(this, gameState); // Bikin objek Storyline2 baru
                 ((Storyline2) currentStory).setDialogueState(data.dialogueState); // Atur state dialognya
-                ((Storyline2) currentStory).showDialoguePublic(data.dialogueState); // Lanjutin cerita dari state itu
+                ((Storyline2) currentStory).startStory(true); // pass true for fromSave
                 break;
             case 3: // Kalo ID 3
                 currentStory = new Storyline3(this, gameState); // Bikin objek Storyline3 baru
