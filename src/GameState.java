@@ -154,7 +154,6 @@ public class GameState {
         return false;
     }
 
-
     public int getItemQuantity(String itemName) {
         return inventoryQuantities.getOrDefault(itemName, 0);
     }

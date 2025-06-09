@@ -21,6 +21,8 @@ public class SaveData implements Serializable {
         this.inventoryQuantities = inventoryQuantities; // Updated
     }
     
+     public boolean shouldCleanupTimers = false;
+    
     public int getDialogueState() {
         return dialogueState;
     }

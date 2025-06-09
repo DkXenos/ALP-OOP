@@ -7,7 +7,7 @@ import javax.swing.border.EmptyBorder; // Ngimpor kelas buat ngasih jarak kosong
 
 public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela utama game, turunan dari JFrame
     JTextArea textArea; // Deklarasi area buat nampilin teks cerita utama
-    private JButton inventoryBtn, saveBtn, loadBtn, backToMenuBtn; // Deklarasi tombol-tombol di bawah (inventory, save, load, balik ke menu)
+    private JButton inventoryBtn, saveBtn; // Deklarasi tombol-tombol di bawah (inventory, save, balik ke menu)
     private Storyline currentStory; // Nyimpen objek cerita yang lagi jalan sekarang
     private GameState gameState; // Nyimpen semua data game (darah player, item, dll)
     private Typewriter typewriter; // Objek buat nampilin teks kayak mesin ketik di textArea utama
@@ -143,25 +143,10 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         styleButton(saveBtn, buttonFont, buttonSize, new Color(60, 179, 113)); // Panggil metode styleButton buat ngasih gaya ke tombol save (hijau)
         saveBtn.addActionListener(e -> saveCurrentGame()); // Ngasih aksi kalo tombol "Save Game" diklik, panggil metode saveCurrentGame
 
-        loadBtn = new JButton("Load Game"); // Bikin tombol "Load Game"
-        styleButton(loadBtn, buttonFont, buttonSize, new Color(255, 165, 0)); // Panggil metode styleButton buat ngasih gaya ke tombol load (oranye)
-
-        backToMenuBtn = new JButton("Back to Menu"); // Bikin tombol "Back to Menu"
-        styleButton(backToMenuBtn, buttonFont, buttonSize, new Color(220, 50, 50)); // Panggil metode styleButton buat ngasih gaya ke tombol back to menu (merah)
-        backToMenuBtn.addActionListener(e -> { // Ngasih aksi kalo tombol "Back to Menu" diklik
-            AudioManager.getInstance().stopMusic(); // Berhentiin musik game yang lagi jalan
-            this.dispose(); // Tutup jendela GameUI ini
-            StartMenu startMenu = new StartMenu(); // Bikin objek StartMenu baru
-            startMenu.setVisible(true); // Tampilin jendela StartMenu (StartMenu nanti muter musiknya sendiri)
-        });
-        
-        loadBtn.addActionListener(e -> loadGameFromSlot()); // Ngasih aksi kalo tombol "Load Game" diklik, panggil metode loadGameFromSlot
         inventoryBtn.addActionListener(e -> showInventory()); // Ngasih aksi kalo tombol "Inventory" diklik, panggil metode showInventory
 
         bottomButtonPanel.add(inventoryBtn); // Tambahin tombol inventory ke panel tombol bawah
         bottomButtonPanel.add(saveBtn); // Tambahin tombol save ke panel tombol bawah
-        bottomButtonPanel.add(loadBtn); // Tambahin tombol load ke panel tombol bawah
-        bottomButtonPanel.add(backToMenuBtn); // Tambahin tombol back to menu ke panel tombol bawah
                 
         bottomSectionPanel.add(bottomButtonPanel, BorderLayout.SOUTH); // Tambahin panel tombol bawah ke bagian paling bawah dari bottomSectionPanel
     }
@@ -445,7 +430,7 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
                 ((Storyline3) currentStory).setDialogueState(data.dialogueState); // Atur state dialognya
                 ((Storyline3) currentStory).showDialoguePublic(data.dialogueState); // Lanjutin cerita dari state itu
                 break;
-            default: // Kalo ID storyline gak dikenal
+            default: // Kalo tipe ceritanya gak dikenal
                 displayText("Error: Invalid storyline ID in save data: " + data.storylineId, Color.RED); // Tampilin pesan error
                 return; // Keluar
         }
@@ -482,39 +467,54 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         });
     }
 
-    private int promptForSaveSlot(String action) { // Metode buat minta nomor slot (kayaknya versi lama/alternatif)
-        String input = JOptionPane.showInputDialog(this, "Enter save slot (1-3) to " + action + ":"); // Tampilin dialog input
-        try { // Coba konversi input jadi angka
-            int slot = Integer.parseInt(input); // Ubah string input jadi integer
-            if (slot >= 1 && slot <= 3) return slot; // Kalo slotnya valid (1-3), balikin nomor slot
-        } catch (Exception ignored) {} // Kalo gagal konversi atau error lain, diabaikan aja
-        JOptionPane.showMessageDialog(this, "Invalid slot. Please enter 1, 2, or 3."); // Tampilin pesan error slot gak valid
-        return -1; // Balikin -1 kalo slot gak valid
-    }
-
     private void loadGameFromSlot() { // Metode buat ngeload game dari slot yang dipilih
         String[] options = { // Pilihan slot yang ditampilin
             "Slot 1 (" + SaveManager.getSlotStage(1) + ")", // Slot 1 dengan deskripsi stage
             "Slot 2 (" + SaveManager.getSlotStage(2) + ")", // Slot 2 dengan deskripsi stage
             "Slot 3 (" + SaveManager.getSlotStage(3) + ")"  // Slot 3 dengan deskripsi stage
         };
-        String choice = (String) JOptionPane.showInputDialog( // Tampilin dialog buat milih slot load
-            this, // Jendela induk
-            "Select a slot to load:", // Pesan di dialog
-            "Load Game", // Judul dialog
-            JOptionPane.PLAIN_MESSAGE, // Tipe pesan
-            null, // Icon (gak pake)
-            options, // Pilihan slot
-            options[0] // Pilihan default
-        );
-        if (choice != null) { // Kalo user milih slot (gak batal)
-            int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3; // Tentukan nomor slot dari pilihan
-            SaveData data = SaveManager.loadGame(slot); // Panggil metode loadGame dari SaveManager buat dapetin data save-an
-            if (data != null) { // Kalo data save-annya ada
-                applySaveData(data); // Terapin data save-an itu ke game
-            } else { // Kalo gak ada data save-an di slot itu
-                displayText("\nNo save found in slot " + slot + ".", Color.RED); // Tampilin pesan error
-            }
+      String choice = (String) JOptionPane.showInputDialog( // Tampilin dialog buat milih slot load
+        this, // Jendela induk
+        "Select a slot to load:", // Pesan di dialog
+        "Load Game", // Judul dialog
+        JOptionPane.PLAIN_MESSAGE, // Tipe pesan
+        null, // Icon (gak pake)
+        options, // Pilihan slot
+        options[0] // Pilihan default
+    );
+    if (choice != null) { // Kalo user milih slot (gak batal)
+        int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3; // Tentukan nomor slot dari pilihan
+        SaveData data = SaveManager.loadGame(slot); // Panggil metode loadGame dari SaveManager buat dapetin data save-an
+        if (data != null) { // Kalo data save-annya ada
+            applySaveData(data); // Terapin data save-an itu ke game
+        } else { // Kalo gak ada data save-an di slot itu
+            displayText("\nNo save found in slot " + slot + ".", Color.RED); // Tampilin pesan error
         }
+    }
+    }
+
+    // Add this method to GameUI
+    private void cleanupCurrentStoryline() {
+        if (currentStory != null) {
+            currentStory.stopAllTimers(); // Stop all timers
+            currentStory.cleanup();       // Full cleanup
+        }
+    }
+
+    // Update your load save method (wherever it is in GameUI)
+    public void loadSaveGame(int slot) {
+        SaveData data = SaveManager.loadGame(slot);
+        if (data != null) {
+            applySaveData(data);
+        } else {
+            displayText("\nNo save found in slot " + slot + ".", Color.RED);
+        }
+    }
+
+    // Also add cleanup when starting new games or switching storylines
+    public void startNewStoryline(int storylineNumber) {
+        cleanupCurrentStoryline(); // Cleanup old storyline first
+        
+        // ... your existing storyline initialization code
     }
 }

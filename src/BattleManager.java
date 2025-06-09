@@ -124,7 +124,6 @@ public class BattleManager {
             }
             this.currentEnemy = null; // Clear the enemy reference
         });
-        // registerTimer(endBattleTimer); // This timer is internal to BattleManager, not Storyline
         endBattleTimer.setRepeats(false);
         endBattleTimer.start();
     }

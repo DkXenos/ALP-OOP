@@ -35,7 +35,7 @@ public class SaveManager {
         
         // try-with-resources pattern ensures proper resource cleanup
         try (Connection conn = getConnection();  // Get database connection
-             PreparedStatement pstmt = conn.prepareStatement(
+             PreparedStatement pstmt = conn.prepareStatement( //preparedstatement itu kaya safe way to run sql command, spy ga kena injectionattack, ? juga bisa kesiisi saftely
                  // INSERT OR REPLACE - SQLite specific command
                  // If slot exists: UPDATE the existing record
                  // If slot doesn't exist: INSERT new record
@@ -63,40 +63,30 @@ public class SaveManager {
 
     // Loads game data from specified save slot
     public static SaveData loadGame(int slot) {
-        createTableIfNotExists();  // Ensure table exists before querying
+        createTableIfNotExists();
         
-        // try-with-resources for automatic connection cleanup
-        try (Connection conn = getConnection();  // Get database connection
-         PreparedStatement pstmt = conn.prepareStatement(
-             // SELECT query to retrieve saved game data
-             // Only get 'data' column for specified slot
-             "SELECT data FROM saves WHERE slot = ?"
-         )) {
-        
-        // Set the slot parameter in the query
-        pstmt.setInt(1, slot);
-        
-        // executeQuery() - Execute SELECT statement, returns ResultSet
-        ResultSet rs = pstmt.executeQuery();
-        
-        // Check if query returned any results
-        if (rs.next()) {  // next() returns true if row exists, moves cursor to that row
-            // getBytes() - Retrieve BLOB data as byte array
-            byte[] saveBytes = rs.getBytes("data");
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(
+                 "SELECT data FROM saves WHERE slot = ?"
+             )) {
             
-            // deserialize() - Convert byte array back to SaveData object
-            SaveData data = (SaveData) deserialize(saveBytes);
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
             
-            // Load inventory data from separate inventory table
-            // new HashMap<>() creates a new instance to avoid reference issues
-            data.inventoryQuantities = new HashMap<>(InventoryDBManager.loadInventory(slot));
-            
-            return data;  // Return fully loaded save data
+            if (rs.next()) {
+                byte[] saveBytes = rs.getBytes("data");
+                SaveData data = (SaveData) deserialize(saveBytes);
+                data.inventoryQuantities = new HashMap<>(InventoryDBManager.loadInventory(slot));
+                
+                // Signal to stop all running timers before loading
+                data.shouldCleanupTimers = true;
+                
+                return data;
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load game: " + e.getMessage());
         }
-    } catch (Exception e) {  // Handle SQL and deserialization errors
-        System.err.println("Failed to load game: " + e.getMessage());
-    }
-    return null;  // Return null if slot is empty or error occurred
+        return null;
     }
 
     // Creates the main saves table if it doesn't exist

@@ -23,7 +23,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
     public Storyline2(GameUI ui, GameState state) {
         super(ui, state);
         this.battleManager = new BattleManager(ui, state);
-    ui.setTitle("A Lost Euphoria"); 
+        ui.setTitle("A Lost Euphoria"); 
     }
 
     public BattleManager getBattleManager() {
@@ -65,10 +65,10 @@ private static final Item XANAX_ITEM = new SmokingItem(
         }
     }
  
-@Override
-public void startStory() {
-    startStory(false);
-}
+    @Override
+    public void startStory() {
+        startStory(false);
+    }
 
     public void startStory(boolean fromSave) {
         if (!fromSave) {
@@ -80,46 +80,16 @@ public void startStory() {
             state.setStat(UNIQUE_STAT_KEY_S2, 0);
             state.setStat(STAT_SOCIAL_STATUS, 0);
         
+            ui.setStageImage("/Resources/Images/Story2/classroom.png");
+            AudioManager.getInstance().playMusic("/Resources/Audio/Story2/chapter1_intro_bgm.wav", true);
 
+            Timer timer = new Timer(500, e -> {
+                ui.displayText("Chapter 1: A New Beginning", Color.BLACK);
+            });
+            timer.setRepeats(false);
+            timer.start(); 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-        
-        ui.setStageImage("/Resources/Images/Story2/classroom.png");
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/chapter1_intro_bgm.wav", true);
-
-        Timer timer = new Timer(500, e -> {
-            ui.displayText("Chapter 1: A New Beginning", Color.BLACK);
-        });
-        timer.setRepeats(false);
-        timer.start(); 
-
-         showDialogue(0);
+            showDialogue(0);
         } else {
             showDialogue(dialogueState); // Start at loaded stage
         }
@@ -145,8 +115,7 @@ public void startStory() {
         
         int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
         return baseAttack - 1 + new Random().nextInt(4);
-}
-
+    }
 
     public void useInventoryItem(String itemName) {
         if (itemName.equalsIgnoreCase("XANAX") && dialogueState == 15) {
@@ -251,8 +220,7 @@ public void startStory() {
                 Timer proceedAfterChoiceTimer2 = new Timer(3000, e -> showDialogue(5)); 
                 proceedAfterChoiceTimer2.setRepeats(false);
                 proceedAfterChoiceTimer2.start();
-             
-                  break;
+                break;
 
             case 5: // Jake's offer choices  
                 String jakeChoiceText = "";
@@ -295,7 +263,7 @@ public void startStory() {
                         break;
                 }
                 ui.displayText(counselorChoiceText, Color.GRAY);
-                Timer counselorProceed = new Timer(6000, e -> startChapter6Battle());
+                Timer counselorProceed = new Timer(6000, e -> startAdderallBattle());
                 counselorProceed.setRepeats(false); counselorProceed.start();
                 break;
 
@@ -353,62 +321,60 @@ public void startStory() {
                 Timer researchProceed = new Timer(3000, e -> showDialogue(11));
                 researchProceed.setRepeats(false); researchProceed.start();
                 break;
-                 case 12: //  dealer choices
-            String dealerChoiceText = "";
-            switch (choice) {
-                case 1:
-                    dealerChoiceText = "\nNarrator: \"You slam the laptop shut, your hands shaking. This has gone too far.\"";
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
-                    break;
-                case 2:
-                    dealerChoiceText = "\nNarrator: \"Curiosity and desperation override your better judgment.\"";
-                    state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
-                    break;
-                case 3:
-                    dealerChoiceText = "\nNarrator: \"You've crossed a line you never thought you would cross.\"";
-                    state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
-                    break;
-            }
-            ui.displayText(dealerChoiceText, Color.GRAY);
-            Timer dealerProceed = new Timer(3000, e -> showDialogue(13));
-            dealerProceed.setRepeats(false); dealerProceed.start();
-            break;
+
+            case 12: //  dealer choices
+                String dealerChoiceText = "";
+                switch (choice) {
+                    case 1:
+                        dealerChoiceText = "\nNarrator: \"You slam the laptop shut, your hands shaking. This has gone too far.\"";
+                        state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
+                        break;
+                    case 2:
+                        dealerChoiceText = "\nNarrator: \"Curiosity and desperation override your better judgment.\"";
+                        state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
+                        break;
+                    case 3:
+                        dealerChoiceText = "\nNarrator: \"You've crossed a line you never thought you would cross.\"";
+                        state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+                        break;
+                }
+                ui.displayText(dealerChoiceText, Color.GRAY);
+                Timer dealerProceed = new Timer(3000, e -> showDialogue(13));
+                dealerProceed.setRepeats(false); dealerProceed.start();
+                break;
             
-        case 15: 
-            String finalChoiceText = "";
-            switch (choice) {
-                case 1:
-                    finalChoiceText = "\nNarrator: \"You gather all your remaining strength to fight the monster you've become.\"";
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
-                    break;
-                case 2:
-                    finalChoiceText = "\nNarrator: \"The addiction whispers sweetly, promising relief from all the pain.\"";
-                    state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
-                    break;
-                case 3:
-                    finalChoiceText = "\nNarrator: \"Maybe something in your inventory can help in this desperate moment.\"";
-                    finalChoiceText += "\n" + playerName + ": \"Let me check what I have...\"";
-                    finalChoiceText += "\n[Use the inventory system to select and use an item. The battle will continue after you use an item or close the inventory.]";
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
-                    break;
-            }
-            ui.displayText(finalChoiceText, Color.GRAY);
-            
-            // Only proceed automatically for choices 1 and 2
-            if (choice != 3) {
-                Timer finalProceed = new Timer(3000, e -> showDialogue(16));
-                finalProceed.setRepeats(false); finalProceed.start();
-            }
-            // For choice 3, the dialogue will continue when the user manually uses an item
-            // or they can proceed to stage 16 through other means
-            break;
-    }
-}
+            case 15: 
+                String finalChoiceText = "";
+                switch (choice) {
+                    case 1:
+                        finalChoiceText = "\nNarrator: \"You gather all your remaining strength to fight the monster you've become.\"";
+                        state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
+                        break;
+                    case 2:
+                        finalChoiceText = "\nNarrator: \"The addiction whispers sweetly, promising relief from all the pain.\"";
+                        state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+                        break;
+                    case 3:
+                        finalChoiceText = "\nNarrator: \"Maybe something in your inventory can help in this desperate moment.\"";
+                        finalChoiceText += "\n" + playerName + ": \"Let me check what I have...\"";
+                        finalChoiceText += "\n[Use the inventory system to select and use an item. The battle will continue after you use an item or close the inventory.]";
+                        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+                        break;
+                }
+                ui.displayText(finalChoiceText, Color.GRAY);
                 
-    
+                // Only proceed automatically for choices 1 and 2
+                if (choice != 3) {
+                    Timer finalProceed = new Timer(3000, e -> showDialogue(16));
+                    finalProceed.setRepeats(false); finalProceed.start();
+                }
+                // For choice 3, the dialogue will continue when the user manually uses an item
+                // or they can proceed to stage 16 through other means
+                break;
+        }
+    }
 
-
-     private void startChapter3Battle() {
+    private void startCaffeineBattle() {
         ui.setStageImage("/Resources/Images/Story2/.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
 
@@ -445,8 +411,7 @@ public void startStory() {
         startBattleActual.start();
     }
 
-    
-     private void startChapter6Battle() {
+    private void startAdderallBattle() {
         ui.setStageImage("/Resources/Images/Story2/.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
  
@@ -478,8 +443,7 @@ public void startStory() {
         startBattleActual.start();
     }
 
-
-     private void startChapter13Battle() {  
+    private void startXanaxBattle() {  
         ui.setStageImage("/Resources/Images/Story2/.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
 
@@ -503,17 +467,17 @@ public void startStory() {
                     state.adjustStat(STAT_PLAYER_DEFENSE, 10);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 5);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
-                     Timer proceed = new Timer(12000, res -> showDialogue(14));
+                    Timer proceed = new Timer(12000, res -> showDialogue(14));
                     proceed.setRepeats(false); proceed.start();
                 } else { 
                     ui.setStageImage("/Resources/Images/Story2/.png");
                     ui.displayText("\nNarrator: \"You were too afraid to fight back effectively. Addiction Level +2\"", Color.GRAY);
                     Timer r1 = new Timer(2500, res -> ui.displayText("\nBig Level Up, You can now deal more damage - You've learned from this failure.\"", Color.GREEN));
                     r1.setRepeats(false); r1.start();
-                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +10, Attack +10, Defense +10, Willpower +5\"", Color.GREEN));
+                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +20, Attack +5, Defense +10, Willpower +5\"", Color.GREEN));
                     r2.setRepeats(false); r2.start();
-                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 10);
-                    state.adjustStat(GameState.PLAYER_ATTACK, 10);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 20);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 5);
                     state.adjustStat(STAT_PLAYER_DEFENSE, 10);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 5);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
@@ -566,7 +530,8 @@ public void startStory() {
         startBattleActual.setRepeats(false);
         startBattleActual.start();
     }
-   private void showStage0() {
+
+     private void showStage0() {
      if (dialogueState != 0) return;
   
         ui.setStageImage("/Resources/Images/Story2/highschool.png"); 
@@ -642,7 +607,7 @@ public void startStory() {
         
         Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: You try to look for anything to help you stay awake, and found the caffeine pills that your dad owned.", Color.GRAY));
         t1.setRepeats(false); t1.start();
-        Timer t2 = new Timer(5000, e -> startChapter3Battle());
+        Timer t2 = new Timer(5000, e -> startCaffeineBattle());
         t2.setRepeats(false); t2.start();
     }
 
@@ -784,7 +749,7 @@ private void showStage13() {
     t1.setRepeats(false); t1.start();
     Timer t2 = new Timer(6000, e -> ui.displayText("\n" + playerName + " (shaking): \"Just one. Just to calm down. I can't think straight anymore.\"", Color.GRAY));
     t2.setRepeats(false); t2.start();
-    Timer t3 = new Timer(10000, e -> startChapter13Battle());
+    Timer t3 = new Timer(10000, e -> startXanaxBattle());
     t3.setRepeats(false); t3.start();
 }
 private void showStage14() {
