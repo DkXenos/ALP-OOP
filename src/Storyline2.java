@@ -13,11 +13,18 @@ public class Storyline2 extends Storyline {
     public static final String STAT_PLAYER_WILLPOWER = "playerWillpower";
     public static final String STAT_PLAYER_DEFENSE = "playerDefense";
 
-private static final Item XANAX_ITEM = new SmokingItem(
+    private static final Item XANAX_ITEM = new DrugItem(
         "XANAX", 
         "Xanax is a nicotine replacement product.",
         "smokes a Xanax. A brief, harsh buzz...",
         Map.of(UNIQUE_STAT_KEY_S2, 2, STAT_PLAYER_WILLPOWER, -1)
+    );
+
+    private static final Item ENERGY_PILLS = new DrugItem(
+        "ENERGY_PILLS", 
+        "Energy Pills are a stimulant drug.",
+        "takes an Energy Pill. A rush of energy surges through...",
+        Map.of(UNIQUE_STAT_KEY_S2, 3, STAT_PLAYER_WILLPOWER, -2)
     );
 
     public Storyline2(GameUI ui, GameState state) {
@@ -108,7 +115,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
     
     public int realPlayerDamage() {
         // Check if this is the Adderall battle (first real drug encounter)
-        if (isAdderallBattle) {
+        if (isAdderallBattle == true) {
             // Player is too scared to deal damage during first real drug encounter
             return 0;
         }
@@ -128,6 +135,28 @@ private static final Item XANAX_ITEM = new SmokingItem(
             }
         }
         
+        // Handle Energy Pills during late night study sessions
+        if (itemName.equalsIgnoreCase("ENERGY_PILLS") && (dialogueState == 1 || dialogueState == 2 || dialogueState == 7)) {
+            if (state.getItemQuantity("ENERGY_PILLS") > 0) {
+                useEnergyPillsDuringStudy();
+                return;
+            } else {
+                ui.displayText("\n" + playerName + " doesn't have any Energy Pills to use.", Color.BLACK);
+                return;
+            }
+        }
+        
+        // Handle items during final boss battle
+        if (battleManager.isBattleActive() && dialogueState == 16) {
+            if (itemName.equalsIgnoreCase("XANAX") && state.getItemQuantity("XANAX") > 0) {
+                useXanaxDuringFinalBattle();
+                return;
+            } else if (itemName.equalsIgnoreCase("ENERGY_PILLS") && state.getItemQuantity("ENERGY_PILLS") > 0) {
+                useEnergyPillsDuringFinalBattle();
+                return;
+            }
+        }
+        
         Item itemToUse = state.getItemPrototype(itemName);
         if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
             // Apply the item's effect for other cases
@@ -136,6 +165,37 @@ private static final Item XANAX_ITEM = new SmokingItem(
         } else {
             ui.displayText("\n" + playerName + " doesn't have any " + itemName + " to use or item is unknown.", Color.BLACK);
         }
+    }
+
+    private void useEnergyPillsDuringStudy() {
+        state.consumeItem("ENERGY_PILLS");
+        state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        
+        ui.displayText("\n" + playerName + " (reaching for the Energy Pills): \"Maybe this will help me focus better tonight.\"", Color.BLACK);
+        
+        Timer energyEffect = new Timer(2000, e -> {
+            ui.displayText("\nNarrator: \"You swallow the Energy Pill. A rush of artificial energy surges through your body...\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.displayText("\n" + playerName + " (feeling the rush): \"Wow... I can think so clearly now. I could study all night!\"", Color.BLACK));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.displayText("\nNarrator: \"Your heart rate increases. Your hands shake slightly, but your mind feels laser-focused.\"", Color.GRAY));
+            t2.setRepeats(false); t2.start();
+            Timer t3 = new Timer(7000, e2 -> ui.displayText("\nSystem Status: \"Energy Pills consumed! Addiction Level +2, Willpower -1\"", Color.ORANGE));
+            t3.setRepeats(false); t3.start();
+            
+            // Add progression logic for stage 7
+            if (dialogueState == 7) {
+                Timer proceedToNext = new Timer(9000, e2 -> {
+                    ui.displayText("\n\n[The Next Day] (School bathroom, Jake approaches you.)", Color.GRAY);
+                    Timer t7 = new Timer(1000, e3 -> ui.displayText("\nJake: \"Hey, you look rough. Did those pills help?\"", Color.BLUE));
+                    t7.setRepeats(false); t7.start();
+                    Timer finalProceed = new Timer(3000, e3 -> showDialogue(8)); 
+                    finalProceed.setRepeats(false); finalProceed.start();
+                });
+                proceedToNext.setRepeats(false); proceedToNext.start();
+            }
+        });
+        energyEffect.setRepeats(false); energyEffect.start();
     }
 
     private void useXanaxDuringFinalStage() {
@@ -173,6 +233,43 @@ private static final Item XANAX_ITEM = new SmokingItem(
         
         Timer finalProceed = new Timer(20000, e -> showDialogue(16));
         finalProceed.setRepeats(false); finalProceed.start();
+    }
+
+
+    private void useXanaxDuringFinalBattle() {
+        state.consumeItem("XANAX");
+        state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
+        state.adjustStat(GameState.PLAYER_ATTACK, -3);
+        
+        ui.appendBattleLog(playerName + " (in desperation): \"Maybe the Xanax will calm me down enough to think straight!\"", Color.BLACK);
+        
+        Timer xanaxBattleEffect = new Timer(2000, e -> {
+            ui.appendBattleLog("Narrator: \"You swallow the Xanax mid-battle. Your anxiety melts away, but so does your ability to fight effectively...\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.appendBattleLog("Addicted Milo: \"Yes! Give in to the chemicals! You're weakening your own resolve!\"", Color.RED.darker()));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.appendBattleLog("System Status: \"Xanax used in battle! Attack Power -3, Addiction Level +1, Willpower -2\"", Color.RED.darker()));
+            t2.setRepeats(false); t2.start();
+        });
+        xanaxBattleEffect.setRepeats(false); xanaxBattleEffect.start();
+    }
+
+    private void useEnergyPillsDuringFinalBattle() {
+        state.consumeItem("ENERGY_PILLS");
+        state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        state.adjustStat(GameState.PLAYER_ATTACK, 2);
+        
+        ui.appendBattleLog(playerName + " (desperately): \"I need more energy to fight this!\"", Color.BLACK);
+        
+        Timer energyBattleEffect = new Timer(2000, e -> {
+            ui.appendBattleLog("Narrator: \"You consume the Energy Pill. A surge of artificial strength flows through you, but at what cost?\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.appendBattleLog("Addicted Milo: \"You still need the drugs to feel strong! You're proving my point!\"", Color.RED.darker()));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.appendBattleLog("System Status: \"Energy Pills used! Attack Power +2, but Addiction Level +2, Willpower -1\"", Color.ORANGE));
+            t2.setRepeats(false); t2.start();
+        });
+        energyBattleEffect.setRepeats(false); energyBattleEffect.start();
     }
 
     private void handleDialogueChoice(int choice) {
@@ -238,11 +335,12 @@ private static final Item XANAX_ITEM = new SmokingItem(
                 ui.displayText(jakeChoiceText, Color.GRAY);
                 Timer jakeOffer = new Timer(2000, e -> {
                     ui.displayText("\nJake: (lowering his voice) \"My older brother gave me these. Energy pills, way better than coffee.\" (hands you a small bottle) \"Keep them. Use them when you really need them.\"", Color.BLUE);
-                    Timer t1 = new Timer(5000, e2 ->
-                        ui.displayText("\nSystem: Added Energy Pills to inventory.", Color.GREEN));
-                    t1.setRepeats(false); t1.start();
-                    Timer t2 = new Timer(9000, e2 -> ui.displayText("\n" + playerName + ": \"I... thanks. I'll think about it.\"\nJake: \"Trust me, they're lifesavers during finals.\"", Color.BLACK));
-                    t2.setRepeats(false); t2.start(); 
+                    Timer t2 = new Timer(5000, e2 ->  ui.displayText("\nSystem: Added 1 " + ENERGY_PILLS.getItemName() + " to inventory.", Color.GREEN));
+                    state.addItem(ENERGY_PILLS, 1);
+                     t2.setRepeats(false); t2.start();
+
+                    Timer t3 = new Timer(9000, e2 -> ui.displayText("\n" + playerName + ": \"I... thanks. I'll think about it.\"\nJake: \"Trust me, they're lifesavers during finals.\"", Color.BLACK));
+                    t3.setRepeats(false); t3.start();
                 });
                 jakeOffer.setRepeats(false); jakeOffer.start();
                 Timer proceed = new Timer(13000, e2 -> showDialogue(6));
@@ -271,19 +369,28 @@ private static final Item XANAX_ITEM = new SmokingItem(
                 String outputText = "";
                 switch (choice) {
                     case 1: 
-                        outputText = "\nNarrator: \"Honesty feels dangerous, but you're running out of options.\"";
+                        outputText = "\nNarrator: \"You decide to use the Energy Pills as a temporary solution.\"";
+                        outputText += "\n" + playerName + ": \"Let me check my inventory for those Energy Pills...\"";
+                        state.consumeItem("ENERGY_PILLS");
+                        // Don't auto-use, wait for user to manually use from inventory
                         break;
                     case 2: 
-                        outputText = "\nNarrator: \"You try to maintain some dignity, but Jake sees right through you.\"";
-                        break;
-                    case 3: 
-                        outputText = "\nNarrator: \"You've crossed a line you never thought you would. The old you would be horrified.\"";
+                        outputText = "\nNarrator: \"You decide to save them for a more desperate moment. You try to push through the night naturally.\"";
+                        outputText += "\n" + playerName + " (struggling): \"I need to learn to cope without relying on substances...\"";
                         break;
                 }
                 ui.displayText(outputText, Color.GRAY);   
-                Timer proceedAfterChoiceTimer3 = new Timer(3000, e -> showDialogue(8)); 
-                proceedAfterChoiceTimer3.setRepeats(false);
-                proceedAfterChoiceTimer3.start();
+                
+                // Continue to Jake conversation for both choices after a delay
+                Timer continueToJake = new Timer(3000, e -> {
+                    ui.displayText("\n\n[The Next Day] (School bathroom, Jake approaches you.)", Color.GRAY);
+                    Timer t7 = new Timer(1000, e2 -> ui.displayText("\nJake: \"Hey, you look rough. Did those pills help?\"", Color.BLUE));
+                    t7.setRepeats(false); t7.start();
+                    Timer proceedAfterChoiceTimer3 = new Timer(3000, e2 -> showDialogue(8)); 
+                    proceedAfterChoiceTimer3.setRepeats(false);
+                    proceedAfterChoiceTimer3.start();
+                });
+                continueToJake.setRepeats(false); continueToJake.start();
                 break;
 
             case 9: // Month 4 parent confrontation choices
@@ -357,8 +464,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
                     case 3:
                         finalChoiceText = "\nNarrator: \"Maybe something in your inventory can help in this desperate moment.\"";
                         finalChoiceText += "\n" + playerName + ": \"Let me check what I have...\"";
-                        finalChoiceText += "\n[Use the inventory system to select and use an item. The battle will continue after you use an item or close the inventory.]";
-                        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+                         state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
                         break;
                 }
                 ui.displayText(finalChoiceText, Color.GRAY);
@@ -525,6 +631,21 @@ private static final Item XANAX_ITEM = new SmokingItem(
                     proceed.setRepeats(false); proceed.start();
                 }
             });
+            
+            // Add mid-battle event when enemy health is around 50%
+            battleManager.setMidBattleEvent(() -> {
+                battleManager.pauseBattle();
+                ui.displayText("\nAddicted Milo: \"You're struggling, aren't you? You know what would make this easier...\"", Color.RED.darker());
+                Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The battle is taking its toll. Your hands shake, your vision blurs. Maybe something in your inventory could help...\"", Color.GRAY));
+                t1.setRepeats(false); t1.start();
+                Timer t2 = new Timer(4000, e -> ui.displayText("\n" + playerName + " (desperate): \"I... I need to focus. Maybe I should check my inventory...\"", Color.BLACK));
+                t2.setRepeats(false); t2.start();
+                Timer t3 = new Timer(6000, e -> {
+                    ui.displayText("\nSystem: \"Mid-battle pause! You can use items from your inventory or continue fighting.\"", Color.ORANGE);
+                    battleManager.resumeBattle();
+                });
+                t3.setRepeats(false); t3.start();
+            });
         });
 
         startBattleActual.setRepeats(false);
@@ -566,7 +687,7 @@ private static final Item XANAX_ITEM = new SmokingItem(
     }
 
 
-    private void showStage1() {
+       private void showStage1() {
         ui.setStageImage("/Resources/Images/Story2/milo_bedroom.png"); 
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage1_night_bgm.wav", true); 
         
@@ -649,8 +770,8 @@ private static final Item XANAX_ITEM = new SmokingItem(
     }
 
     private void showStage7() {
-        ui.setStageImage("/Resources/Images/Story2/counting_pills.png"); // Added image path
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage7_stress_bgm.wav", true); // Added audio path
+        ui.setStageImage("/Resources/Images/Story2/counting_pills.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage7_stress_bgm.wav", true);
         
         ui.displayText("\n\n [Milo's Bedroom - Month 4, Late Night] ", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (counting pills): \"Only three left and the refill isn't for another two weeks. That's not enough for midterms. How do I get more, I need more.\"", Color.BLACK));
@@ -665,14 +786,11 @@ private static final Item XANAX_ITEM = new SmokingItem(
         Timer t4 = new Timer(8000, e -> ui.displayText("\n" + playerName + ": \"Vyvanse lasts longer... or maybe something to help me sleep after the stimulants. Xanax could work.\"", Color.BLACK));
         t4.setRepeats(false); t4.start();
         
-        Timer t5 = new Timer(11000, e -> ui.displayText("\n\n[The Next Day] (School bathroom, Jake approaches you.)", Color.GRAY));
+        Timer t5 = new Timer(11000, e -> ui.displayText("\nNarrator: \"You still have some Energy Pills left. Maybe they could help you keep you calm for awhile, until you get more Adderall...\"", Color.GRAY));
         t5.setRepeats(false); t5.start();
         
-        Timer t6 = new Timer(12000, e -> ui.displayText("\nJake: \"Hey, you look rough, Did those pills help?\"", Color.BLUE));
-        t6.setRepeats(false); t6.start();
-        
-        Timer t7 = new Timer(30000, e -> ui.showChoicesDialog(new String[]{"Admit they helped but you need more", "Lie and say you didn't use them", "Ask if he has anything stronger"}));
-        t7.setRepeats(false); t7.start();
+        Timer showChoices = new Timer(30000, e -> ui.showChoicesDialog(new String[]{"Use Energy Pills to cope tonight", "Save them for later - try to endure without"}));
+        showChoices.setRepeats(false); showChoices.start();
     }
 
     private void showStage8(){
@@ -719,7 +837,7 @@ private void showStage11() {
     ui.displayText("\n\n [Milo's Room - Researching Online] ", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\n" + "Narrator: \"The darknet is a hot spot for drugs. A certain advertisement catches your attention.  \"DONT WANT TO DISAPPOINT YOUR FAMILY? CONTACT HERE NOW!\" A telegram account...", Color.GRAY));
     t1.setRepeats(false); t1.start();
-    Timer t2 = new Timer(5000, e -> ui.displayText("\n" + "Narrator: \"You decide to ask the person behind the advertisement.", Color.GRAY));
+    Timer t2 = new Timer(5000, e -> ui.displayText("\n" + "Narrator: \"You decide to start talking to the person behind the advertisement.", Color.GRAY));
     t2.setRepeats(false); t2.start();
     Timer proceedTimer = new Timer(8500, e -> showDialogue(12));
     proceedTimer.setRepeats(false); proceedTimer.start();
@@ -767,7 +885,7 @@ private void showStage14() {
     t4.setRepeats(false); t4.start();
     Timer t5 = new Timer(12000, e -> ui.displayText("\nNarrator: \"Your grades begin to slip. Teachers notice. Your parents are called for another meeting. You prepare for the worst.\"", Color.GRAY));
     t5.setRepeats(false); t5.start();
-    Timer proceedTimer = new Timer(30000, e -> showDialogue(15));
+    Timer proceedTimer = new Timer(23000, e -> showDialogue(15));
     proceedTimer.setRepeats(false); proceedTimer.start();
 }
 private void showStage15() {
@@ -788,7 +906,7 @@ private void showStage15() {
         Timer t6 = new Timer(13000, e -> ui.displayText("\nAddicted Milo: \"But it's who you ARE now. Without the pills, you're just ordinary. Mediocre. A disappointment.\"", Color.RED.darker()));
     t6.setRepeats(false); t6.start();
     
-    Timer showChoices = new Timer(40000, e -> ui.showChoicesDialog(new String[]{"Fight against your addiction", "Give in to the voices", "Try to use an item from inventory"}));
+    Timer showChoices = new Timer(25000, e -> ui.showChoicesDialog(new String[]{"Fight against your addiction", "Give in to the voices", "Try to use an item from inventory"}));
     showChoices.setRepeats(false); showChoices.start();
 }
 
@@ -823,7 +941,7 @@ private void showBadEnding() {
         t2.setRepeats(false); t2.start();
         Timer t3 = new Timer(7000, e -> ui.displayText("\nMom (sobbing): \"He was just trying to be perfect... we just wanted him to succeed...\"", Color.BLUE));
         t3.setRepeats(false); t3.start();
-        Timer t5 = new Timer(15000, e -> ui.displayText("\n\n=== THE END ===\n\"Sometimes the cost of 'success' is everything we truly value.\"\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
+        Timer t5 = new Timer(15000, e -> ui.displayText("\n\n=== THE END ===\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
         t5.setRepeats(false); t5.start();
     } else {
         // bad ending
@@ -839,7 +957,7 @@ private void showBadEnding() {
         t3.setRepeats(false); t3.start();
         Timer t4 = new Timer(11000, e -> ui.displayText("\n" + playerName + ": \"I'm clean now, but it's too late. The damage is done.\"", Color.BLACK));
         t4.setRepeats(false); t4.start();
-         Timer t6 = new Timer(18000, e -> ui.displayText("\n\n=== THE END ===\n\"Addiction doesn't just destroy the Milo, it destroys everyone who loves them.\"\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
+         Timer t6 = new Timer(18000, e -> ui.displayText("\n\n=== THE END ===\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
         t6.setRepeats(false); t6.start();
     }
 }
@@ -856,10 +974,27 @@ private void showBadEnding() {
                 };
             }
             
+            // Special choices for final battle
+            if (dialogueState == 16) {
+                return new String[]{
+                    "1. Attack (" + (baseAttack-1) + "-" + (baseAttack+2) + " dmg)",
+                    "2. Use Item (Check inventory for Xanax or Energy Pills)",
+                    "3. Fight with pure willpower (Special attack)"
+                };
+            }
+            
             return new String[]{
                 "1. Attack (" + (baseAttack-1) + "-" + (baseAttack+2) + " dmg)",
-                "2. Use Item (Not Implemented)"};
+                "2. Use Item (Check your inventory)"
+            };
         }
         return new String[0]; 
+    }
+
+    // Add this helper method for setting mid-battle events  
+    public void setMidBattleEvent(Runnable event) {
+        if (battleManager != null) {
+            battleManager.setMidBattleEvent(event);
+        }
     }
 }

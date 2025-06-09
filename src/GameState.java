@@ -22,19 +22,13 @@ public class GameState {
     // We'll make them public in Storyline3 or define them here/in a constants class.
     // For this example, assuming Storyline3.UNIQUE_STAT_KEY_S3 etc. are made public.
     private static final Map<String, Supplier<Item>> KNOWN_ITEM_FACTORIES = new HashMap<>();
-
+    
     static {
-        // INI PENTINGGGGG BAWAH INII YES YES YES
-
-        // This block will be problematic if Storyline3 stat keys are private.
-        // We will define them directly here for now or assume they are made public in Storyline3.
-        // To avoid direct dependency on Storyline3 class here, let's use string literals
-        // and ensure Storyline3 uses the same literals when creating items.
-        String nicotineKey = "nicotineAddictionLevel"; // Storyline3.UNIQUE_STAT_KEY_S3
-        String willpowerKey = "playerWillpower";     // Storyline3.STAT_PLAYER_WILLPOWER
-        String defenseKey = "playerDefense";         // Storyline3.STAT_PLAYER_DEFENSE
-        String socialStatusKey = "socialStatus";     // Storyline3.STAT_SOCIAL_STATUS
-
+        // Smoking items (Storyline3)
+        String nicotineKey = "nicotineAddictionLevel";
+        String willpowerKey = "playerWillpower";
+        String defenseKey = "playerDefense"; 
+        String socialStatusKey = "socialStatus";
 
         KNOWN_ITEM_FACTORIES.put("Cigarette", () -> new SmokingItem(
             "Cigarette", 
@@ -46,13 +40,29 @@ public class GameState {
             "Vape Pen", 
             "A sleek, modern vape pen. Produces flavored vapor.",
             "uses the Vape Pen. Smooth vapor, lingering desire...",
-            Map.of(nicotineKey, 3, willpowerKey, -1, defenseKey, -1) // Example: Vape might also affect defense
+            Map.of(nicotineKey, 3, willpowerKey, -1, defenseKey, -1)
         ));
         KNOWN_ITEM_FACTORIES.put("Premium Cigarette", () -> new SmokingItem(
             "Premium Cigarette", 
             "A high-quality, expensive cigarette. Promises a richer experience.",
             "lights up the Premium Cigarette. It's strong, a noticeable kick.",
             Map.of(nicotineKey, 5, willpowerKey, -2, PLAYER_HEALTH, -1, socialStatusKey, -1)
+        ));
+
+        // Drug items (Storyline2)
+        String drugAddictionKey = "drugAddictionLevel";
+
+        KNOWN_ITEM_FACTORIES.put("XANAX", () -> new DrugItem(
+            "XANAX", 
+            "Xanax is an anti-anxiety medication.",
+            "takes a Xanax pill. Anxiety melts away, but reality blurs...",
+            Map.of(drugAddictionKey, 2, willpowerKey, -1)
+        ));
+        KNOWN_ITEM_FACTORIES.put("ENERGY_PILLS", () -> new DrugItem(
+            "ENERGY_PILLS", 
+            "Energy Pills are a stimulant drug.",
+            "swallows an Energy Pill. A rush of artificial energy surges through...",
+            Map.of(drugAddictionKey, 3, willpowerKey, -2)
         ));
     }
 

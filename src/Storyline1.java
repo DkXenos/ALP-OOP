@@ -221,4 +221,23 @@ public class Storyline1 extends Storyline {
         }
         return new String[0]; 
     }
+
+    // Add this helper method for setting mid-battle events
+    public void setMidBattleEvent(Runnable event) {
+        if (battleManager != null) {
+            battleManager.setMidBattleEvent(event);
+        }
+    }
+
+    // Add useInventoryItem method for consistency
+    public void useInventoryItem(String itemName) {
+        Item itemToUse = state.getItemPrototype(itemName);
+        if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
+            itemToUse.applyEffect(state, ui, "Player");
+            state.consumeItem(itemName);
+            ui.displayText("\nUsed " + itemName + ".", Color.BLACK);
+        } else {
+            ui.displayText("\nCannot use " + itemName + " - not available.", Color.BLACK);
+        }
+    }
 }

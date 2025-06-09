@@ -78,4 +78,15 @@ public class Typewriter {
             }
         }
     }
+
+    // Optional: Method to stop typing immediately and clear the queue
+    public void stopAndClearQueue() {
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        messageQueue.clear();
+        currentMessage = null;
+        // You might want to clear any partially typed text from textArea if needed,
+        // but usually, just stopping is enough.
+    }
 }

@@ -116,9 +116,7 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
             }
         });
         itemButtonBattle.addActionListener(e -> { // Ngasih aksi kalo tombol "Use Item" diklik
-            if (currentStory != null && battleManagerIsActive()) { // Kalo ada cerita yang jalan dan lagi battle
-                currentStory.handleChoice(2); // Panggil metode handleChoice di cerita, dengan pilihan 2 (biasanya buat pake item)
-            }
+           showInventory(); 
         });
 
         battleActionPanel.add(attackButton); // Tambahin tombol "Attack" ke panel aksi battle
@@ -273,10 +271,6 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
             displayText("\nCannot open inventory: GameState not initialized.", Color.RED); // Tampilin pesan error
             return; // Keluar
         }
-        if (battleManagerIsActive()) { // Kalo lagi battle
-            displayText("\nCannot access inventory during battle.", Color.RED); // Tampilin pesan error
-            return; // Keluar
-        }
 
         JDialog inventoryDialog = new JDialog(this, "Inventory", true); // Bikin dialog inventory, modal
         inventoryDialog.setSize(450, 300); // Atur ukuran dialog inventory
@@ -301,18 +295,11 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
                 String itemName = selectedValue.substring(0, selectedValue.indexOf(" (x")); // Potong string buat dapetin nama itemnya aja
                 inventoryDialog.dispose(); // Tutup dialog inventory
 
-                if (currentStory instanceof Storyline3) { // Kalo cerita yang lagi jalan itu Storyline3
-                    ((Storyline3) currentStory).useInventoryItem(itemName); // Panggil metode useInventoryItem khusus buat Storyline3
-                } else if (currentStory instanceof Storyline2) { // Kalo cerita yang lagi jalan itu Storyline2
-                    ((Storyline2) currentStory).useInventoryItem(itemName); // Panggil metode useInventoryItem khusus buat Storyline2
-                } else { // Kalo cerita lain
-                    // Penggunaan item generik atau pesan buat storyline lain
-                    Item item = gameState.getItemPrototype(itemName); // Dapetin prototype item dari GameState
-                    if (item != null && gameState.getItemQuantity(itemName) > 0) { // Kalo itemnya ada dan jumlahnya lebih dari 0
-                        displayText("\nUsed: " + itemName + ". (Generic use)", Color.BLACK); // Tampilin pesan penggunaan generik
-                    } else { // Kalo item gak bisa dipake
-                        displayText("\nCannot use " + itemName + ".", Color.ORANGE); // Tampilin pesan error
-                    }
+                // Handle battle-specific item usage
+                if (battleManagerIsActive()) {
+                    handleBattleItemUsage(itemName);
+                } else {
+                    handleNormalItemUsage(itemName);
                 }
             } else { // Kalo gak ada item yang dipilih atau inventory kosong
                  displayText("\nNo item selected or inventory is empty.", Color.BLACK); // Tampilin pesan
@@ -325,11 +312,43 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         inventoryDialog.setVisible(true); // Tampilin dialog inventory
     }
 
-    private void showDialogueOptions() { // Metode (kayaknya buat tes) buat nampilin pilihan dialog
-        String[] options = {"Hello nice to meet you!", "This is another text dialogue", "THIS IS A FAST RED TEXT"}; // Contoh pilihan
-        showChoicesDialog(options); // Panggil metode showChoicesDialog buat nampilin pilihan ini
+    // Add new method for battle item usage
+    private void handleBattleItemUsage(String itemName) {
+        if (currentStory instanceof Storyline1) {
+            // For Storyline1, you might want to add useInventoryItem method
+            Item item = gameState.getItemPrototype(itemName);
+            if (item != null && gameState.getItemQuantity(itemName) > 0) {
+                item.applyEffect(gameState, this, "Player");
+                gameState.consumeItem(itemName);
+                appendBattleLog("Used " + itemName + " during battle!", Color.GREEN);
+            } else {
+                appendBattleLog("Cannot use " + itemName + ".", Color.RED);
+            }
+        } else if (currentStory instanceof Storyline2) {
+            ((Storyline2) currentStory).useInventoryItem(itemName);
+        } else if (currentStory instanceof Storyline3) {
+            ((Storyline3) currentStory).useInventoryItem(itemName);
+        }
     }
 
+    // Add new method for normal (non-battle) item usage
+    private void handleNormalItemUsage(String itemName) {
+        if (currentStory instanceof Storyline3) {
+            ((Storyline3) currentStory).useInventoryItem(itemName);
+        } else if (currentStory instanceof Storyline2) {
+            ((Storyline2) currentStory).useInventoryItem(itemName);
+        } else {
+            // Generic item usage for other storylines
+            Item item = gameState.getItemPrototype(itemName);
+            if (item != null && gameState.getItemQuantity(itemName) > 0) {
+                item.applyEffect(gameState, this, "Player");
+                gameState.consumeItem(itemName);
+                displayText("\nUsed: " + itemName + ".", Color.BLACK);
+            } else {
+                displayText("\nCannot use " + itemName + ".", Color.ORANGE);
+            }
+        }
+    }
 
     private void saveCurrentGame() { // Metode buat nyimpen game
         if (currentStory == null || gameState == null) { // Kalo gak ada cerita atau data game
@@ -360,9 +379,9 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
 
         // Minta user milih slot buat nyimpen (1-3)
         String[] options = { // Pilihan slot yang ditampilin ke user
-            "Slot 1 (" + SaveManager.getSlotStage(1) + ")", // Slot 1 dengan deskripsi stage-nya
-            "Slot 2 (" + SaveManager.getSlotStage(2) + ")", // Slot 2 dengan deskripsi stage-nya
-            "Slot 3 (" + SaveManager.getSlotStage(3) + ")"  // Slot 3 dengan deskripsi stage-nya
+            "Slot 1: " + SaveManager.getSlotStage(1), // Slot 1 dengan deskripsi storyline dan stage-nya
+            "Slot 2: " + SaveManager.getSlotStage(2), // Slot 2 dengan deskripsi storyline dan stage-nya
+            "Slot 3: " + SaveManager.getSlotStage(3)  // Slot 3 dengan deskripsi storyline dan stage-nya
         };
         String choice = (String) JOptionPane.showInputDialog( // Tampilin dialog input buat milih slot
             this, // Jendela induknya GameUI ini
@@ -467,39 +486,6 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         });
     }
 
-    private void loadGameFromSlot() { // Metode buat ngeload game dari slot yang dipilih
-        String[] options = { // Pilihan slot yang ditampilin
-            "Slot 1 (" + SaveManager.getSlotStage(1) + ")", // Slot 1 dengan deskripsi stage
-            "Slot 2 (" + SaveManager.getSlotStage(2) + ")", // Slot 2 dengan deskripsi stage
-            "Slot 3 (" + SaveManager.getSlotStage(3) + ")"  // Slot 3 dengan deskripsi stage
-        };
-      String choice = (String) JOptionPane.showInputDialog( // Tampilin dialog buat milih slot load
-        this, // Jendela induk
-        "Select a slot to load:", // Pesan di dialog
-        "Load Game", // Judul dialog
-        JOptionPane.PLAIN_MESSAGE, // Tipe pesan
-        null, // Icon (gak pake)
-        options, // Pilihan slot
-        options[0] // Pilihan default
-    );
-    if (choice != null) { // Kalo user milih slot (gak batal)
-        int slot = choice.startsWith("Slot 1") ? 1 : choice.startsWith("Slot 2") ? 2 : 3; // Tentukan nomor slot dari pilihan
-        SaveData data = SaveManager.loadGame(slot); // Panggil metode loadGame dari SaveManager buat dapetin data save-an
-        if (data != null) { // Kalo data save-annya ada
-            applySaveData(data); // Terapin data save-an itu ke game
-        } else { // Kalo gak ada data save-an di slot itu
-            displayText("\nNo save found in slot " + slot + ".", Color.RED); // Tampilin pesan error
-        }
-    }
-    }
-
-    // Add this method to GameUI
-    private void cleanupCurrentStoryline() {
-        if (currentStory != null) {
-            currentStory.stopAllTimers(); // Stop all timers
-            currentStory.cleanup();       // Full cleanup
-        }
-    }
 
     // Update your load save method (wherever it is in GameUI)
     public void loadSaveGame(int slot) {
@@ -509,12 +495,5 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         } else {
             displayText("\nNo save found in slot " + slot + ".", Color.RED);
         }
-    }
-
-    // Also add cleanup when starting new games or switching storylines
-    public void startNewStoryline(int storylineNumber) {
-        cleanupCurrentStoryline(); // Cleanup old storyline first
-        
-        // ... your existing storyline initialization code
     }
 }

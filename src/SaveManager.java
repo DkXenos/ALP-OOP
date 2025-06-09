@@ -137,14 +137,31 @@ public class SaveManager {
                 // Deserialize to get SaveData object
                 SaveData data = (SaveData) deserialize(saveBytes);
                 
-                // Return formatted stage description
-                return "Stage " + data.getDialogueState();
+                // Get storyline name based on ID
+                String storylineName = getStorylineName(data.storylineId);
+                
+                // Return formatted stage description with storyline info
+                return storylineName + " - Stage " + data.getDialogueState();
             }
         } catch (Exception e) {
             // Ignore errors for empty slots (expected behavior)
             // This allows the method to return "Empty" for non-existent saves
         }
         return "Empty";  // Return if slot has no save data
+    }
+    
+    // Helper method to get storyline name from ID
+    private static String getStorylineName(int storylineId) {
+        switch (storylineId) {
+            case 1:
+                return "Storyline 1";
+            case 2:
+                return "Storyline 2";
+            case 3:
+                return "Storyline 3";
+            default:
+                return "Unknown Story";
+        }
     }
 
     //  Serializes an object to a byte array.
