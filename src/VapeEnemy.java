@@ -6,8 +6,6 @@ public class VapeEnemy extends Enemy {
         super(name, maxHealth, attack);
     }
 
-    //INI BELUM BISA DIPAKE DI BATTLE SCENE SKILL SKILL NYA, harus diupdate lagi pokoke
-
     /**
      * Performs an attack using the "Coughing" skill.
      * This attack deals the enemy's base attack damage plus bonus damage from the skill.

@@ -49,10 +49,10 @@ public class BattleManager {
 
 
     public int calculatePlayerDamage() {
-    int baseAttack = gameState.getStat(GameState.PLAYER_ATTACK);
-    // Returns random value between baseAttack-1 and baseAttack+2
-    return baseAttack - 1 + new Random().nextInt(4);
-}
+            int effectiveAttack = gameState.getEffectiveAttack(); // Use effective attack (base + willpower)
+            // Returns the effective attack value
+            return effectiveAttack;
+    }
 
     // Modified this method to allow setting events mid-battle
     public void setMidBattleEvent(Runnable event) {
@@ -98,9 +98,6 @@ public class BattleManager {
                     return;
                 }
                 break;
-            case 2: // Use Item
-                ui.displayText("Opening inventory...", Color.BLACK);
-                return;
             default:
                 ui.appendBattleLog("Invalid battle action. Try again.", Color.BLACK);
                 return;

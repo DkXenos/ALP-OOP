@@ -25,7 +25,6 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
     private JLabel opponentHealthBattleLabel; // Label buat nampilin darah musuh pas battle
     private JPanel battleActionPanel; // Panel buat nampung tombol aksi pas battle (serang, item)
     private JButton attackButton; // Tombol buat nyerang pas battle
-    private JButton itemButtonBattle; // Tombol buat pake item pas battle
 
     private JPanel topImagePanel; // Panel di bagian atas buat nampilin gambar suasana
     private Image currentStageImage; // Nyimpen gambar yang lagi ditampilin di topImagePanel
@@ -108,19 +107,14 @@ public class GameUI extends JFrame { // Bikin kelas GameUI, ini adalah jendela u
         battleActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5)); // Bikin panel buat tombol aksi battle, pake FlowLayout (rata tengah, jarak horizontal 10, vertikal 5)
         battleActionPanel.setOpaque(false); // Bikin panel aksi battle transparan
         attackButton = new JButton("Attack"); // Bikin tombol "Attack"
-        itemButtonBattle = new JButton("Use Item"); // Bikin tombol "Use Item"
 
         attackButton.addActionListener(e -> { // Ngasih aksi kalo tombol "Attack" diklik
             if (currentStory != null && battleManagerIsActive()) { // Kalo ada cerita yang jalan dan lagi battle
                 currentStory.handleChoice(1); // Panggil metode handleChoice di cerita, dengan pilihan 1 (biasanya buat nyerang)
             }
         });
-        itemButtonBattle.addActionListener(e -> { // Ngasih aksi kalo tombol "Use Item" diklik
-           showInventory(); 
-        });
 
         battleActionPanel.add(attackButton); // Tambahin tombol "Attack" ke panel aksi battle
-        battleActionPanel.add(itemButtonBattle); // Tambahin tombol "Use Item" ke panel aksi battle
         battleDisplayPanel.add(battleActionPanel, BorderLayout.SOUTH); // Tambahin panel aksi battle ke bagian bawah panel battle
 
         mainContentPanel.add(textAreaScrollPane, TEXT_AREA_CARD); // Tambahin area teks cerita (dengan scrollbar) sebagai satu kartu/tampilan ke mainContentPanel

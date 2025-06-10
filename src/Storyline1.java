@@ -216,8 +216,7 @@ public class Storyline1 extends Storyline {
     public String[] getCurrentChoices() {
         if (battleManager.isBattleActive()) {
             return new String[]{
-                "1. Attack (" + state.getStat(GameState.PLAYER_ATTACK) + " dmg)",
-                "2. Use Item (Not Implemented)"};
+                "1. Attack (" + state.getEffectiveAttack() + " dmg)"};
         }
         return new String[0]; 
     }

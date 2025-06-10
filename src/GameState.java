@@ -16,37 +16,34 @@ public class GameState {
     public static final String PLAYER_HEALTH = "playerHealth";
     public static final String PLAYER_MAX_HEALTH = "playerMaxHealth";
     public static final String PLAYER_ATTACK = "playerAttack";
+    public static final String PLAYER_WILLPOWER = "playerWillpower";
 
     // Item Factories for repopulating items on load
-    // These need access to stat keys. For Storyline3 items, these keys are in Storyline3.
-    // We'll make them public in Storyline3 or define them here/in a constants class.
-    // For this example, assuming Storyline3.UNIQUE_STAT_KEY_S3 etc. are made public.
     private static final Map<String, Supplier<Item>> KNOWN_ITEM_FACTORIES = new HashMap<>();
     
     static {
         // Smoking items (Storyline3)
         String nicotineKey = "nicotineAddictionLevel";
         String willpowerKey = "playerWillpower";
-        String defenseKey = "playerDefense"; 
         String socialStatusKey = "socialStatus";
 
         KNOWN_ITEM_FACTORIES.put("Cigarette", () -> new SmokingItem(
             "Cigarette", 
             "A standard, mass-produced cigarette.",
             "smokes a Cigarette. A brief, harsh buzz...",
-            Map.of(nicotineKey, 2, willpowerKey, -1)
+            Map.of(nicotineKey, 2, PLAYER_MAX_HEALTH, -2)
         ));
         KNOWN_ITEM_FACTORIES.put("Vape Pen", () -> new SmokingItem(
             "Vape Pen", 
             "A sleek, modern vape pen. Produces flavored vapor.",
             "uses the Vape Pen. Smooth vapor, lingering desire...",
-            Map.of(nicotineKey, 3, willpowerKey, -1, defenseKey, -1)
+            Map.of(nicotineKey, 3, PLAYER_MAX_HEALTH, -3)
         ));
         KNOWN_ITEM_FACTORIES.put("Premium Cigarette", () -> new SmokingItem(
             "Premium Cigarette", 
             "A high-quality, expensive cigarette. Promises a richer experience.",
             "lights up the Premium Cigarette. It's strong, a noticeable kick.",
-            Map.of(nicotineKey, 5, willpowerKey, -2, PLAYER_HEALTH, -1, socialStatusKey, -1)
+            Map.of(nicotineKey, 5, PLAYER_MAX_HEALTH, -5, PLAYER_HEALTH, -2, socialStatusKey, -1)
         ));
 
         // Drug items (Storyline2)
@@ -56,13 +53,13 @@ public class GameState {
             "XANAX", 
             "Xanax is an anti-anxiety medication.",
             "takes a Xanax pill. Anxiety melts away, but reality blurs...",
-            Map.of(drugAddictionKey, 2, willpowerKey, -1)
+            Map.of(drugAddictionKey, 2, PLAYER_MAX_HEALTH, -2)
         ));
         KNOWN_ITEM_FACTORIES.put("ENERGY_PILLS", () -> new DrugItem(
             "ENERGY_PILLS", 
             "Energy Pills are a stimulant drug.",
             "swallows an Energy Pill. A rush of artificial energy surges through...",
-            Map.of(drugAddictionKey, 3, willpowerKey, -2)
+            Map.of(drugAddictionKey, 3, PLAYER_MAX_HEALTH, -3)
         ));
     }
 
@@ -72,6 +69,7 @@ public class GameState {
         setStat(PLAYER_MAX_HEALTH, 100);
         setStat(PLAYER_HEALTH, getStat(PLAYER_MAX_HEALTH));
         setStat(PLAYER_ATTACK, 10);
+        setStat(PLAYER_WILLPOWER, 0);
     }
 
     public void setStat(String key, int value) {
@@ -79,7 +77,7 @@ public class GameState {
         // Ensure health doesn't exceed max_health or go below 0 immediately after setting
         if (key.equals(PLAYER_HEALTH)) {
             int currentHealth = stats.getOrDefault(key, 0);
-            int maxHealth = stats.getOrDefault(PLAYER_MAX_HEALTH, currentHealth); // Use PLAYER_MAX_HEALTH
+            int maxHealth = stats.getOrDefault(PLAYER_MAX_HEALTH, currentHealth);
             stats.put(key, Math.min(Math.max(currentHealth, 0), maxHealth));
         }
     }
@@ -92,6 +90,11 @@ public class GameState {
     public void adjustStat(String key, int amount) {
         int currentValue = getStat(key);
         setStat(key, currentValue + amount);
+    }
+
+    // Get effective attack power (base attack + willpower bonus)
+    public int getEffectiveAttack() {
+        return getStat(PLAYER_ATTACK) + getStat(PLAYER_WILLPOWER);
     }
 
     public void setFlag(String key, boolean value) {
@@ -138,8 +141,6 @@ public class GameState {
             inventoryQuantities.put(itemName, inventoryQuantities.get(itemName) - 1);
             if (inventoryQuantities.get(itemName) == 0) {
                 inventoryQuantities.remove(itemName);
-                // Optionally remove from itemPrototypes if no longer needed and won't be re-added,
-                // but generally safer to keep prototypes if they might be acquired again.
             }
             System.out.println("Consumed 1 " + itemName + ".");
             return true;
@@ -155,7 +156,6 @@ public class GameState {
             inventoryQuantities.put(itemName, currentQuantity - quantity);
             if (inventoryQuantities.get(itemName) == 0) {
                 inventoryQuantities.remove(itemName);
-                // itemPrototypes.remove(itemName); // Consider if prototype should be removed
             }
             System.out.println("Removed " + quantity + " " + itemName + "(s) from inventory.");
             return true;
@@ -203,13 +203,12 @@ public class GameState {
     private void repopulateItemPrototypesFromQuantities() {
         if (inventoryQuantities == null) return;
         for (String itemName : inventoryQuantities.keySet()) {
-            if (!itemPrototypes.containsKey(itemName)) { // Only add if not already (e.g. from addItem)
+            if (!itemPrototypes.containsKey(itemName)) {
                 Supplier<Item> factory = KNOWN_ITEM_FACTORIES.get(itemName);
                 if (factory != null) {
                     itemPrototypes.put(itemName, factory.get());
                 } else {
                     System.err.println("Unknown item type during prototype repopulation: " + itemName);
-                    // Potentially add a placeholder/error item or remove from quantities
                 }
             }
         }
