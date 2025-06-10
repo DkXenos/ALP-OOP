@@ -11,7 +11,13 @@ public class Storyline2 extends Storyline {
     public static final String UNIQUE_STAT_KEY_S2 = "drugAddictionLevel"; 
     public static final String STAT_SOCIAL_STATUS = "socialStatus";
     public static final String STAT_PLAYER_WILLPOWER = "playerWillpower";
-    public static final String STAT_PLAYER_DEFENSE = "playerDefense";
+
+    // Add flag constants like Storyline3
+    public static final String FLAG_SKILL_OVERCOME_ACQUIRED = "skillOvercomeAcquired";
+    public static final String FLAG_ENERGY_PILLS_USED = "energyPillsUsed";
+    public static final String FLAG_XANAX_USED = "xanaxUsed";
+    public static final String FLAG_DEALER_CONTACTED = "dealerContacted";
+    public static final String FLAG_PARENTS_CONFRONTED = "parentsConfronted";
 
     private static final Item XANAX_ITEM = new DrugItem(
         "XANAX", 
@@ -85,10 +91,16 @@ public class Storyline2 extends Storyline {
             state.setStat(GameState.PLAYER_HEALTH, 15);
             state.setStat(GameState.PLAYER_MAX_HEALTH, 15);
             state.setStat(GameState.PLAYER_ATTACK, 1);
-            state.setStat(STAT_PLAYER_DEFENSE, 0);
             state.setStat(STAT_PLAYER_WILLPOWER, 5);
             state.setStat(UNIQUE_STAT_KEY_S2, 0);
             state.setStat(STAT_SOCIAL_STATUS, 0);
+            
+            // Initialize flags
+            state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, false);
+            state.setFlag(FLAG_ENERGY_PILLS_USED, false);
+            state.setFlag(FLAG_XANAX_USED, false);
+            state.setFlag(FLAG_DEALER_CONTACTED, false);
+            state.setFlag(FLAG_PARENTS_CONFRONTED, false);
         
             ui.setStageImage("/Resources/Images/Story2/classroom.png");
             AudioManager.getInstance().playMusic("/Resources/Audio/Story2/chapter1_intro_bgm.wav", true);
@@ -101,7 +113,7 @@ public class Storyline2 extends Storyline {
 
             showDialogue(0);
         } else {
-            showDialogue(dialogueState); // Start at loaded stage
+            showDialogue(dialogueState); 
         }
     }
 
@@ -118,13 +130,20 @@ public class Storyline2 extends Storyline {
     
     public int realPlayerDamage() {
         // Check if this is the Adderall battle (first real drug encounter)
-        if (isAdderallBattle == true) {
+        if (isAdderallBattle) {
             // Player is too scared to deal damage during first real drug encounter
             return 0;
         }
         
         int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
-        return baseAttack - 1 + new Random().nextInt(4);
+        int willpower = state.getStat(STAT_PLAYER_WILLPOWER);
+        
+        // Use flag to check if OVERCOME skill is acquired
+        if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
+            return baseAttack + willpower + new Random().nextInt(2); // Base + willpower + skill bonus
+        }
+        
+        return baseAttack + willpower;
     }
 
     public void useInventoryItem(String itemName) {
@@ -175,6 +194,9 @@ public class Storyline2 extends Storyline {
         state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
         
+        // Set flag for Energy Pills usage
+        state.setFlag(FLAG_ENERGY_PILLS_USED, true);
+        
         ui.displayText("\n" + playerName + " (reaching for the Energy Pills): \"Maybe this will help me focus better tonight.\"", Color.BLACK);
         
         Timer energyEffect = new Timer(2000, e -> {
@@ -205,6 +227,9 @@ public class Storyline2 extends Storyline {
         state.consumeItem("XANAX");
         state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
+        
+        // Set flag for Xanax usage
+        state.setFlag(FLAG_XANAX_USED, true);
         
         ui.displayText("\n" + playerName + " (reaching for the Xanax): \"Maybe... maybe this will help me think clearly.\"", Color.BLACK);
         
@@ -442,10 +467,12 @@ public class Storyline2 extends Storyline {
                     case 2:
                         dealerChoiceText = "\nNarrator: \"Curiosity and desperation override your better judgment.\"";
                         state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
+                        state.setFlag(FLAG_DEALER_CONTACTED, true); // Set dealer contact flag
                         break;
                     case 3:
                         dealerChoiceText = "\nNarrator: \"You've crossed a line you never thought you would cross.\"";
                         state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
+                        state.setFlag(FLAG_DEALER_CONTACTED, true); // Set dealer contact flag
                         break;
                 }
                 ui.displayText(dealerChoiceText, Color.GRAY);
@@ -488,7 +515,7 @@ public class Storyline2 extends Storyline {
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
 
         Timer startBattleActual = new Timer(1000, e2 -> {
-            Enemy enemy = new DrugEnemy("Caffeine Pills", 10, 1); 
+            Enemy enemy = new DrugEnemy("Caffeine Pills", 15, 2); 
             battleManager.startBattle(enemy, battleResult -> { 
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png");
@@ -500,10 +527,9 @@ public class Storyline2 extends Storyline {
 
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
                     state.adjustStat(GameState.PLAYER_ATTACK, 1);
-                    state.adjustStat(STAT_PLAYER_DEFENSE, 1);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
-                    Timer r3 = new Timer(7500, res -> ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Defense +1, Willpower +2\"", Color.GREEN));
+                    Timer r3 = new Timer(7500, res -> ui.displayText("\nSystem Status: \"Level Up! Health +1, Max Health +1, Attack +1, Willpower +2\"", Color.GREEN));
                     r3.setRepeats(false); r3.start();
                     Timer proceed = new Timer(10000, res -> showDialogue(4));
                     proceed.setRepeats(false); proceed.start();
@@ -530,7 +556,7 @@ public class Storyline2 extends Storyline {
         
         Timer startBattleActual = new Timer(4000, e2 -> {
             isAdderallBattle = true; // Set flag for no damage
-            Enemy enemy = new DrugEnemy("Adderall", 15, 3); 
+            Enemy enemy = new DrugEnemy("Adderall", 25, 3); 
             battleManager.startBattle(enemy, battleResult -> { 
                 isAdderallBattle = false; // Reset flag after battle
                 ui.setStageImage("/Resources/Images/Story2/.png");
@@ -539,9 +565,12 @@ public class Storyline2 extends Storyline {
                 r1.setRepeats(false); r1.start();
                 Timer r2 = new Timer(5000, res -> ui.displayText("\nNarrator: \"The Adderall takes effect quickly. Laser focus floods your mind, but something feels fundamentally wrong.\"", Color.GRAY));
                 r2.setRepeats(false); r2.start();
-                Timer r3 = new Timer(7500, res -> ui.displayText("\nNew Skill Unlocked: OVERCOME - You've learned from this failure and won't be paralyzed by fear again.\"", Color.GREEN));
+                Timer r3 = new Timer(7500, res -> {
+                    ui.displayText("\nNew Skill Unlocked: OVERCOME - You've learned from this failure and won't be paralyzed by fear again.\"", Color.GREEN);
+                    state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, true);
+                });
                 r3.setRepeats(false); r3.start();
-                Timer r4 = new Timer(10000, res -> ui.displayText("\nSystem Status: \"Defeat! Addiction Level +2, but you've gained experience. Health +1, Max Health +1, Attack +1, Defense +1, Willpower +1\"", Color.GREEN));
+                Timer r4 = new Timer(10000, res -> ui.displayText("\nSystem Status: \"Defeat! Addiction Level +2, but you've gained experience. Health +1, Max Health +1, Attack +1, Willpower +1\"", Color.GREEN));
                 r4.setRepeats(false); r4.start();
                 state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
                 Timer proceed = new Timer(12500, res -> showDialogue(7));
@@ -557,7 +586,7 @@ public class Storyline2 extends Storyline {
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2", true); 
 
         Timer startBattleActual = new Timer(1000, e2 -> {
-            Enemy enemy = new DrugEnemy("Xanax", 20, 3); 
+            Enemy enemy = new DrugEnemy("Xanax", 40, 5); 
             battleManager.startBattle(enemy, battleResult -> { 
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png");
@@ -569,12 +598,11 @@ public class Storyline2 extends Storyline {
 
                     Timer r4 = new Timer(7500, res -> ui.displayText("\nBig Level Up, You can now deal more damage - You've learned from this failure.\"", Color.GREEN));
                     r4.setRepeats(false); r4.start();
-                    Timer r5 = new Timer(9000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +10, Attack +10, Defense +10, Willpower +5\"", Color.GREEN));
+                    Timer r5 = new Timer(9000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +10, Attack +3, Willpower 3\"", Color.GREEN));
                     r5.setRepeats(false); r5.start();
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 10);
-                    state.adjustStat(GameState.PLAYER_ATTACK, 10);
-                    state.adjustStat(STAT_PLAYER_DEFENSE, 10);
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, 5);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 3);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 3);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
                     Timer proceed = new Timer(12000, res -> showDialogue(14));
                     proceed.setRepeats(false); proceed.start();
@@ -583,12 +611,11 @@ public class Storyline2 extends Storyline {
                     ui.displayText("\nNarrator: \"You were too afraid to fight back effectively. Addiction Level +2\"", Color.GRAY);
                     Timer r1 = new Timer(2500, res -> ui.displayText("\nBig Level Up, You can now deal more damage - You've learned from this failure.\"", Color.GREEN));
                     r1.setRepeats(false); r1.start();
-                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +20, Attack +5, Defense +10, Willpower +5\"", Color.GREEN));
+                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Level Up! Max Health +10, Attack +3, Willpower +3\"", Color.GREEN));
                     r2.setRepeats(false); r2.start();
-                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 20);
-                    state.adjustStat(GameState.PLAYER_ATTACK, 5);
-                    state.adjustStat(STAT_PLAYER_DEFENSE, 10);
-                    state.adjustStat(STAT_PLAYER_WILLPOWER, 5);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 10);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 3);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 3);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
                     Timer proceed = new Timer(7500, res -> showDialogue(14));
                     proceed.setRepeats(false); proceed.start();
@@ -604,27 +631,39 @@ public class Storyline2 extends Storyline {
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/final_boss_battle_bgm.wav", true);
         
         Timer startBattleActual = new Timer(1000, e2 -> {
-            Enemy enemy = new DrugEnemy("Addicted Self", 35, 5);
+            Enemy enemy = new DrugEnemy("Addicted Self", 150, 6);
             battleManager.startBattle(enemy, battleResult -> {
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story2/victory_moment.png");
-                    ui.displayText("\nNarrator: \"You've won this battle, but the war continues. You used your OVERCOME skill and newfound strength.\"", Color.GRAY);
+                    
+                    // Check if player has OVERCOME skill
+                    if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
+                        ui.displayText("\nNarrator: \"You've won this battle using your OVERCOME skill and newfound strength. The experience from your failures made you stronger.\"", Color.GRAY);
+                    } else {
+                        ui.displayText("\nNarrator: \"You've won this battle, but the war continues. Pure willpower carried you through.\"", Color.GRAY);
+                    }
+                    
                     Timer r1 = new Timer(3000, res -> ui.displayText("\n" + playerName + ": \"I... I did it. I can fight this.\"", Color.BLACK));
                     r1.setRepeats(false); r1.start();
                     
                     state.adjustStat(GameState.PLAYER_MAX_HEALTH, 2);
                     state.adjustStat(GameState.PLAYER_ATTACK, 2);
-                    state.adjustStat(STAT_PLAYER_DEFENSE, 2);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 3);
                     state.setStat(GameState.PLAYER_HEALTH, state.getStat(GameState.PLAYER_MAX_HEALTH));
                     
-                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Final Level Up! Health +2, Max Health +2, Attack +2, Defense +2, Willpower +3\"", Color.GREEN));
+                    Timer r2 = new Timer(5000, res -> ui.displayText("\nSystem Status: \"Final Level Up! Health +2, Max Health +2, Attack +2, Willpower +3\"", Color.GREEN));
                     r2.setRepeats(false); r2.start();
                     Timer proceed = new Timer(8000, res -> showBadEnding());
                     proceed.setRepeats(false); proceed.start();
                 } else {
                     ui.setStageImage("/Resources/Images/Story2/defeat_moment.png");
-                    ui.displayText("\nNarrator: \"The addiction was too strong. Even with your OVERCOME skill, you couldn't break free completely.\"", Color.GRAY);
+                    
+                    if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
+                        ui.displayText("\nNarrator: \"Even with your OVERCOME skill, the addiction was too strong this time.\"", Color.GRAY);
+                    } else {
+                        ui.displayText("\nNarrator: \"The addiction was too strong. You couldn't break free.\"", Color.GRAY);
+                    }
+                    
                     Timer r1 = new Timer(3000, res -> ui.displayText("\nAddicted Milo: \"You see? You'll never be free from me. Never.\"", Color.RED.darker()));
                     r1.setRepeats(false); r1.start();
                     
@@ -774,7 +813,7 @@ public class Storyline2 extends Storyline {
 
     private void showStage7() {
         ui.setStageImage("/Resources/Images/Story2/counting_pills.png");
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage7_stress_bgm.wav", true);
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true);
         
         ui.displayText("\n\n [Milo's Bedroom - Month 4, Late Night] ", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (counting pills): \"Only three left and the refill isn't for another two weeks. That's not enough for midterms. How do I get more, I need more.\"", Color.BLACK));
@@ -930,13 +969,23 @@ private void showStage16() {
 private void showBadEnding() {
     int addictionLevel = state.getStat(UNIQUE_STAT_KEY_S2);
     
-    if (addictionLevel >= 7) {
-        // worse ending
+    // Check flags to determine ending variations
+    boolean usedDealerDrugs = state.getFlag(FLAG_DEALER_CONTACTED);
+    boolean overcameInitialFear = state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED);
+    
+    if (addictionLevel >= 7 || usedDealerDrugs) {
+        // Worse ending - especially if contacted dealer
         ui.setStageImage("/Resources/Images/Story2/death_ending.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/tragic_ending_bgm.wav", true);
         
         ui.displayText("\n\n[Six Months Later - Hospital Room]", Color.DARK_GRAY);
-        Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The overdose was inevitable. Your body couldn't handle all the substances anymore.\"", Color.GRAY));
+        Timer t1 = new Timer(2000, e -> {
+            if (usedDealerDrugs) {
+                ui.displayText("\nNarrator: \"The illegal drugs from the dealer were too dangerous. Your body couldn't handle the unknown substances.\"", Color.GRAY);
+            } else {
+                ui.displayText("\nNarrator: \"The overdose was inevitable. Your body couldn't handle all the substances anymore.\"", Color.GRAY);
+            }
+        });
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(5000, e -> ui.displayText("\nDoctor: \"We did everything we could. I'm sorry.\"", Color.BLUE));
         t2.setRepeats(false); t2.start();
@@ -945,13 +994,19 @@ private void showBadEnding() {
         Timer t5 = new Timer(15000, e -> ui.displayText("\n\n=== THE END ===\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
         t5.setRepeats(false); t5.start();
     } else {
-        // bad ending
+        // Bad ending with flag variations
         ui.setStageImage("/Resources/Images/Story2/family_tragedy.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad_ending_bgm", true);
         
         ui.displayText("\n\n[Living Room - One Year Later]", Color.DARK_GRAY);
-        Timer t1 = new Timer(2000, e -> ui.displayText("\nNarrator: \"You survived, but the stress you caused your family had consequences you never imagined.\"", Color.GRAY));
-        t1.setRepeats(false); t1.start();       
+        Timer t1 = new Timer(2000, e -> {
+            if (overcameInitialFear) {
+                ui.displayText("\nNarrator: \"Despite learning to overcome your initial fears, the damage to your family was already done.\"", Color.GRAY);
+            } else {
+                ui.displayText("\nNarrator: \"You survived, but the stress you caused your family had consequences you never imagined.\"", Color.GRAY);
+            }
+        });
+        t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(5000, e -> ui.displayText("\n" + playerName + " (at father's funeral): \"The doctor said it was a heart attack. But I know... the stress of watching me destroy myself...\"", Color.BLACK));
         t2.setRepeats(false); t2.start();
           Timer t3 = new Timer(8000, e -> ui.displayText("\nMom (barely audible): \"He loved you so much. He just wanted you to be happy and successful.\"", Color.BLUE));
@@ -966,36 +1021,23 @@ private void showBadEnding() {
    @Override
     public String[] getCurrentChoices() {
         if (battleManager.isBattleActive()) {
-            int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
-            
             if (isAdderallBattle) { 
                 return new String[]{
-                    "1. Try to resist (Fear prevents effective action - 0 dmg)",
-                    "2. Use Item (Too scared to think clearly)"
+                    "1. Try to resist (Fear prevents effective action - 0 dmg)"
                 };
             }
             
             // Special choices for final battle
             if (dialogueState == 16) {
                 return new String[]{
-                    "1. Attack (" + (baseAttack-1) + "-" + (baseAttack+2) + " dmg)",
-                    "2. Use Item (Check inventory for Xanax or Energy Pills)",
-                    "3. Fight with pure willpower (Special attack)"
+                    "1. Attack (" + realPlayerDamage() + " dmg)"
                 };
             }
             
             return new String[]{
-                "1. Attack (" + (baseAttack-1) + "-" + (baseAttack+2) + " dmg)",
-                "2. Use Item (Check your inventory)"
+                "1. Attack (" + realPlayerDamage() + " dmg)"
             };
         }
         return new String[0]; 
-    }
-
-    // Add this helper method for setting mid-battle events  
-    public void setMidBattleEvent(Runnable event) {
-        if (battleManager != null) {
-            battleManager.setMidBattleEvent(event);
-        }
     }
 }

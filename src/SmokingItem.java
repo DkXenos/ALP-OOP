@@ -42,8 +42,8 @@ public class SmokingItem extends Item {
                     break;
                 case 1:
                     ui.displayText("\n" + playerName + " feels lightheaded and dizzy...", Color.RED);
-                    state.adjustStat("playerDefense", -1);
-                    ui.displayText("\nSide Effect: Defense -1 (dizziness)", Color.RED.darker());
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, -1);
+                    ui.displayText("\nSide Effect: Max Health -1 (dizziness)", Color.RED.darker());
                     break;
                 case 2:
                     ui.displayText("\n" + playerName + "'s hands shake slightly from nicotine...", Color.RED);

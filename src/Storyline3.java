@@ -5,13 +5,16 @@ import javax.swing.Timer;
 public class Storyline3 extends Storyline {
     private int dialogueState = 0;
     private BattleManager battleManager;
-    private String playerName = "Kai"; 
+    private String playerName = "Kai";
+    private boolean isFirstCigaretteBattle = false;
+    private boolean isVapeBattle = false;
+    private boolean isPremiumCigaretteBattle = false;
+    private boolean isChapter4Battle = false;
 
-    // Stat Keys - Making them public static for GameState's item factory
-    public static final String UNIQUE_STAT_KEY_S3 = "nicotineAddictionLevel"; 
+    // Add missing stat constants like in Storyline2
+    public static final String UNIQUE_STAT_KEY_S3 = "nicotineAddictionLevel";
     public static final String STAT_SOCIAL_STATUS = "socialStatus";
     public static final String STAT_PLAYER_WILLPOWER = "playerWillpower";
-    public static final String STAT_PLAYER_DEFENSE = "playerDefense";
 
     // New Flag for Chapter 4 Skill
     public static final String FLAG_SKILL_OVERCOME_ACQUIRED = "skillOvercomeAcquired";
@@ -27,7 +30,7 @@ public class Storyline3 extends Storyline {
         "Vape Pen", 
         "A sleek, modern vape pen. Produces flavored vapor.",
         "uses the Vape Pen. Smooth vapor, lingering desire...",
-        Map.of(UNIQUE_STAT_KEY_S3, 3, STAT_PLAYER_WILLPOWER, -1, STAT_PLAYER_DEFENSE, -1) // Example effect
+        Map.of(UNIQUE_STAT_KEY_S3, 3, STAT_PLAYER_WILLPOWER, -1) // Example effect
     );
     private static final Item PREMIUM_CIGARETTE_ITEM = new SmokingItem(
         "Premium Cigarette", 
@@ -36,11 +39,11 @@ public class Storyline3 extends Storyline {
         Map.of(UNIQUE_STAT_KEY_S3, 5, STAT_PLAYER_WILLPOWER, -2, GameState.PLAYER_HEALTH, -1, STAT_SOCIAL_STATUS, -1)
     );
 
-
     public Storyline3(GameUI ui, GameState state) {
         super(ui, state);
         this.battleManager = new BattleManager(ui, state);
-        ui.setTitle("A Burning Melody"); //ini buat ngganti title e yang diatas itu
+        ui.setTitle("A Burning Melody");
+        
     }
 
     // ... getBattleManager, getDialogueState, setDialogueState, showDialoguePublic ...
@@ -87,38 +90,65 @@ public class Storyline3 extends Storyline {
 
     @Override
     public void startStory() {
-        state.setStat(GameState.PLAYER_HEALTH, 10);
-        state.setStat(GameState.PLAYER_MAX_HEALTH, 10);
-        state.setStat(GameState.PLAYER_ATTACK, 1);
-        state.setStat(STAT_PLAYER_DEFENSE, 0);
-        state.setStat(STAT_PLAYER_WILLPOWER, 5);
-        
-        state.setStat(UNIQUE_STAT_KEY_S3, 0); 
-        state.setStat(STAT_SOCIAL_STATUS, 0);
-        state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, false); // Initialize new flag
-        
-        ui.setStageImage("/Resources/Images/Story3/dorm-room.png"); // Initial image for the story
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story3/chapter1_intro_bgm.wav", true); // Initial BGM
-
-        Timer timer = new Timer(500, e ->{
-            ui.displayText("Chapter 1: First Encounter", Color.BLACK);
-        });
-        timer.setRepeats(false);
-        timer.start();
-        showDialogue(0); 
+        startStory(false);
     }
-    // New method to use an item from inventory
-    public void useInventoryItem(String itemName) {
-        Item itemToUse = state.getItemPrototype(itemName);
-        if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
-            // Apply the item's effect
-            itemToUse.applyEffect(state, ui, playerName);
-            // Consume the item from inventory
-            state.consumeItem(itemName);
-            // Potentially update UI elements that show stats if you have any always-visible stat displays
+
+    // Add overloaded startStory method like Storyline2
+    public void startStory(boolean fromSave) {
+        if (!fromSave) {
+            state.setStat(GameState.PLAYER_HEALTH, 10);
+            state.setStat(GameState.PLAYER_MAX_HEALTH, 10);
+            state.setStat(GameState.PLAYER_ATTACK, 1);
+            state.setStat(STAT_PLAYER_WILLPOWER, 5);
+            
+            state.setStat(UNIQUE_STAT_KEY_S3, 0); 
+            state.setStat(STAT_SOCIAL_STATUS, 0);
+            state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, false);
+            
+            ui.setStageImage("/Resources/Images/Story3/dorm-room.png");
+            AudioManager.getInstance().playMusic("/Resources/Audio/Story3/chapter1_intro_bgm.wav", true);
+
+            Timer timer = new Timer(500, e ->{
+                ui.displayText("Chapter 1: First Encounter", Color.BLACK);
+            });
+            timer.setRepeats(false);
+            timer.start();
+            showDialogue(0);
         } else {
-            ui.displayText("\n" + playerName + " doesn't have any " + itemName + " to use or item is unknown.", Color.BLACK);
+            showDialogue(dialogueState); // Start at loaded stage like Storyline2
         }
+    }
+
+    // Enhanced battle damage calculation like Storyline2
+    public int realPlayerDamage() {
+        int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
+        int willpower = state.getStat(STAT_PLAYER_WILLPOWER);
+        
+        // Check specific battle types for different damage calculations
+        if (isFirstCigaretteBattle) {
+            // Player is hesitant during first cigarette encounter
+            return Math.max(1, baseAttack + willpower - 1);
+        }
+        
+        if (isVapeBattle) {
+            // Player is more confident after first encounter
+            return baseAttack + willpower + new java.util.Random().nextInt(2);
+        }
+        
+        if (isPremiumCigaretteBattle) {
+            // Stronger temptation, but player has experience
+            return baseAttack + willpower + new java.util.Random().nextInt(2);
+        }
+        
+        if (isChapter4Battle) {
+            // Final battle mechanics
+            if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
+                return baseAttack + willpower + 2 + new java.util.Random().nextInt(3); // Skill bonus
+            }
+            return baseAttack + willpower + new java.util.Random().nextInt(2);
+        }
+        
+        return baseAttack + willpower;
     }
 
     @Override
@@ -195,7 +225,7 @@ public class Storyline3 extends Storyline {
                     proceed.start();
                 }
                 break;
-            case 5: // Small talk during study session break
+            case 5: // Small talk during study session break - STRESS MOMENT
                 String smallTalkText = "";
                 switch (choice) {
                     case 1:
@@ -212,7 +242,9 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(smallTalkText, Color.BLACK);
-                Timer proceedTimerStage5 = new Timer(3000, e -> showDialogue(6));
+                Timer stressMessage = new Timer(2000, e -> ui.displayText("\nNarrator: \"The stress is building up. Maybe checking your inventory for something to calm your nerves...\"", Color.GRAY));
+                stressMessage.setRepeats(false); stressMessage.start();
+                Timer proceedTimerStage5 = new Timer(5000, e -> showDialogue(6));
                 proceedTimerStage5.setRepeats(false);
                 proceedTimerStage5.start();
                 break;
@@ -234,7 +266,7 @@ public class Storyline3 extends Storyline {
                     proceed.start();
                 }
                 break;
-            case 7: // Kai's reflection after vape encounter/choice
+            case 7: // Kai's reflection after vape encounter/choice - STRESS MOMENT
                 String kaiReflectionVape = "";
                 switch (choice) {
                     case 1:
@@ -251,11 +283,13 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(kaiReflectionVape, Color.GRAY);
-                Timer proceedAfterReflectionVape = new Timer(3000, e -> showDialogue(8));
+                Timer stressMessage2 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The academic pressure continues to mount. You feel overwhelmed...\"", Color.GRAY));
+                stressMessage2.setRepeats(false); stressMessage2.start();
+                Timer proceedAfterReflectionVape = new Timer(5000, e -> showDialogue(8));
                 proceedAfterReflectionVape.setRepeats(false);
                 proceedAfterReflectionVape.start();
                 break;
-            case 9: // Kai's thoughts on filling the void
+            case 9: // Kai's thoughts on filling the void - STRESS MOMENT
                 String voidFillingThoughts = "";
                 switch (choice) {
                     case 1:
@@ -272,7 +306,9 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(voidFillingThoughts, Color.GRAY);
-                Timer proceedTimerStage9 = new Timer(3000, e -> showDialogue(10));
+                Timer stressMessage3 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The void inside feels overwhelming. Maybe something in your inventory could provide temporary relief...\"", Color.GRAY));
+                stressMessage3.setRepeats(false); stressMessage3.start();
+                Timer proceedTimerStage9 = new Timer(5000, e -> showDialogue(10));
                 proceedTimerStage9.setRepeats(false);
                 proceedTimerStage9.start();
                 break;
@@ -294,7 +330,7 @@ public class Storyline3 extends Storyline {
                     proceed.start();
                 }
                 break;
-            case 12: // Kai's reflection after premium cigarette encounter/game
+            case 12: // Kai's reflection after premium cigarette encounter/game - STRESS MOMENT
                 String kaiReflectionPremium = "";
                 switch (choice) {
                     case 1:
@@ -311,7 +347,9 @@ public class Storyline3 extends Storyline {
                         break;
                 }
                 ui.displayText(kaiReflectionPremium, Color.GRAY);
-                Timer proceedAfterReflectionPremium = new Timer(3000, e -> showDialogue(13));
+                Timer stressMessage4 = new Timer(2000, e -> ui.displayText("\nNarrator: \"The pressure of performance is getting to you. Your hands are shaking slightly...\"", Color.GRAY));
+                stressMessage4.setRepeats(false); stressMessage4.start();
+                Timer proceedAfterReflectionPremium = new Timer(5000, e -> showDialogue(13));
                 proceedAfterReflectionPremium.setRepeats(false);
                 proceedAfterReflectionPremium.start();
                 break;
@@ -325,29 +363,230 @@ public class Storyline3 extends Storyline {
                     showDialogue(15); // -> showStage15_IsolationPath will set its own image
                 }
                 break;
-            // case 17: // For "Back to Main Menu" - no image change needed here usually
-            //    break; 
+            case 17: // Final choices - "Return to Main Menu" or "Restart Story"
+                if (choice == 1) {
+                    // Return to main menu logic would be handled by GameUI
+                    ui.displayText("\nReturning to main menu...", Color.BLACK);
+                } else if (choice == 2) {
+                    // Restart story
+                    ui.displayText("\nRestarting story...", Color.BLACK);
+                    Timer restartTimer = new Timer(1000, e -> {
+                        startStory(false); // Restart from beginning
+                    });
+                    restartTimer.setRepeats(false);
+                    restartTimer.start();
+                }
+                break;
         }
+    }
+
+    // Enhanced useInventoryItem method - only allow specific items during stress and final battle
+    public void useInventoryItem(String itemName) {
+        // Handle Cigarette during stress moments only (stages 5, 7, 9, 12)
+        if (itemName.equalsIgnoreCase("Cigarette") && (dialogueState == 5 || dialogueState == 7 || dialogueState == 9 || dialogueState == 12)) {
+            if (state.getItemQuantity("Cigarette") > 0) {
+                useCigaretteDuringStress();
+                return;
+            } else {
+                ui.displayText("\n" + playerName + " doesn't have any Cigarettes to use.", Color.BLACK);
+                return;
+            }
+        }
+        
+        // Handle Vape Pen during stress moments only (stages 5, 7, 9, 12)
+        if (itemName.equalsIgnoreCase("Vape Pen") && (dialogueState == 5 || dialogueState == 7 || dialogueState == 9 || dialogueState == 12)) {
+            if (state.getItemQuantity("Vape Pen") > 0) {
+                useVapePenDuringStress();
+                return;
+            } else {
+                ui.displayText("\n" + playerName + " doesn't have any Vape Pen to use.", Color.BLACK);
+                return;
+            }
+        }
+        
+        // Handle Premium Cigarette during final battle only
+        if (itemName.equalsIgnoreCase("Premium Cigarette") && battleManager.isBattleActive() && dialogueState >= 14) {
+            if (state.getItemQuantity("Premium Cigarette") > 0) {
+                usePremiumCigaretteDuringFinalBattle();
+                return;
+            } else {
+                ui.displayText("\n" + playerName + " doesn't have any Premium Cigarettes to use.", Color.BLACK);
+                return;
+            }
+        }
+        
+        // Handle all items during final battle
+        if (battleManager.isBattleActive() && dialogueState >= 14) {
+            if (itemName.equalsIgnoreCase("Cigarette") && state.getItemQuantity("Cigarette") > 0) {
+                useCigaretteDuringFinalBattle();
+                return;
+            } else if (itemName.equalsIgnoreCase("Vape Pen") && state.getItemQuantity("Vape Pen") > 0) {
+                useVapePenDuringFinalBattle();
+                return;
+            }
+        }
+        
+        // Restrict usage outside allowed contexts
+        if (itemName.equalsIgnoreCase("Cigarette") || itemName.equalsIgnoreCase("Vape Pen")) {
+            ui.displayText("\n" + playerName + ": \"I don't feel the need to use that right now.\"", Color.BLACK);
+            return;
+        }
+        
+        if (itemName.equalsIgnoreCase("Premium Cigarette") && !battleManager.isBattleActive()) {
+            ui.displayText("\n" + playerName + ": \"That's too strong for casual use. I should save it for when I really need it.\"", Color.BLACK);
+            return;
+        }
+        
+        // Default case for any other items
+        Item itemToUse = state.getItemPrototype(itemName);
+        if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
+            itemToUse.applyEffect(state, ui, playerName);
+            state.consumeItem(itemName);
+        } else {
+            ui.displayText("\n" + playerName + " doesn't have any " + itemName + " to use or item is unknown.", Color.BLACK);
+        }
+    }
+
+    private void useCigaretteDuringStress() {
+        state.consumeItem("Cigarette");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 2);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        
+        ui.displayText("\n" + playerName + " (lighting up): \"Maybe this will help me relax...\"", Color.BLACK);
+        
+        Timer cigaretteEffect = new Timer(2000, e -> {
+            ui.displayText("\nNarrator: \"You take a drag from the cigarette. The nicotine hits quickly, providing temporary relief...\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.displayText("\n" + playerName + " (feeling the buzz): \"That's... actually not bad. I can see why people do this.\"", Color.BLACK));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.displayText("\nNarrator: \"But as the initial effect fades, you feel a subtle craving for more.\"", Color.GRAY));
+            t2.setRepeats(false); t2.start();
+            Timer t3 = new Timer(7000, e2 -> ui.displayText("\nSystem Status: \"Cigarette consumed! Addiction Level +2, Willpower -1\"", Color.ORANGE));
+            t3.setRepeats(false); t3.start();
+        });
+        cigaretteEffect.setRepeats(false); cigaretteEffect.start();
+    }
+
+    private void useVapePenDuringStress() {
+        state.consumeItem("Vape Pen");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 3);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        
+        ui.displayText("\n" + playerName + " (reaching for the vape): \"This should be safer than cigarettes...\"", Color.BLACK);
+        
+        Timer vapeEffect = new Timer(2000, e -> {
+            ui.displayText("\nNarrator: \"You inhale the flavored vapor. It's smooth, almost pleasant, but the nicotine still affects you.\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.displayText("\n" + playerName + " (exhaling vapor): \"This is actually quite nice. No harsh smoke, just... relief.\"", Color.BLACK));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.displayText("\nNarrator: \"The modern delivery method doesn't change the addictive nature of the substance.\"", Color.GRAY));
+            t2.setRepeats(false); t2.start();
+            Timer t3 = new Timer(7000, e2 -> ui.displayText("\nSystem Status: \"Vape Pen used! Addiction Level +3, Willpower -1\"", Color.ORANGE));
+            t3.setRepeats(false); t3.start();
+        });
+        vapeEffect.setRepeats(false); vapeEffect.start();
+    }
+
+    private void usePremiumCigaretteDuringStress() {
+        state.consumeItem("Premium Cigarette");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 5);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
+        state.adjustStat(GameState.PLAYER_HEALTH, -1);
+        state.adjustStat(STAT_SOCIAL_STATUS, -1);
+        
+        ui.displayText("\n" + playerName + " (lighting the premium cigarette): \"If I'm going to do this, might as well be the good stuff...\"", Color.BLACK);
+        
+        Timer premiumEffect = new Timer(2000, e -> {
+            ui.displayText("\nNarrator: \"The premium tobacco burns slower, delivering a more intense experience. But the cost to your body is higher.\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.displayText("\n" + playerName + " (feeling the strong effects): \"Wow... this is way stronger. I can really feel it.\"", Color.BLACK));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.displayText("\nNarrator: \"Your teammates notice the smell and give you disapproving looks.\"", Color.GRAY));
+            t2.setRepeats(false); t2.start();
+            Timer t3 = new Timer(7000, e2 -> ui.displayText("\nSystem Status: \"Premium Cigarette used! Addiction Level +5, Willpower -2, Health -1, Social Status -1\"", Color.RED.darker()));
+            t3.setRepeats(false); t3.start();
+        });
+        premiumEffect.setRepeats(false); premiumEffect.start();
+    }
+
+    private void useCigaretteDuringFinalBattle() {
+        state.consumeItem("Cigarette");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 2);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        state.adjustStat(GameState.PLAYER_ATTACK, -1);
+        
+        ui.appendBattleLog(playerName + " (in desperation): \"Maybe a cigarette will calm my nerves!\"", Color.BLACK);
+        
+        Timer cigaretteBattleEffect = new Timer(2000, e -> {
+            ui.appendBattleLog("Narrator: \"You light up mid-battle. The familiar ritual provides false comfort, but weakens your resolve.\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.appendBattleLog("Social Pressure: \"Yes! Give in to the habit! You're proving my point!\"", Color.RED.darker()));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.appendBattleLog("System Status: \"Cigarette used in battle! Attack Power -1, Addiction Level +2, Willpower -1\"", Color.RED.darker()));
+            t2.setRepeats(false); t2.start();
+        });
+        cigaretteBattleEffect.setRepeats(false); cigaretteBattleEffect.start();
+    }
+
+    private void useVapePenDuringFinalBattle() {
+        state.consumeItem("Vape Pen");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 3);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
+        state.adjustStat(GameState.PLAYER_ATTACK, 1);
+        
+        ui.appendBattleLog(playerName + " (desperately): \"The vape might give me the edge I need!\"", Color.BLACK);
+        
+        Timer vapeBattleEffect = new Timer(2000, e -> {
+            ui.appendBattleLog("Narrator: \"You take quick puffs from the vape. The nicotine provides artificial confidence, but at a cost.\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.appendBattleLog("Social Pressure: \"You still need the chemicals to feel strong! You're becoming one of us!\"", Color.RED.darker()));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.appendBattleLog("System Status: \"Vape Pen used! Attack Power +1, but Addiction Level +3, Willpower -1\"", Color.ORANGE));
+            t2.setRepeats(false); t2.start();
+        });
+        vapeBattleEffect.setRepeats(false); vapeBattleEffect.start();
+    }
+
+    private void usePremiumCigaretteDuringFinalBattle() {
+        state.consumeItem("Premium Cigarette");
+        state.adjustStat(UNIQUE_STAT_KEY_S3, 5);
+        state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
+        state.adjustStat(GameState.PLAYER_ATTACK, -2);
+        state.adjustStat(GameState.PLAYER_HEALTH, -2);
+        
+        ui.appendBattleLog(playerName + " (in panic): \"I need the strongest thing I have!\"", Color.BLACK);
+        
+        Timer premiumBattleEffect = new Timer(2000, e -> {
+            ui.appendBattleLog("Narrator: \"You smoke the premium cigarette rapidly. The intense nicotine overwhelms you, making you dizzy and weak.\"", Color.GRAY);
+            Timer t1 = new Timer(3000, e2 -> ui.appendBattleLog("Social Pressure: \"Excellent! You're destroying yourself for me! This is exactly what I wanted!\"", Color.RED.darker()));
+            t1.setRepeats(false); t1.start();
+            Timer t2 = new Timer(5000, e2 -> ui.appendBattleLog("System Status: \"Premium Cigarette used! Attack Power -2, Health -2, Addiction Level +5, Willpower -2\"", Color.RED.darker()));
+            t2.setRepeats(false); t2.start();
+        });
+        premiumBattleEffect.setRepeats(false); premiumBattleEffect.start();
     }
 
     // --- Battle Methods ---
     private void startChapter1Battle() {
         ui.setStageImage("/Resources/Images/Story3/battle1.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation1_bgm.wav", true);
+        isFirstCigaretteBattle = true;
         
         ui.displayText("\nNarrator: A wave of peer pressure washes over you. It feels like a challenge.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             Enemy enemy = new DrugEnemy("Peer Pressure", 15, 2);
             battleManager.startBattle(enemy, battleResult -> {
+                isFirstCigaretteBattle = false;
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story3/kai_resists_cigarette.png");
                     ui.displayText("\nNarrator: You feel a strange sense of accomplishment having resisted.", Color.GRAY);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 1);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 1);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
+                    ui.displayText("\nSystem Status: \"Victory! Health +1, Attack +1, Willpower +2\"", Color.GREEN);
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(3));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 } else {
                     ui.setStageImage("/Resources/Images/Story3/kai_smokes_cigarette.png");
                     ui.displayText("\nNarrator: The pressure was too much. You give in to the temptation.", Color.GRAY);
                     state.addItem(CIGARETTE_ITEM, 1);
+                    state.adjustStat(UNIQUE_STAT_KEY_S3, 2);
+                    ui.displayText("\nSystem: Added 1 Cigarette to inventory. Addiction Level +2", Color.ORANGE);
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(3));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 }
@@ -360,17 +599,26 @@ public class Storyline3 extends Storyline {
     private void startChapter2Battle() { 
         ui.setStageImage("/Resources/Images/Story3/battle20.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation2_bgm.wav", true);
+        isVapeBattle = true;
+        
         ui.displayText("\nNarrator: The sleek vape pen gleams. Another test of will.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             Enemy enemy = new DrugEnemy("Vape Temptation", 18, 2);
             battleManager.startBattle(enemy, battleResult -> {
+                isVapeBattle = false;
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.displayText("\nNarrator: You resist the urge to vape.", Color.GRAY);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 2);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 2);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
+                    ui.displayText("\nSystem Status: \"Victory! Health +2, Attack +2, Willpower +2\"", Color.GREEN);
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(7));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 } else {
                     ui.displayText("\nNarrator: You give in and use the vape pen.", Color.GRAY);
                     state.addItem(VAPE_PEN_ITEM, 1);
+                    state.adjustStat(UNIQUE_STAT_KEY_S3, 3);
+                    ui.displayText("\nSystem: Added 1 Vape Pen to inventory. Addiction Level +3", Color.ORANGE);
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(7));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 }
@@ -383,17 +631,26 @@ public class Storyline3 extends Storyline {
     private void startChapter3Battle() { 
         ui.setStageImage("/Resources/Images/Story3/premium_cig_battle_bg.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_temptation3_bgm.wav", true);
+        isPremiumCigaretteBattle = true;
+        
         ui.displayText("\nNarrator: This cigarette feels different, heavier. A true test of resolve.", Color.GRAY);
         Timer startBattleActual = new Timer(2000, e2 -> {
             Enemy enemy = new DrugEnemy("Premium Temptation", 25, 3);
             battleManager.startBattle(enemy, battleResult -> {
+                isPremiumCigaretteBattle = false;
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.displayText("\nNarrator: You resist the premium cigarette.", Color.GRAY);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 3);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 3);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 3);
+                    ui.displayText("\nSystem Status: \"Major Victory! Health +3, Attack +3, Willpower +3\"", Color.GREEN);
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(12));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 } else {
                     ui.displayText("\nNarrator: You give in to the premium cigarette.", Color.GRAY);
                     state.addItem(PREMIUM_CIGARETTE_ITEM, 1);
+                    state.adjustStat(UNIQUE_STAT_KEY_S3, 5);
+                    ui.displayText("\nSystem: Added 1 Premium Cigarette to inventory. Addiction Level +5", Color.RED.darker());
                     Timer proceedTimer = new Timer(3000, e -> showDialogue(12));
                     proceedTimer.setRepeats(false); proceedTimer.start();
                 }
@@ -406,15 +663,41 @@ public class Storyline3 extends Storyline {
     private void startChapter4Battle() {
         ui.setStageImage("/Resources/Images/Story3/balcony_vape_battle_bg.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story3/battle_boss_social_bgm.wav", true);
+        isChapter4Battle = true;
+        
         ui.displayText("\nNarrator: Kai heads to the balcony, a cloud of sweet-smelling vapor hangs in the air.", Color.GRAY);
         Timer preBattleTimer = new Timer(2500, e -> {
             Enemy enemy = new DrugEnemy("Social Pressure", 30, 4);
             battleManager.startBattle(enemy, battleResult -> {
+                isChapter4Battle = false;
                 if (battleResult == BattleManager.BattleResult.WIN) {
+                    ui.displayText("\nNarrator: You've overcome the social pressure through sheer willpower!", Color.GRAY);
+                    state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, true);
+                    state.adjustStat(GameState.PLAYER_MAX_HEALTH, 5);
+                    state.adjustStat(GameState.PLAYER_ATTACK, 5);
+                    state.adjustStat(STAT_PLAYER_WILLPOWER, 5);
+                    ui.displayText("\nSystem: \"SKILL OVERCOME ACQUIRED! Major stat bonuses gained!\"", Color.GREEN);
                     showDialogue(15);
                 } else {
+                    ui.displayText("\nNarrator: The social pressure was overwhelming.", Color.GRAY);
+                    state.adjustStat(UNIQUE_STAT_KEY_S3, 3);
                     showDialogue(16);
                 }
+            });
+            
+            // Add mid-battle event like Storyline2
+            battleManager.setMidBattleEvent(() -> {
+                battleManager.pauseBattle();
+                ui.displayText("\nSocial Pressure: \"Everyone's doing it, Kai. Why are you being so difficult?\"", Color.RED.darker());
+                Timer t1 = new Timer(2000, e2 -> ui.displayText("\nNarrator: \"The pressure is intense. Maybe something in your inventory could help...\"", Color.GRAY));
+                t1.setRepeats(false); t1.start();
+                Timer t2 = new Timer(4000, e2 -> ui.displayText("\n" + playerName + " (struggling): \"I... I need to think. Maybe I should check what I have...\"", Color.BLACK));
+                t2.setRepeats(false); t2.start();
+                Timer t3 = new Timer(6000, e2 -> {
+                    ui.displayText("\nSystem: \"Mid-battle pause! You can use items from your inventory or continue fighting.\"", Color.ORANGE);
+                    battleManager.resumeBattle();
+                });
+                t3.setRepeats(false); t3.start();
             });
         });
         preBattleTimer.setRepeats(false);
@@ -719,11 +1002,41 @@ public class Storyline3 extends Storyline {
     @Override
     public String[] getCurrentChoices() {
         if (battleManager.isBattleActive()) {
+            if (isFirstCigaretteBattle) {
+                return new String[]{
+                    "1. Resist the pressure (Attack: " + realPlayerDamage() + " dmg)"
+                };
+            }
+            
+            if (isVapeBattle) {
+                return new String[]{
+                    "1. Say no to vaping (Attack: " + realPlayerDamage() + " dmg)"
+                };
+            }
+            
+            if (isPremiumCigaretteBattle) {
+                return new String[]{
+                    "1. Refuse the premium cigarette (Attack: " + realPlayerDamage() + " dmg)"
+                };
+            }
+            
+            if (isChapter4Battle) {
+                return new String[]{
+                    "1. Stand your ground (Attack: " + realPlayerDamage() + " dmg)"
+                };
+            }
+            
             return new String[]{
-                "1. Resist (Attack)", 
-                "2. Use Item (Not Implemented)"}; // Consider if items can be used in battle
+                "1. Resist (Attack: " + realPlayerDamage() + " dmg)"
+            };
         }
-        // Return empty or specific choices if your GameUI needs them outside of showChoicesDialog calls
         return new String[0]; 
+    }
+
+    // Add this helper method for setting mid-battle events
+    public void setMidBattleEvent(Runnable event) {
+        if (battleManager != null) {
+            battleManager.setMidBattleEvent(event);
+        }
     }
 }
