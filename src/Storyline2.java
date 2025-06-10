@@ -132,7 +132,7 @@ public class Storyline2 extends Storyline {
         int willpower = state.getStat(STAT_PLAYER_WILLPOWER);
         
         if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
-            return baseAttack + willpower + new Random().nextInt(2); // Base + willpower + skill bonus
+            return baseAttack + willpower + new Random().nextInt(2); 
         }
         
         return baseAttack + willpower;
@@ -312,7 +312,7 @@ public class Storyline2 extends Storyline {
                 proceedAfterChoiceTimer.start();
                 break;
 
-            case 4: // Family dinner choices
+            case 4:
                 String familyChoiceText = "";
                 switch (choice) {
                     case 1: 
@@ -333,7 +333,7 @@ public class Storyline2 extends Storyline {
                 proceedAfterChoiceTimer2.start();
                 break;
 
-            case 5: // Jake's offer choices  
+            case 5:  
                 String jakeChoiceText = "";
                 switch (choice) {
                     case 1:
@@ -361,7 +361,7 @@ public class Storyline2 extends Storyline {
                 proceed.setRepeats(false); proceed.start();
                 break;
 
-            case 6: // Counselor choices
+            case 6: 
                 String counselorChoiceText = "";
                 switch (choice) {
                     case 1:
@@ -379,7 +379,7 @@ public class Storyline2 extends Storyline {
                 counselorProceed.setRepeats(false); counselorProceed.start();
                 break;
 
-            case 7: // Jake conversation choices (Month 3)
+            case 7: 
                 String outputText = "";
                 switch (choice) {
                     case 1: 
@@ -405,7 +405,7 @@ public class Storyline2 extends Storyline {
                 continueToJake.setRepeats(false); continueToJake.start();
                 break;
 
-            case 9: // Month 4 parent confrontation choices
+            case 9: 
                 String parentChoiceText = "";
                 switch (choice) {
                     case 1:
@@ -423,7 +423,7 @@ public class Storyline2 extends Storyline {
                 parentProceed.setRepeats(false); parentProceed.start();
                 break;
 
-            case 10: // Online research choices
+            case 10: 
                 String researchChoiceText = "";
                 switch (choice) {
                     case 1:
@@ -441,7 +441,7 @@ public class Storyline2 extends Storyline {
                 researchProceed.setRepeats(false); researchProceed.start();
                 break;
 
-            case 12: //  dealer choices
+            case 12: 
                 String dealerChoiceText = "";
                 switch (choice) {
                     case 1:
@@ -451,12 +451,12 @@ public class Storyline2 extends Storyline {
                     case 2:
                         dealerChoiceText = "\nNarrator: \"Curiosity and desperation override your better judgment.\"";
                         state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
-                        state.setFlag(FLAG_DEALER_CONTACTED, true); // Set dealer contact flag
+                        state.setFlag(FLAG_DEALER_CONTACTED, true); 
                         break;
                     case 3:
                         dealerChoiceText = "\nNarrator: \"You've crossed a line you never thought you would cross.\"";
                         state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
-                        state.setFlag(FLAG_DEALER_CONTACTED, true); // Set dealer contact flag
+                        state.setFlag(FLAG_DEALER_CONTACTED, true); 
                         break;
                 }
                 ui.displayText(dealerChoiceText, Color.GRAY);
@@ -536,10 +536,10 @@ public class Storyline2 extends Storyline {
         fearMessage.setRepeats(false); fearMessage.start();
         
         Timer startBattleActual = new Timer(4000, e2 -> {
-            isAdderallBattle = true; // Set flag for no damage
+            isAdderallBattle = true; 
             Enemy enemy = new DrugEnemy("Adderall", 25, 3); 
             battleManager.startBattle(enemy, battleResult -> { 
-                isAdderallBattle = false; // Reset flag after battle
+                isAdderallBattle = false; 
                 ui.setStageImage("/Resources/Images/Story2/.png");
                 ui.displayText("\nNarrator: \"You were too afraid to fight back effectively. The fear of using real drugs paralyzed you.\"", Color.GRAY);
                 Timer r1 = new Timer(2500, res -> ui.displayText("\n" + playerName + " (defeated): \"I... I couldn't resist. The pressure was too much. I took it.\"", Color.BLACK));
@@ -722,8 +722,8 @@ public class Storyline2 extends Storyline {
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
     private void showStage2() {
-        ui.setStageImage("/Resources/Images/Story2/bedroom.png"); // Added image path
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage9.wav", true); // Added audio path
+        ui.setStageImage("/Resources/Images/Story2/bedroom.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage9.wav", true);
         
         ui.displayText("\n\n[Same Bedroom - Two weeks later, 2:00 AM] ", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + " (rubbing bloodshot eyes, surrounded by energy drink cans): \"Third test this week. Can't focus anymore... I need something even more refreshing.\"", Color.BLACK));
@@ -743,8 +743,8 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage3() {
-        ui.setStageImage("/Resources/Images/Story2/caffeine.png"); // Added image path
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true); // Added audio path
+        ui.setStageImage("/Resources/Images/Story2/caffeine.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true);
         
         Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: You try to look for anything to help you stay awake, and found the caffeine pills that your dad owned.", Color.GRAY));
         t1.setRepeats(false); t1.start();

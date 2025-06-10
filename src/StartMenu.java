@@ -15,12 +15,11 @@ public class StartMenu extends JFrame{
     public StartMenu(){
          try {
             InputStream is = getClass().getResourceAsStream("/Resources/Fonts/lightes/Lightes.otf");
-            // Add null check for resource stream
-            if (is == null) throw new IOException("Font resource not found: /Resources/Fonts/lightes/Lightes.otf");
+             if (is == null) throw new IOException("Font resource not found: /Resources/Fonts/lightes/Lightes.otf");
             customFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(64f);
         } catch (Exception e) {
             e.printStackTrace();
-            customFont = new Font("Serif", Font.BOLD, 48); // Fallback font
+            customFont = new Font("Serif", Font.BOLD, 48); 
         }
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -87,7 +86,7 @@ public class StartMenu extends JFrame{
         buttonContainer.add(buttonPanel, BorderLayout.CENTER);
         backgroundPanel.add(buttonContainer, BorderLayout.SOUTH);
 
-        startButton.addActionListener(e -> showStorylineSelection()); // Changed this line
+        startButton.addActionListener(e -> showStorylineSelection()); 
         loadGameButton.addActionListener(e -> {
             String[] options = {
                 "Slot 1 (" + SaveManager.getSlotStage(1) + ")",
@@ -114,8 +113,6 @@ public class StartMenu extends JFrame{
             }
         });
 
-        // Play main menu BGM
-        // Ensure you have a "main_menu_bgm.wav" in "src/Resources/Audio/"
         AudioManager.getInstance().playMusic("/Resources/Audio/start-bgm.wav", true); 
     }
 
@@ -142,7 +139,6 @@ public class StartMenu extends JFrame{
         });
     }
 
-    // New method to show storyline selection
     private void showStorylineSelection() {
         String[] storylineOptions = {
             "Storyline 1: Lullaby of Empty Bottles",
@@ -157,7 +153,7 @@ public class StartMenu extends JFrame{
             JOptionPane.PLAIN_MESSAGE,
             null,
             storylineOptions,
-            storylineOptions[0] // Default selection
+            storylineOptions[0] 
         );
         
         if (choice != null) {
@@ -175,12 +171,11 @@ public class StartMenu extends JFrame{
     }
 
     public void startGameWithCutscene(int storylineId) {
-        AudioManager.getInstance().stopMusic(); // Stop menu music
+        AudioManager.getInstance().stopMusic(); 
         
-        this.dispose(); // Close start menu
+        this.dispose(); 
         
-        // Show loading screen with storyline-specific cutscene
-        int cutsceneDurationMs = 5000; // 5 seconds cutscene
+        int cutsceneDurationMs = 5000; 
         new LoadingScreen(storylineId, cutsceneDurationMs);
     }
 
@@ -191,7 +186,6 @@ public class StartMenu extends JFrame{
         if (saveDataToLoad != null) {
             gameUI.applySaveData(saveDataToLoad);
         } else {
-            // Default to storyline 2 for backward compatibility
             gameUI.startGame(1); 
         }
         gameUI.setVisible(true);

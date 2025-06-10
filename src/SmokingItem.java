@@ -18,21 +18,18 @@ public class SmokingItem extends Item {
         // Display the use message
         ui.displayText("\n" + playerName + " " + usageMessage, Color.BLACK);
         
-        // Apply stat effects
         if (statChanges != null) {
             for (Map.Entry<String, Integer> effect : statChanges.entrySet()) {
                 String statKey = effect.getKey();
                 Integer value = effect.getValue();
                 state.adjustStat(statKey, value);
                 
-                // Display effect message
                 String effectMsg = value > 0 ? "+" + value : String.valueOf(value);
                 ui.displayText("\nEffect: " + statKey + " " + effectMsg, Color.ORANGE);
             }
         }
         
-        // Smoking-specific side effects
-        if (random.nextInt(100) < 25) { // 25% chance of side effects
+        if (random.nextInt(100) < 25) { 
             int sideEffect = random.nextInt(3);
             switch (sideEffect) {
                 case 0:
@@ -53,13 +50,11 @@ public class SmokingItem extends Item {
             }
         }
         
-        // Addiction warning at high nicotine levels
         int nicotineAddictionLevel = state.getStat("nicotineAddictionLevel");
         if (nicotineAddictionLevel > 4) {
             ui.displayText("\n" + playerName + " feels the familiar urge for another smoke building...", Color.RED.darker());
         }
         
-        // Smoking-specific aftermath message
         ui.displayText("\n" + playerName + " tastes ash and feels the nicotine coursing through their system...", Color.GRAY.darker());
     }
 }

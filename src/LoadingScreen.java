@@ -4,7 +4,6 @@ import javax.swing.*;
 public class LoadingScreen extends JWindow {
 
     public LoadingScreen(int storylineId, int durationMs) {
-        // Determine cutscene assets based on storyline
         String gifPath = getCutsceneGifPath(storylineId);
         String sfxPath = getCutsceneSfxPath(storylineId);
         
@@ -14,7 +13,6 @@ public class LoadingScreen extends JWindow {
         setSize(800, 600); 
         setLocationRelativeTo(null);
         
-        // Play storyline-specific cutscene SFX
         if (sfxPath != null && !sfxPath.isEmpty()) {
             AudioManager.getInstance().playMusic(sfxPath, false); 
         }
@@ -22,17 +20,14 @@ public class LoadingScreen extends JWindow {
         setVisible(true);
 
         Timer timer = new Timer(durationMs, e -> {
-            // Stop the cutscene audio before disposing
             AudioManager.getInstance().stopMusic(); 
             
             this.dispose(); 
             SwingUtilities.invokeLater(() -> {
                 if (storylineId == 4) {
-                    // Initial loading - go to StartMenu
                     StartMenu startMenu = new StartMenu();
                     startMenu.setVisible(true);
                 } else {
-                    // Storyline cutscene - start the specific game
                     GameUI gameUI = new GameUI();
                     gameUI.startGame(storylineId);
                     gameUI.setVisible(true);
@@ -43,35 +38,33 @@ public class LoadingScreen extends JWindow {
         timer.start();
     }
     
-    // Method to get the appropriate cutscene GIF based on storyline
     private String getCutsceneGifPath(int storylineId) {
         switch (storylineId) {
             case 4:
-                return "./Resources/Assets/opening-screen.gif"; // Initial app loading
+                return "./Resources/Assets/opening-screen.gif";
             case 1:
-                return "./Resources/Assets/lulaby-opening.gif"; // Cutscene for Storyline1
+                return "./Resources/Assets/lulaby-opening.gif";
             case 2:
-                return "./Resources/Assets/euphoria-opening.gif"; // Cutscene for Storyline2
+                return "./Resources/Assets/euphoria-opening.gif";
             case 3:
-                return "./Resources/Assets/burning-opening.gif"; // Cutscene for Storyline3
+                return "./Resources/Assets/burning-opening.gif";
             default:
-                return "./Resources/Assets/default-cutscene.gif"; // Fallback
+                return "./Resources/Assets/default-cutscene.gif";
         }
     }
     
-    // Method to get the appropriate cutscene audio based on storyline
     private String getCutsceneSfxPath(int storylineId) {
         switch (storylineId) {
             case 4:
-                return "./Resources/Audio/loading-sfx.wav"; // Initial app loading audio
+                return "./Resources/Audio/loading-sfx.wav";
             case 1:
-                return "./Resources/Audio/burning-audio.wav"; // Cutscene audio for Storyline1
+                return "./Resources/Audio/burning-audio.wav";
             case 2:
-                return "./Resources/Audio/euphoria-opening.wav"; // Cutscene audio for Storyline2
+                return "./Resources/Audio/euphoria-opening.wav";
             case 3:
-                return "./Resources/Audio/burning-audio.wav"; // Cutscene audio for Storyline3
+                return "./Resources/Audio/burning-audio.wav";
             default:
-                return "./Resources/Audio/default-cutscene.wav"; // Fallback
+                return "./Resources/Audio/default-cutscene.wav";
         }
     }
 }

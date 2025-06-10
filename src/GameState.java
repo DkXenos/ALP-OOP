@@ -1,30 +1,25 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List; // For GameUI inventory display
-import java.util.Map;    // For GameUI inventory display
-import java.util.function.Supplier; // For item factories
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class GameState {
     private HashMap<String, Integer> stats = new HashMap<>();
     private HashMap<String, Boolean> flags = new HashMap<>();
     
-    // Inventory: Store item prototypes and their quantities
     private Map<String, Item> itemPrototypes = new HashMap<>();
     private Map<String, Integer> inventoryQuantities = new HashMap<>();
 
-    // Define keys for player stats
     public static final String PLAYER_HEALTH = "playerHealth";
     public static final String PLAYER_MAX_HEALTH = "playerMaxHealth";
     public static final String PLAYER_ATTACK = "playerAttack";
     public static final String PLAYER_WILLPOWER = "playerWillpower";
 
-    // Item Factories for repopulating items on load
     private static final Map<String, Supplier<Item>> KNOWN_ITEM_FACTORIES = new HashMap<>();
     
     static {
-        // Smoking items (Storyline3)
         String nicotineKey = "nicotineAddictionLevel";
-        String willpowerKey = "playerWillpower";
         String socialStatusKey = "socialStatus";
 
         KNOWN_ITEM_FACTORIES.put("Cigarette", () -> new SmokingItem(
@@ -46,7 +41,6 @@ public class GameState {
             Map.of(nicotineKey, 5, PLAYER_MAX_HEALTH, -5, PLAYER_HEALTH, -2, socialStatusKey, -1)
         ));
 
-        // Drug items (Storyline2)
         String drugAddictionKey = "drugAddictionLevel";
 
         KNOWN_ITEM_FACTORIES.put("XANAX", () -> new DrugItem(
@@ -63,9 +57,7 @@ public class GameState {
         ));
     }
 
-
     public GameState() {
-        // Initialize default player stats
         setStat(PLAYER_MAX_HEALTH, 100);
         setStat(PLAYER_HEALTH, getStat(PLAYER_MAX_HEALTH));
         setStat(PLAYER_ATTACK, 10);
@@ -74,7 +66,6 @@ public class GameState {
 
     public void setStat(String key, int value) {
         stats.put(key, value);
-        // Ensure health doesn't exceed max_health or go below 0 immediately after setting
         if (key.equals(PLAYER_HEALTH)) {
             int currentHealth = stats.getOrDefault(key, 0);
             int maxHealth = stats.getOrDefault(PLAYER_MAX_HEALTH, currentHealth);
@@ -86,13 +77,11 @@ public class GameState {
         return stats.getOrDefault(key, 0);
     }
 
-    // Helper to adjust stats, e.g., taking damage or healing
     public void adjustStat(String key, int amount) {
         int currentValue = getStat(key);
         setStat(key, currentValue + amount);
     }
 
-    // Get effective attack power (base attack + willpower bonus)
     public int getEffectiveAttack() {
         return getStat(PLAYER_ATTACK) + getStat(PLAYER_WILLPOWER);
     }
@@ -105,9 +94,8 @@ public class GameState {
         return flags.getOrDefault(key, false);
     }
 
-    // New methods for save/load
     public HashMap<String, Integer> getAllStats() {
-        return new HashMap<>(this.stats); // Return a copy
+        return new HashMap<>(this.stats);
     }
 
     public void setAllStats(Map<String, Integer> newStats) {
@@ -118,7 +106,7 @@ public class GameState {
     }
 
     public HashMap<String, Boolean> getAllFlags() {
-        return new HashMap<>(this.flags); // Return a copy
+        return new HashMap<>(this.flags);
     }
 
     public void setAllFlags(Map<String, Boolean> newFlags) {

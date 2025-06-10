@@ -11,15 +11,12 @@ public class Storyline1 extends Storyline {
     private boolean isHardDrugsBattle = false;
     private boolean isFinalBattle = false;
 
-    // Storyline 1 specific stat constants
     public static final String UNIQUE_STAT_KEY_S1 = "depressionLevel";
     public static final String STAT_SOCIAL_CONNECTION = "socialConnection";
     public static final String STAT_PLAYER_WILLPOWER = "playerWillpower";
 
-    // Flag for final skill
     public static final String FLAG_SKILL_RESILIENCE_ACQUIRED = "skillResilienceAcquired";
 
-    // Item Definitions
     private static final Item ALCOHOL_ITEM = new SmokingItem(
         "Bottle of Beer", 
         "A cold bottle of beer. Promises to wash away the pain.",
@@ -117,7 +114,6 @@ public class Storyline1 extends Storyline {
         }
     }
 
-    // Enhanced battle damage calculation
     public int realPlayerDamage() {
         int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
         int willpower = state.getStat(STAT_PLAYER_WILLPOWER);
@@ -125,9 +121,9 @@ public class Storyline1 extends Storyline {
         
         if (state.getFlag(FLAG_SKILL_RESILIENCE_ACQUIRED)) {
             if (isFinalBattle) {
-                return baseAttack + willpower + socialConnection + 3 + new java.util.Random().nextInt(4); // Major skill bonus
+                return baseAttack + willpower + socialConnection + 3 + new java.util.Random().nextInt(4);
             }
-            return baseAttack + willpower + socialConnection + 1 + new java.util.Random().nextInt(2); // Skill bonus
+            return baseAttack + willpower + socialConnection + 1 + new java.util.Random().nextInt(2);
         }
         
         return baseAttack + Math.max(0, willpower - 1) + Math.max(0, socialConnection - 1);
@@ -144,12 +140,12 @@ public class Storyline1 extends Storyline {
 
     private void handleDialogueChoice(int choice) {
         switch(dialogueState) {
-            case 0: // Phone notification from old friend
-                if(choice == 1) { // Meet them
+            case 0:
+                if(choice == 1) {
                     state.adjustStat(STAT_SOCIAL_CONNECTION, 2);
                     ui.displayText("\nYou chose to meet. Maybe human connection is what you need.", Color.BLACK);
                     showDialogue(1);
-                } else { // Stay isolated
+                } else {
                     ui.displayText("\nYou decided to stay in. The silence feels heavier now.", Color.BLACK);
                     state.setFlag("choseToIsolate_d0", true);
                     state.adjustStat(UNIQUE_STAT_KEY_S1, 1);
@@ -157,32 +153,32 @@ public class Storyline1 extends Storyline {
                 }
                 break;
                 
-            case 1: // Plan to meet
+            case 1:
                 showDialogue(2);
                 break;
                 
-            case 2: // Confrontation on the way
-                if (choice == 1) { // Confront the figure
+            case 2:
+                if (choice == 1) {
                     ui.displayText("\nYour choice leads to a confrontation with your inner demons!", Color.BLACK);
                     Timer battleStartTimer = new Timer(1500, e -> startChapter1Battle());
                     battleStartTimer.setRepeats(false);
                     battleStartTimer.start();
-                } else { // Avoid conflict
+                } else {
                     ui.displayText("\nYou avoided the confrontation, but the weight follows you.", Color.BLACK);
                     state.adjustStat(UNIQUE_STAT_KEY_S1, 1);
                     showDialogue(3); 
                 }
                 break;
                 
-            case 3: // At the restaurant
+            case 3:
                 showDialogue(4);
                 break;
                 
-            case 4: // Conversation with friend
-                if (choice == 1) { // Open up about struggles
+            case 4:
+                if (choice == 1) {
                     state.adjustStat(STAT_SOCIAL_CONNECTION, 2);
                     ui.displayText("\n" + playerName + ": \"Honestly? I've been struggling. Everything feels... empty.\"", Color.BLACK);
-                } else { // Keep it surface level
+                } else {
                     state.adjustStat(UNIQUE_STAT_KEY_S1, 1);
                     ui.displayText("\n" + playerName + ": \"Just the usual routine. Nothing exciting.\"", Color.BLACK);
                 }
@@ -191,13 +187,13 @@ public class Storyline1 extends Storyline {
                 proceedTimer.start();
                 break;
                 
-            case 5: // Friend suggests bar
-                if (choice == 1) { // Go to the bar
+            case 5:
+                if (choice == 1) {
                     ui.displayText("\n" + playerName + ": \"You know what? Yeah. Let's do it.\"", Color.BLACK);
                     Timer barTimer = new Timer(2000, e -> startChapter2Battle());
                     barTimer.setRepeats(false);
                     barTimer.start();
-                } else { // Suggest going home
+                } else {
                     ui.displayText("\n" + playerName + ": \"Actually, I should head home. Early day tomorrow.\"", Color.BLACK);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
                     Timer homeTimer = new Timer(3000, e -> showDialogue(6));
@@ -206,7 +202,7 @@ public class Storyline1 extends Storyline {
                 }
                 break;
                 
-            case 6: // Reflection after dinner
+            case 6:
                 String reflectionText = "";
                 int depressionLevel = state.getStat(UNIQUE_STAT_KEY_S1);
                 if (depressionLevel >= 4) {
@@ -226,7 +222,7 @@ public class Storyline1 extends Storyline {
                 choiceTimer.start();
                 break;
                 
-            case 7: // Post-reflection choice
+            case 7:
                 switch (choice) {
                     case 1:
                         ui.displayText("\n" + playerName + ": \"I can't keep living like this. I need to do something.\"", Color.BLACK);
@@ -247,15 +243,15 @@ public class Storyline1 extends Storyline {
                 stressTimer.start();
                 break;
                 
-            case 8: // Chapter 2 transition
+            case 8:
                 showDialogue(9);
                 break;
                 
-            case 9: // Work/daily life struggles
-                if (choice == 1) { // Try to push through
+            case 9:
+                if (choice == 1) {
                     ui.displayText("\n" + playerName + ": \"I can handle this. I just need to work harder.\"", Color.BLACK);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 1);
-                } else { // Consider taking a break
+                } else {
                     ui.displayText("\n" + playerName + ": \"Maybe I should take some time off...\"", Color.BLACK);
                     state.adjustStat(UNIQUE_STAT_KEY_S1, 1);
                 }
@@ -264,10 +260,10 @@ public class Storyline1 extends Storyline {
                 workTimer.start();
                 break;
                 
-            case 10: // Encounter with substances
-                if (choice == 1) { // Face the temptation
+            case 10:
+                if (choice == 1) {
                     startChapter3Battle();
-                } else { // Try to walk away
+                } else {
                     ui.displayText("\n" + playerName + ": \"No... I can't go down that path.\"", Color.BLACK);
                     state.adjustStat(STAT_PLAYER_WILLPOWER, 2);
                     Timer walkAwayTimer = new Timer(3000, e -> showDialogue(11));
@@ -276,32 +272,32 @@ public class Storyline1 extends Storyline {
                 }
                 break;
                 
-            case 11: // Crisis point
-                if (choice == 1) { // Reach out for help
+            case 11:
+                if (choice == 1) {
                     state.adjustStat(STAT_SOCIAL_CONNECTION, 3);
                     state.setFlag(FLAG_SKILL_RESILIENCE_ACQUIRED, true);
                     ui.displayText("\n" + playerName + ": \"I'm calling the suicide hotline. I need help.\"", Color.BLACK);
                     Timer helpTimer = new Timer(3000, e -> showDialogue(12));
                     helpTimer.setRepeats(false);
                     helpTimer.start();
-                } else { // Isolate further
+                } else {
                     startFinalBattle();
                 }
                 break;
                 
-            case 12: // Recovery path
+            case 12:
                 showDialogue(13);
                 break;
                 
-            case 13: // Final choice
-                if (choice == 1) { // Commit to recovery
+            case 13:
+                if (choice == 1) {
                     showGoodEnding();
-                } else { // Still struggling
+                } else {
                     showBitterSweetEnding();
                 }
                 break;
                 
-            case 14: // Final choices - Return to menu or restart
+            case 14:
                 if (choice == 1) {
                     ui.displayText("\nReturning to main menu...", Color.BLACK);
                 } else if (choice == 2) {
@@ -314,12 +310,10 @@ public class Storyline1 extends Storyline {
         }
     }
 
-    // Enhanced useInventoryItem method
     public void useInventoryItem(String itemName) {
         Item itemToUse = state.getItemPrototype(itemName);
         if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
             if (isFirstAlcoholBattle || isCigaretteBattle || isHardDrugsBattle || isFinalBattle) {
-                // During battle - substances provide temporary relief but consequences
                 if (itemName.equals("Bottle of Beer")) {
                     useBeerDuringBattle();
                 } else if (itemName.equals("Cigarette")) {
@@ -331,7 +325,6 @@ public class Storyline1 extends Storyline {
                     state.consumeItem(itemName);
                 }
             } else {
-                // Outside battle - general use
                 itemToUse.applyEffect(state, ui, playerName);
                 state.consumeItem(itemName);
                 ui.displayText("\nUsed " + itemName + ".", Color.BLACK);
@@ -343,8 +336,8 @@ public class Storyline1 extends Storyline {
 
     private void useBeerDuringBattle() {
         ui.displayText("\n" + playerName + " drinks the beer. The alcohol dulls the pain temporarily, but the emptiness remains...", Color.ORANGE);
-        state.adjustStat(GameState.PLAYER_HEALTH, 3); // Temporary relief
-        state.adjustStat(UNIQUE_STAT_KEY_S1, 2); // But increases depression
+        state.adjustStat(GameState.PLAYER_HEALTH, 3);
+        state.adjustStat(UNIQUE_STAT_KEY_S1, 2);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
         state.consumeItem("Bottle of Beer");
     }
@@ -358,14 +351,13 @@ public class Storyline1 extends Storyline {
 
     private void usePillsDuringBattle() {
         ui.displayText("\n" + playerName + " takes the pills. Everything becomes hazy. This is dangerous territory...", Color.RED);
-        state.adjustStat(GameState.PLAYER_HEALTH, 5); // Strong temporary relief
-        state.adjustStat(UNIQUE_STAT_KEY_S1, 4); // But major depression increase
+        state.adjustStat(GameState.PLAYER_HEALTH, 5);
+        state.adjustStat(UNIQUE_STAT_KEY_S1, 4);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
         state.adjustStat(STAT_SOCIAL_CONNECTION, -2);
         state.consumeItem("Pain Pills");
     }
 
-    // Battle Methods
     private void startChapter1Battle() {
         ui.setStageImage("/Resources/Images/Story1/battle1.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story1/battle1.wav", true);
@@ -494,7 +486,6 @@ public class Storyline1 extends Storyline {
                 }
             });
             
-            // Add mid-battle event
             battleManager.setMidBattleEvent(() -> {
                 battleManager.pauseBattle();
                 ui.displayText("\nComplete Despair: \"Why do you keep fighting? You're worthless. Give up.\"", Color.RED.darker());
@@ -511,7 +502,6 @@ public class Storyline1 extends Storyline {
         preBattleTimer.start();
     }
 
-    // Stage Methods
     private void showStage0() {
         ui.setStageImage("/Resources/Images/Story1/stage0.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story1/stage0.wav", true);
@@ -628,8 +618,7 @@ public class Storyline1 extends Storyline {
         Timer t1 = new Timer(1500, e -> ui.displayText("\nNarrator: The dinner is over. You're walking home under the streetlights, processing what just happened.", Color.GRAY));
         t1.setRepeats(false);
         t1.start();
-        // Continue with reflection dialogue from case 6
-        Timer proceedTimer = new Timer(3000, e -> handleDialogueChoice(0)); // Trigger case 6 logic
+        Timer proceedTimer = new Timer(3000, e -> handleDialogueChoice(0));
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
 

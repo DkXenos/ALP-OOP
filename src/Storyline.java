@@ -11,15 +11,11 @@ public abstract class Storyline {
         this.state = state;
     }
 
-    // --- Abstract methods your concrete storylines implement ---
     public abstract void handleChoice(int choice); 
     public abstract String[] getCurrentChoices();
     public abstract int getDialogueState(); 
     public abstract void setDialogueState(int state); 
-    public abstract void showDialoguePublic(int stage); 
-    
-    // Override this in subclasses to handle cleanup before starting
+    public abstract void showDialoguePublic(int stage);
     public void startStory() {
-        // Default implementation - subclasses can override
     }
 }

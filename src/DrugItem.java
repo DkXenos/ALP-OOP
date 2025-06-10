@@ -15,24 +15,20 @@ public class DrugItem extends Item {
 
     @Override
     public void applyEffect(GameState state, GameUI ui, String playerName) {
-        // Display the use message
         ui.displayText("\n" + playerName + " " + usageMessage, Color.BLACK);
         
-        // Apply stat effects
         if (statChanges != null) {
             for (Map.Entry<String, Integer> effect : statChanges.entrySet()) {
                 String statKey = effect.getKey();
                 Integer value = effect.getValue();
                 state.adjustStat(statKey, value);
                 
-                // Display effect message
                 String effectMsg = value > 0 ? "+" + value : String.valueOf(value);
                 ui.displayText("\nEffect: " + statKey + " " + effectMsg, Color.ORANGE);
             }
         }
         
-        // Drug-specific side effects
-        if (random.nextInt(100) < 30) { // 30% chance of side effects
+        if (random.nextInt(100) < 30) { 
             int sideEffect = random.nextInt(3);
             switch (sideEffect) {
                 case 0:
@@ -52,14 +48,11 @@ public class DrugItem extends Item {
                     break;
             }
         }
-        
-        // Withdrawal warning at high addiction levels - fix variable access
         int drugAddictionLevel = state.getStat("drugAddictionLevel");
         if (drugAddictionLevel > 5) {
             ui.displayText("\n" + playerName + " already craves the next dose... withdrawal symptoms are setting in.", Color.RED.darker());
         }
         
-        // Drug-specific aftermath message
         ui.displayText("\n" + playerName + " feels the chemical effects taking hold of their mind...", Color.GRAY.darker());
     }
 }

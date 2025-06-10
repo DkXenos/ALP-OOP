@@ -3,7 +3,7 @@ import java.awt.*;
 import java.net.URL;
 
 public class ImagePanel extends JPanel {
-    private ImageIcon backgroundImageIcon; // Use ImageIcon to handle GIFs
+    private ImageIcon backgroundImageIcon;
 
     public ImagePanel(String imagePath) {
         try {
@@ -14,20 +14,18 @@ public class ImagePanel extends JPanel {
             } else {
                 backgroundImageIcon = new ImageIcon(imgUrl);
             }
-        } catch (Exception e) { // ImageIcon constructor doesn't throw checked IOExceptions
+        } catch (Exception e) {
             System.err.println("Error loading background image: " + imagePath);
             e.printStackTrace();
             backgroundImageIcon = null;
         }
-        setLayout(new BorderLayout()); // Default layout
+        setLayout(new BorderLayout());
     }
 
-    // Constructor overload for no image (just a plain panel)
     public ImagePanel() {
         this(null);
     }
 
-    // Method to change the image after construction
     public void setImage(String imagePath) {
         try {
             if (imagePath == null || imagePath.isEmpty()) {
@@ -46,10 +44,9 @@ public class ImagePanel extends JPanel {
             e.printStackTrace();
             backgroundImageIcon = null;
         }
-        repaint(); // Trigger a repaint to show the new image
+        repaint();
     }
 
-    // Method to get the current ImageIcon (useful for checking if image loaded successfully)
     public ImageIcon getImageIcon() {
         return backgroundImageIcon;
     }
@@ -58,12 +55,8 @@ public class ImagePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (backgroundImageIcon != null && backgroundImageIcon.getImage() != null) {
-            // Draw the image, scaling it to the panel's size.
-            // 'this' (the ImagePanel itself) acts as the ImageObserver,
-            // which is necessary for animated GIFs to update and repaint.
             g.drawImage(backgroundImageIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
         } else {
-            // Fallback if image failed to load - you can customize this
             g.setColor(Color.DARK_GRAY);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
