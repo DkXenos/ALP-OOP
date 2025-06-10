@@ -730,9 +730,8 @@ public class Storyline2 extends Storyline {
 
 
        private void showStage1() {
-        // Use relative paths that work in JAR
-        ui.setStageImage("Resources/Images/Story2/milo_bedroom.png"); 
-        AudioManager.getInstance().playMusic("Resources/Audio/Story2/stage3.wav", true); 
+        ui.setStageImage("/Resources/Images/Story2/bedroom.png"); 
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true); 
         
         ui.displayText("\n\n[Milo's Bedroom - Later that Night, 7:00 PM]", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (looking at a color-coded study schedule): \"OOP, WebProg, Database, Calculus, UKM, SU... I can do this. I have to do this.\"", Color.BLACK));
@@ -745,8 +744,8 @@ public class Storyline2 extends Storyline {
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
     private void showStage2() {
-        ui.setStageImage("Resources/Images/Story2/late_night_study.png");
-        AudioManager.getInstance().playMusic("Resources/Audio/Story2/story2_stage9.wav", true); // Added audio path
+        ui.setStageImage("/Resources/Images/Story2/bedroom.png"); // Added image path
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage9.wav", true); // Added audio path
         
         ui.displayText("\n\n[Same Bedroom - Two weeks later, 2:00 AM] ", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + " (rubbing bloodshot eyes, surrounded by energy drink cans): \"Third test this week. Can't focus anymore... I need something even more refreshing.\"", Color.BLACK));
@@ -766,8 +765,8 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage3() {
-        ui.setStageImage("Resources/Images/Story2/caffeine_pills.png"); // Added image path
-        AudioManager.getInstance().playMusic("Resources/Audio/Story2/stage3.wav", true); // Added audio path
+        ui.setStageImage("/Resources/Images/Story2/caffeine.png"); // Added image path
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true); // Added audio path
         
         Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: You try to look for anything to help you stay awake, and found the caffeine pills that your dad owned.", Color.GRAY));
         t1.setRepeats(false); t1.start();
@@ -776,8 +775,8 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage4() {
-        ui.setStageImage("Resources/Images/Story2/family_dinner.png");
-        AudioManager.getInstance().playMusic("Resources/Audio/Story2/story2_stage4.wav", true);
+        ui.setStageImage("/Resources/Images/Story2/dinner.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage4.wav", true);
         
         ui.displayText("\n\n2nd Month\n[Milo sitting with his parents at dinner]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\nDad: \"So I spoke with Mr. Peterson today about college recommendations. He says you need more extracurriculars if you want Stanford to even look at your application.\"", Color.BLUE));
@@ -794,14 +793,16 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage5() {
-         Timer t1 = new Timer(1000, e -> ui.displayText("\n\n[School hallway, between classes]\nJake (Classmate): \"Hey Milo, you look exhausted. You know what helps me during exam week?\"", Color.BLUE));
+          ui.setStageImage("/Resources/Images/Story2/hallway.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage4.wav", true);
+       Timer t1 = new Timer(1000, e -> ui.displayText("\n\n[School hallway, between classes]\nJake (Classmate): \"Hey Milo, you look exhausted. You know what helps me during exam week?\"", Color.BLUE));
         t1.setRepeats(false); t1.start();
         Timer t2 = new Timer(10000, e -> ui.showChoicesDialog(new String[]{"Ask what he means", "Say you're fine and walk away", "Show interest but stay cautious"}));
         t2.setRepeats(false); t2.start();
     }
 
     private void showStage6() {
-        ui.setStageImage("/Resources/Images/Story2/counselor_office.png");
+        ui.setStageImage("/Resources/Images/Story2/counsilor.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage5_counselor_bgm.wav", true);
 
         ui.displayText("\n\n[The Next Week - School counselor's office]", Color.DARK_GRAY);
@@ -813,7 +814,7 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage7() {
-        ui.setStageImage("/Resources/Images/Story2/counting_pills.png");
+        ui.setStageImage("/Resources/Images/Story2/pills.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true);
         
         ui.displayText("\n\n [Milo's Bedroom - Month 4, Late Night] ", Color.DARK_GRAY);
@@ -837,7 +838,9 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage8(){
-    Timer t3 = new Timer(1000, e -> ui.displayText("\n" + "Jake: \"I might know someone who can help. My cousin deals with anxiety too - has some Xanax she could spare.\" (slips you a small bag) \"For when you need to come down from the study drugs.\"", Color.BLUE));
+     ui.setStageImage("/Resources/Images/Story2/xanax.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage4.wav", true);
+       Timer t3 = new Timer(1000, e -> ui.displayText("\n" + "Jake: \"I might know someone who can help. My cousin deals with anxiety too - has some Xanax she could spare.\" (slips you a small bag) \"For when you need to come down from the study drugs.\"", Color.BLUE));
     t3.setRepeats(false); t3.start();
     Timer t4 = new Timer(5000, e ->  ui.displayText("\nSystem: Added 1 " + XANAX_ITEM.getItemName() + " to inventory.", Color.GREEN));                  
     state.addItem(XANAX_ITEM, 1);
@@ -850,7 +853,10 @@ public class Storyline2 extends Storyline {
     proceedTimer.setRepeats(false); proceedTimer.start();
 }
 
-private void showStage9() {
+private void showStage9() {  
+    ui.setStageImage("/Resources/Images/Story2/aderall.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2-0.wav", true);
+
     ui.displayText("\n\n[Milo's Room - Late Night, Month 6] ", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + " (jittery, unable to sleep): \"I need the Adderall to focus, and the Xanax to sleep. It's just medicine.\"", Color.BLACK));
     t1.setRepeats(false); t1.start();
@@ -861,7 +867,10 @@ private void showStage9() {
 }
 
 private void showStage10() {
-    ui.displayText("\n\n [Living Room - Parent Confrontation] ", Color.DARK_GRAY);
+    ui.setStageImage("/Resources/Images/Story2/confronttion.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage9.wav", true);
+
+        ui.displayText("\n\n [Living Room - Parent Confrontation] ", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\n" + "Mom: \"You don't look well, Milo. You've lost so much weight, and your Pancasila teacher says you fell asleep in class.\"", Color.BLUE));
     t1.setRepeats(false); t1.start();
     Timer t2 = new Timer(3500, e -> ui.displayText("\n" + playerName + " (stressed out): \"I'm fine! Just stressed about college applications.\"", Color.BLACK));
@@ -877,7 +886,10 @@ private void showStage10() {
 }
 
 private void showStage11() {
-    ui.displayText("\n\n [Milo's Room - Researching Online] ", Color.DARK_GRAY);
+     ui.setStageImage("/Resources/Images/Story2/darkweb.png");
+        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2-0.wav", true);
+
+        ui.displayText("\n\n [Milo's Room - Researching Online] ", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\n" + "Narrator: \"The darknet is a hot spot for drugs. A certain advertisement catches your attention.  \"DONT WANT TO DISAPPOINT YOUR FAMILY? CONTACT HERE NOW!\" A telegram account...", Color.GRAY));
     t1.setRepeats(false); t1.start();
     Timer t2 = new Timer(5000, e -> ui.displayText("\n" + "Narrator: \"You decide to start talking to the person behind the advertisement.", Color.GRAY));
@@ -887,7 +899,7 @@ private void showStage11() {
 }
 
 private void showStage12() {
-    ui.setStageImage("/Resources/Images/Story2/online_dealer.png");
+    ui.setStageImage("/Resources/Images/Story2/dealer.png");
     AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage4.wav", true);
     
     ui.displayText("\n\n[Online Chat - Semester break - Month 7]", Color.DARK_GRAY);
@@ -902,7 +914,7 @@ private void showStage12() {
 }
 
 private void showStage13() {
-    ui.setStageImage("/Resources/Images/Story2/xanax_temptation.png");
+    ui.setStageImage("/Resources/Images/Story2/xanax.png");
     AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2-0.wav", true);
     
     ui.displayText("\n\n[Milo's Room - Same Night]", Color.DARK_GRAY);
@@ -914,7 +926,7 @@ private void showStage13() {
     t3.setRepeats(false); t3.start();
 }
 private void showStage14() {
-    ui.setStageImage("/Resources/Images/Story2/empty_prescription.png");
+    ui.setStageImage("/Resources/Images/Story2/xanax.png");
     AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad.wav", true);
     
     ui.displayText("\n\n[Milo's Room - Month 7, Week 3]", Color.DARK_GRAY);
@@ -932,8 +944,9 @@ private void showStage14() {
     proceedTimer.setRepeats(false); proceedTimer.start();
 }
 private void showStage15() {
-    ui.setStageImage("/Resources/Images/Story2/mirror_confrontation.png");
-    
+    ui.setStageImage("/Resources/Images/Story2/final.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad.wav", true);
+     
     ui.displayText("\n\n[Milo's Room - 3 AM, Month 8]", Color.DARK_GRAY);
     Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: \"You stand in front of your mirror, barely recognizing the person staring back. Hollow eyes, gaunt cheeks, trembling hands.\"", Color.GRAY));
     t1.setRepeats(false); t1.start();
@@ -953,8 +966,9 @@ private void showStage15() {
 }
 
 private void showStage16() {
-    ui.setStageImage("/Resources/Images/Story2/final_battle_prep.png");
-    
+    ui.setStageImage("/Resources/Images/Story2/final.png");
+    AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad.wav", true);
+     
     ui.displayText("\n\nNarrator: \"This is it. The final confrontation with the monster you've become.\"", Color.GRAY);
     Timer t1 = new Timer(2000, e -> ui.displayText("\n" + playerName + ": \"I won't let you control me anymore!\"", Color.BLACK));
     t1.setRepeats(false); t1.start();
