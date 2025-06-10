@@ -730,8 +730,9 @@ public class Storyline2 extends Storyline {
 
 
        private void showStage1() {
-        ui.setStageImage("/Resources/Images/Story2/milo_bedroom.png"); 
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true); 
+        // Use relative paths that work in JAR
+        ui.setStageImage("Resources/Images/Story2/milo_bedroom.png"); 
+        AudioManager.getInstance().playMusic("Resources/Audio/Story2/stage3.wav", true); 
         
         ui.displayText("\n\n[Milo's Bedroom - Later that Night, 7:00 PM]", Color.DARK_GRAY);
         Timer t1 = new Timer(1500, e -> ui.displayText("\n" + playerName + " (looking at a color-coded study schedule): \"OOP, WebProg, Database, Calculus, UKM, SU... I can do this. I have to do this.\"", Color.BLACK));
@@ -744,8 +745,8 @@ public class Storyline2 extends Storyline {
         proceedTimer.setRepeats(false); proceedTimer.start();
     }
     private void showStage2() {
-        ui.setStageImage("/Resources/Images/Story2/late_night_study.png"); // Added image path
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage9.wav", true); // Added audio path
+        ui.setStageImage("Resources/Images/Story2/late_night_study.png");
+        AudioManager.getInstance().playMusic("Resources/Audio/Story2/story2_stage9.wav", true); // Added audio path
         
         ui.displayText("\n\n[Same Bedroom - Two weeks later, 2:00 AM] ", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\n" + playerName + " (rubbing bloodshot eyes, surrounded by energy drink cans): \"Third test this week. Can't focus anymore... I need something even more refreshing.\"", Color.BLACK));
@@ -765,8 +766,8 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage3() {
-        ui.setStageImage("/Resources/Images/Story2/caffeine_pills.png"); // Added image path
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/stage3.wav", true); // Added audio path
+        ui.setStageImage("Resources/Images/Story2/caffeine_pills.png"); // Added image path
+        AudioManager.getInstance().playMusic("Resources/Audio/Story2/stage3.wav", true); // Added audio path
         
         Timer t1 = new Timer(1000, e -> ui.displayText("\nNarrator: You try to look for anything to help you stay awake, and found the caffeine pills that your dad owned.", Color.GRAY));
         t1.setRepeats(false); t1.start();
@@ -775,8 +776,8 @@ public class Storyline2 extends Storyline {
     }
 
     private void showStage4() {
-        ui.setStageImage("/Resources/Images/Story2/family_dinner.png");
-        AudioManager.getInstance().playMusic("/Resources/Audio/Story2/story2_stage4.wav", true);
+        ui.setStageImage("Resources/Images/Story2/family_dinner.png");
+        AudioManager.getInstance().playMusic("Resources/Audio/Story2/story2_stage4.wav", true);
         
         ui.displayText("\n\n2nd Month\n[Milo sitting with his parents at dinner]", Color.DARK_GRAY);
         Timer t1 = new Timer(1000, e -> ui.displayText("\nDad: \"So I spoke with Mr. Peterson today about college recommendations. He says you need more extracurriculars if you want Stanford to even look at your application.\"", Color.BLUE));
