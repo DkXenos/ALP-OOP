@@ -49,7 +49,7 @@ public class LoadingScreen extends JWindow {
             case 4:
                 return "./Resources/Assets/opening-screen.gif"; // Initial app loading
             case 1:
-                return "./Resources/Assets/storyline1-cutscene.gif"; // Cutscene for Storyline1
+                return "./Resources/Assets/lulaby-opening.gif"; // Cutscene for Storyline1
             case 2:
                 return "./Resources/Assets/euphoria-opening.gif"; // Cutscene for Storyline2
             case 3:
@@ -65,7 +65,7 @@ public class LoadingScreen extends JWindow {
             case 4:
                 return "./Resources/Audio/loading-sfx.wav"; // Initial app loading audio
             case 1:
-                return "./Resources/Audio/storyline1-cutscene.wav"; // Cutscene audio for Storyline1
+                return "./Resources/Audio/burning-audio.wav"; // Cutscene audio for Storyline1
             case 2:
                 return "./Resources/Audio/euphoria-opening.wav"; // Cutscene audio for Storyline2
             case 3:
