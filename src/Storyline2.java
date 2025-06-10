@@ -12,7 +12,6 @@ public class Storyline2 extends Storyline {
     public static final String STAT_SOCIAL_STATUS = "socialStatus";
     public static final String STAT_PLAYER_WILLPOWER = "playerWillpower";
 
-    // Add flag constants like Storyline3
     public static final String FLAG_SKILL_OVERCOME_ACQUIRED = "skillOvercomeAcquired";
     public static final String FLAG_ENERGY_PILLS_USED = "energyPillsUsed";
     public static final String FLAG_XANAX_USED = "xanaxUsed";
@@ -37,9 +36,6 @@ public class Storyline2 extends Storyline {
         super(ui, state);
         this.battleManager = new BattleManager(ui, state);
         ui.setTitle("A Lost Euphoria"); 
-        
-        // Remove registerItemPrototype calls since method doesn't exist
-        // Items will be handled directly when needed
     }
 
     public BattleManager getBattleManager() {
@@ -95,7 +91,6 @@ public class Storyline2 extends Storyline {
             state.setStat(UNIQUE_STAT_KEY_S2, 0);
             state.setStat(STAT_SOCIAL_STATUS, 0);
             
-            // Initialize flags
             state.setFlag(FLAG_SKILL_OVERCOME_ACQUIRED, false);
             state.setFlag(FLAG_ENERGY_PILLS_USED, false);
             state.setFlag(FLAG_XANAX_USED, false);
@@ -129,16 +124,13 @@ public class Storyline2 extends Storyline {
     private boolean isAdderallBattle = false;
     
     public int realPlayerDamage() {
-        // Check if this is the Adderall battle (first real drug encounter)
         if (isAdderallBattle) {
-            // Player is too scared to deal damage during first real drug encounter
             return 0;
         }
         
         int baseAttack = state.getStat(GameState.PLAYER_ATTACK);
         int willpower = state.getStat(STAT_PLAYER_WILLPOWER);
         
-        // Use flag to check if OVERCOME skill is acquired
         if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
             return baseAttack + willpower + new Random().nextInt(2); // Base + willpower + skill bonus
         }
@@ -157,7 +149,6 @@ public class Storyline2 extends Storyline {
             }
         }
         
-        // Handle Energy Pills during late night study sessions
         if (itemName.equalsIgnoreCase("ENERGY_PILLS") && (dialogueState == 1 || dialogueState == 2 || dialogueState == 7)) {
             if (state.getItemQuantity("ENERGY_PILLS") > 0) {
                 useEnergyPillsDuringStudy();
@@ -168,7 +159,6 @@ public class Storyline2 extends Storyline {
             }
         }
         
-        // Handle items during final boss battle
         if (battleManager.isBattleActive() && dialogueState == 16) {
             if (itemName.equalsIgnoreCase("XANAX") && state.getItemQuantity("XANAX") > 0) {
                 useXanaxDuringFinalBattle();
@@ -181,7 +171,6 @@ public class Storyline2 extends Storyline {
         
         Item itemToUse = state.getItemPrototype(itemName);
         if (itemToUse != null && state.getItemQuantity(itemName) > 0) {
-            // Apply the item's effect for other cases
             itemToUse.applyEffect(state, ui, playerName);
             state.consumeItem(itemName);
         } else {
@@ -194,7 +183,6 @@ public class Storyline2 extends Storyline {
         state.adjustStat(UNIQUE_STAT_KEY_S2, 2);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -1);
         
-        // Set flag for Energy Pills usage
         state.setFlag(FLAG_ENERGY_PILLS_USED, true);
         
         ui.displayText("\n" + playerName + " (reaching for the Energy Pills): \"Maybe this will help me focus better tonight.\"", Color.BLACK);
@@ -208,7 +196,6 @@ public class Storyline2 extends Storyline {
             Timer t3 = new Timer(7000, e2 -> ui.displayText("\nSystem Status: \"Energy Pills consumed! Addiction Level +2, Willpower -1\"", Color.ORANGE));
             t3.setRepeats(false); t3.start();
             
-            // Add progression logic for stage 7
             if (dialogueState == 7) {
                 Timer proceedToNext = new Timer(9000, e2 -> {
                     ui.displayText("\n\n[The Next Day] (School bathroom, Jake approaches you.)", Color.GRAY);
@@ -228,7 +215,6 @@ public class Storyline2 extends Storyline {
         state.adjustStat(UNIQUE_STAT_KEY_S2, 1);
         state.adjustStat(STAT_PLAYER_WILLPOWER, -2);
         
-        // Set flag for Xanax usage
         state.setFlag(FLAG_XANAX_USED, true);
         
         ui.displayText("\n" + playerName + " (reaching for the Xanax): \"Maybe... maybe this will help me think clearly.\"", Color.BLACK);
@@ -400,7 +386,6 @@ public class Storyline2 extends Storyline {
                         outputText = "\nNarrator: \"You decide to use the Energy Pills as a temporary solution.\"";
                         outputText += "\n" + playerName + ": \"Let me check my inventory for those Energy Pills...\"";
                         state.consumeItem("ENERGY_PILLS");
-                        // Don't auto-use, wait for user to manually use from inventory
                         break;
                     case 2: 
                         outputText = "\nNarrator: \"You decide to save them for a more desperate moment. You try to push through the night naturally.\"";
@@ -409,7 +394,6 @@ public class Storyline2 extends Storyline {
                 }
                 ui.displayText(outputText, Color.GRAY);   
                 
-                // Continue to Jake conversation for both choices after a delay
                 Timer continueToJake = new Timer(3000, e -> {
                     ui.displayText("\n\n[The Next Day] (School bathroom, Jake approaches you.)", Color.GRAY);
                     Timer t7 = new Timer(1000, e2 -> ui.displayText("\nJake: \"Hey, you look rough. Did those pills help?\"", Color.BLUE));
@@ -499,13 +483,10 @@ public class Storyline2 extends Storyline {
                 }
                 ui.displayText(finalChoiceText, Color.GRAY);
                 
-                // Only proceed automatically for choices 1 and 2
                 if (choice != 3) {
                     Timer finalProceed = new Timer(3000, e -> showDialogue(16));
                     finalProceed.setRepeats(false); finalProceed.start();
                 }
-                // For choice 3, the dialogue will continue when the user manually uses an item
-                // or they can proceed to stage 16 through other means
                 break;
         }
     }
@@ -636,7 +617,6 @@ public class Storyline2 extends Storyline {
                 if (battleResult == BattleManager.BattleResult.WIN) {
                     ui.setStageImage("/Resources/Images/Story2/victory_moment.png");
                     
-                    // Check if player has OVERCOME skill
                     if (state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED)) {
                         ui.displayText("\nNarrator: \"You've won this battle using your OVERCOME skill and newfound strength. The experience from your failures made you stronger.\"", Color.GRAY);
                     } else {
@@ -674,7 +654,6 @@ public class Storyline2 extends Storyline {
                 }
             });
             
-            // Add mid-battle event when enemy health is around 50%
             battleManager.setMidBattleEvent(() -> {
                 battleManager.pauseBattle();
                 ui.displayText("\nAddicted Milo: \"You're struggling, aren't you? You know what would make this easier...\"", Color.RED.darker());
@@ -720,7 +699,6 @@ public class Storyline2 extends Storyline {
         });
         t2.setRepeats(false); t2.start();
         Timer showchoices = new Timer(16500, e -> {
-            // Only show choices if user haven't loaded another save slot, spy ga jalan timernya 
             if (dialogueState == 0) {
                 ui.showChoicesDialog(new String[]{"Take a deep breath and enter", "Check your schedule one more time", "Look at your reflection in the trophy case"});
             }
@@ -984,12 +962,10 @@ private void showStage16() {
 private void showBadEnding() {
     int addictionLevel = state.getStat(UNIQUE_STAT_KEY_S2);
     
-    // Check flags to determine ending variations
     boolean usedDealerDrugs = state.getFlag(FLAG_DEALER_CONTACTED);
     boolean overcameInitialFear = state.getFlag(FLAG_SKILL_OVERCOME_ACQUIRED);
     
     if (addictionLevel >= 7 || usedDealerDrugs) {
-        // Worse ending - especially if contacted dealer
         ui.setStageImage("/Resources/Images/Story2/death_ending.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/tragic_ending_bgm.wav", true);
         
@@ -1009,7 +985,6 @@ private void showBadEnding() {
         Timer t5 = new Timer(15000, e -> ui.displayText("\n\n=== THE END ===\n\nAddiction Level: " + addictionLevel + "/10", Color.RED.darker()));
         t5.setRepeats(false); t5.start();
     } else {
-        // Bad ending with flag variations
         ui.setStageImage("/Resources/Images/Story2/family_tragedy.png");
         AudioManager.getInstance().playMusic("/Resources/Audio/Story2/sad_ending_bgm", true);
         
@@ -1042,7 +1017,6 @@ private void showBadEnding() {
                 };
             }
             
-            // Special choices for final battle
             if (dialogueState == 16) {
                 return new String[]{
                     "1. Attack (" + realPlayerDamage() + " dmg)"

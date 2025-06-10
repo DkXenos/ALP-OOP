@@ -7,14 +7,11 @@ import java.util.Random;
 public class BattleManager {
     private GameUI ui;
     private GameState gameState;
-    // private String opponentName; // Will be replaced by currentEnemy.getName()
-    // private int opponentHealth; // Will be replaced by currentEnemy.getCurrentHealth()
-    // private int opponentAttack; // Will be replaced by currentEnemy.getAttack()
-    private Enemy currentEnemy; // Stores the current enemy object
+    private Enemy currentEnemy;
     private Consumer<BattleResult> onBattleEndCallback;
     private boolean isBattleActive = false;
-    private Runnable midBattleEvent; // Add this field
-    private boolean midBattleEventTriggered = false; // Add this field
+    private Runnable midBattleEvent;
+    private boolean midBattleEventTriggered = false;
 
     public enum BattleResult {
         WIN,
@@ -27,12 +24,8 @@ public class BattleManager {
         this.gameState = gameState;
     }
 
-    // Modified startBattle method
     public void startBattle(Enemy enemy, Consumer<BattleResult> callback) {
         this.currentEnemy = enemy;
-        // this.opponentName = enemy.getName(); // No longer needed as separate field
-        // this.opponentHealth = enemy.getCurrentHealth(); // No longer needed as separate field
-        // this.opponentAttack = enemy.getAttack(); // No longer needed as separate field
         this.onBattleEndCallback = callback;
         this.isBattleActive = true;
 
@@ -49,27 +42,19 @@ public class BattleManager {
 
 
     public int calculatePlayerDamage() {
-            int effectiveAttack = gameState.getEffectiveAttack(); // Use effective attack (base + willpower)
-            // Returns the effective attack value
+            int effectiveAttack = gameState.getEffectiveAttack();
             return effectiveAttack;
     }
 
-    // Modified this method to allow setting events mid-battle
     public void setMidBattleEvent(Runnable event) {
         this.midBattleEvent = event;
-        this.midBattleEventTriggered = false; // Always reset flag to allow new event
+        this.midBattleEventTriggered = false;
     }
 
-    // Add this method
     public void pauseBattle() {
-        // Battle is effectively paused - no automatic enemy turn processing
-        // This can be expanded if needed
     }
 
-    // Add this method  
     public void resumeBattle() {
-        // Battle resumes normal processing
-        // This can be expanded if needed
     }
 
     public void processPlayerTurn(int choice) {
@@ -78,19 +63,18 @@ public class BattleManager {
         }
 
         switch (choice) {
-            case 1: // Attack
+            case 1:
                 int damageDealt = calculatePlayerDamage();
                 currentEnemy.takeDamage(damageDealt);
                 ui.appendBattleLog("You attack " + currentEnemy.getName() + " for " + damageDealt + " damage!", Color.BLACK);
                 ui.appendBattleLog(currentEnemy.getName() + " health: " + currentEnemy.getCurrentHealth(), Color.BLACK);
                 ui.updateBattleInterfaceHealth(gameState.getStat(GameState.PLAYER_HEALTH), currentEnemy.getCurrentHealth());
 
-                // Simple mid-battle event trigger (around 50% enemy health)
                 if (!midBattleEventTriggered && midBattleEvent != null && 
                     currentEnemy.getCurrentHealth() <= currentEnemy.getMaxHealth() / 2) {
                     midBattleEventTriggered = true;
-                    midBattleEvent.run(); // Just run the event
-                    return; // Skip enemy turn this time
+                    midBattleEvent.run();
+                    return;
                 }
 
                 if (currentEnemy.isDefeated()) {
@@ -103,7 +87,6 @@ public class BattleManager {
                 return;
         }
 
-        // Enemy turn processing
         if (!currentEnemy.isDefeated()) {
             int enemyAttackValue = currentEnemy.getAttack();
             gameState.adjustStat(GameState.PLAYER_HEALTH, -enemyAttackValue);
@@ -125,8 +108,8 @@ public class BattleManager {
 
     private void endBattle(BattleResult result) {
         isBattleActive = false;
-        midBattleEvent = null; // Clear the event
-        midBattleEventTriggered = false; // Reset flag
+        midBattleEvent = null;
+        midBattleEventTriggered = false;
 
         String enemyNameForMessage = (currentEnemy != null) ? currentEnemy.getName() : "The opponent";
 
@@ -149,7 +132,7 @@ public class BattleManager {
             if (onBattleEndCallback != null) {
                 onBattleEndCallback.accept(result);
             }
-            this.currentEnemy = null; // Clear the enemy reference
+            this.currentEnemy = null;
         });
         endBattleTimer.setRepeats(false);
         endBattleTimer.start();

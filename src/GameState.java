@@ -128,7 +128,6 @@ public class GameState {
         }
     }
 
-    // --- New Inventory Methods ---
     public void addItem(Item item, int quantity) {
         if (item == null || quantity <= 0) return;
         itemPrototypes.putIfAbsent(item.getItemName(), item);
@@ -149,7 +148,6 @@ public class GameState {
         return false;
     }
     
-    // For removing items without using them (e.g., dropping, selling)
     public boolean removeItemCompletely(String itemName, int quantity) {
         int currentQuantity = inventoryQuantities.getOrDefault(itemName, 0);
         if (currentQuantity >= quantity) {
@@ -172,7 +170,6 @@ public class GameState {
         return itemPrototypes.get(itemName);
     }
 
-    // For displaying inventory in UI
     public List<String> getInventoryForDisplay() {
         List<String> displayList = new ArrayList<>();
         if (inventoryQuantities.isEmpty()) {
@@ -187,13 +184,13 @@ public class GameState {
         return displayList;
     }
     
-    public Map<String, Integer> getInventoryQuantities() { // For saving
+    public Map<String, Integer> getInventoryQuantities() {
         return new HashMap<>(this.inventoryQuantities);
     }
 
-    public void setInventoryQuantities(Map<String, Integer> newQuantities) { // For loading
+    public void setInventoryQuantities(Map<String, Integer> newQuantities) {
         this.inventoryQuantities.clear();
-        this.itemPrototypes.clear(); // Clear old prototypes
+        this.itemPrototypes.clear();
         if (newQuantities != null) {
             this.inventoryQuantities.putAll(newQuantities);
             repopulateItemPrototypesFromQuantities();

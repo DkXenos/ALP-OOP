@@ -6,10 +6,9 @@ public class AudioManager {
 
     private static AudioManager instance;
     private Clip currentClip;
-    private float volume = 0.7f; // Default volume (0.0 to 1.0)
+    private float volume = 0.7f;
 
     private AudioManager() {
-        // Private constructor for Singleton pattern
     }
 
     public static synchronized AudioManager getInstance() {
@@ -20,7 +19,7 @@ public class AudioManager {
     }
 
     public void playMusic(String resourcePath, boolean loop) {
-        stopMusic(); // Stop any currently playing music
+        stopMusic();
 
         try {
             InputStream audioSrc = AudioManager.class.getResourceAsStream(resourcePath);
@@ -41,13 +40,12 @@ public class AudioManager {
             } else {
                 currentClip.start();
             }
-            // System.out.println("Playing music: " + resourcePath);
 
         } catch (UnsupportedAudioFileException e) {
             System.err.println("Unsupported audio file: " + resourcePath + " - " + e.getMessage());
         } catch (LineUnavailableException e) {
             System.err.println("Audio line unavailable: " + e.getMessage());
-        } catch (Exception e) { // Catch generic IOException and others
+        } catch (Exception e) {
             System.err.println("Error playing audio: " + resourcePath + " - " + e.getMessage());
         }
     }
@@ -59,11 +57,8 @@ public class AudioManager {
             }
             currentClip.close();
             currentClip = null;
-            // System.out.println("Music stopped.");
         }
     }
-
-    
 
     public float getVolume() {
         return this.volume;
